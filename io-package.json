@@ -1,0 +1,85 @@
+{
+    "common": {
+        "name": "acme",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版"
+            }
+        },
+        "title": "acme",
+        "titleLang": {
+            "en": "acme",
+            "de": "Gipfel",
+            "ru": "акме",
+            "pt": "acme",
+            "nl": "hoogtepunt",
+            "fr": "acmé",
+            "it": "acme",
+            "es": "cumbre",
+            "pl": "kulminacja",
+            "zh-cn": "顶点"
+        },
+        "desc": {
+            "en": "Generates certificate bundles using ACME challenges",
+            "de": "Generiert Zertifikatsbündel mithilfe von ACME-Herausforderungen",
+            "ru": "Генерирует пакеты сертификатов, используя вызовы ACME.",
+            "pt": "Gera pacotes de certificados usando desafios ACME",
+            "nl": "Genereert certificaatbundels met behulp van ACME-uitdagingen",
+            "fr": "Génère des ensembles de certificats à l'aide des défis ACME",
+            "it": "Genera pacchetti di certificati utilizzando le sfide ACME",
+            "es": "Genera paquetes de certificados usando desafíos ACME",
+            "pl": "Generuje pakiety certyfikatów przy użyciu wyzwań ACME",
+            "zh-cn": "使用 ACME 挑战生成证书包"
+        },
+        "authors": [
+            "Robin Rainton <robin@rainton.com>"
+        ],
+        "keywords": [
+            "certificate",
+            "SSL",
+            "ACME"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "acme.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/raintonr/ioBroker.acme/main/admin/acme.png",
+        "readme": "https://github.com/raintonr/ioBroker.acme/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "general",
+        "compact": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "none"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.0.0"
+            }
+        ]
+    },
+    "native": {
+        "option1": true,
+        "option2": "42"
+    },
+    "objects": [],
+    "instanceObjects": []
+}
