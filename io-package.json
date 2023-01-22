@@ -54,10 +54,11 @@
         "main": "main.js",
         "icon": "acme.png",
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/raintonr/ioBroker.acme/main/admin/acme.png",
-        "readme": "https://github.com/raintonr/ioBroker.acme/blob/main/README.md",
+        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.acme/main/admin/acme.png",
+        "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
         "loglevel": "info",
-        "mode": "daemon",
+        "mode": "schedule",
+        "schedule": "0 24 * * *",
         "type": "general",
         "compact": true,
         "connectionType": "cloud",
@@ -77,8 +78,7 @@
         ]
     },
     "native": {
-        "option1": true,
-        "option2": "42"
+        "useStaging": true
     },
     "objects": [],
     "instanceObjects": []
