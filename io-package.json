@@ -16,18 +16,18 @@
                 "zh-cn": "首次出版"
             }
         },
-        "title": "acme",
+        "title": "ACME",
         "titleLang": {
-            "en": "acme",
-            "de": "Gipfel",
-            "ru": "акме",
-            "pt": "acme",
-            "nl": "hoogtepunt",
-            "fr": "acmé",
-            "it": "acme",
-            "es": "cumbre",
-            "pl": "kulminacja",
-            "zh-cn": "顶点"
+            "en": "ACME",
+            "de": "ACME",
+            "ru": "ACME",
+            "pt": "ACME",
+            "nl": "ACME",
+            "fr": "ACME",
+            "it": "ACME",
+            "es": "ACME",
+            "pl": "ACME",
+            "zh-cn": "ACME"
         },
         "desc": {
             "en": "Generates certificate bundles using ACME challenges",
