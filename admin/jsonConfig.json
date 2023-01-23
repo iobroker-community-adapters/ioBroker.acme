@@ -3,6 +3,29 @@
     "items": {
         "mainTab": {
             "type": "panel",
+            "label": "Main",
+            "items": {
+                "maintainerEmail": {
+                    "type": "text",
+                    "label": "Maintainer email passed to CA",
+                    "sm": 12,
+                    "md": 6,
+                    "validator": "data.maintainerEmail",
+                    "validatorErrorText": "Maintainer email must be specified",
+                    "validatorNoSaveOnError": true
+                },
+                "useStaging": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Use staging server",
+                    "help": "Useful for testing/challenge verification purposes.",
+                    "sm": 12,
+                    "md": 6
+                }
+            }
+        },
+        "challengesTab": {
+            "type": "panel",
             "label": "Challenges",
             "items": {
                 "http01Active": {
@@ -177,19 +200,6 @@
                     "validator": "!data.bundles.find(bundle => (!bundle.id || bundle.id.match(/[^a-z0-9]/i)))",
                     "validatorErrorText": "ID must be alphanumeric only. No special characters or space",
                     "validatorNoSaveOnError": true
-                }
-            }
-        },
-        "stagingTab": {
-            "type": "panel",
-            "label": "Staging",
-            "items": {
-                "useStaging": {
-                    "type": "checkbox",
-                    "label": "Use staging server",
-                    "help": "Useful for testing/challenge verification purposes.",
-                    "sm": 12,
-                    "md": 6
                 }
             }
         }
