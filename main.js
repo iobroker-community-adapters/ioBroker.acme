@@ -99,21 +99,31 @@ class Acme extends utils.Adapter {
 
             // TODO: Is there a better way?
             // Just add all the DNS-01 options blindly for all the modules and see what sticks ;)
-            const options = {
-                apiUser: this.config.dns01ApiUser,
-                apiKey: this.config.dns01ApiKey,
-                clientIp: this.config.dns01ClientIp,
-                username: this.config.dns01Username,
-                // TODO: not hardcoded
-                baseUrl: 'https://api.namecheap.com/xml.response'
-            };
+            const dns01Options = {};
+            const dns01Props = {};
+            for (const [key, value] of Object.entries(this.config)) {
+                if (key.startsWith('dns01O')) {
+                    // An option...
+                    dns01Options[key.slice(6)] = value;
+                } else if (key.startsWith('dns01P')) {
+                    // A property to add after creation
+                    dns01Props[key.slice(6)] = value;
+                }
+            }
 
-            this.log.debug('dns-01 options: ' + JSON.stringify(options));
+            // Add module specific options
+            switch (this.config.dns01Module) {
+                case 'acme-dns-01-namecheap':
+                    dns01Options['baseUrl'] = 'https://api.namecheap.com/xml.response';
+                    break;
+            }
+
+            this.log.debug('dns-01 options: ' + JSON.stringify(dns01Options));
 
             // Do this inside try... catch as module is configurable
             let thisChallenge;
             try {
-                thisChallenge = require(this.config.dns01Module).create(options);
+                thisChallenge = require(this.config.dns01Module).create(dns01Options);
             } catch (err) {
                 this.log.error('Failed to load dns-01 challenge module: ' + err);
             }
@@ -121,7 +131,9 @@ class Acme extends utils.Adapter {
             if (thisChallenge) {
                 // Add extra properties
                 // TODO: only add where needed?
-                thisChallenge['propagationDelay'] = this.config.dns01PropagationDelay * 1000;
+                for (const [key, value] of Object.entries(dns01Props)) {
+                    thisChallenge[key] = value;
+                }
                 this.challenges['dns-01'] = thisChallenge;
             }
         }
