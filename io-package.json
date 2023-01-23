@@ -64,7 +64,7 @@
         "connectionType": "cloud",
         "dataSource": "poll",
         "adminUI": {
-            "config": "none"
+            "config": "json"
         },
         "dependencies": [
             {
@@ -78,7 +78,18 @@
         ]
     },
     "native": {
-        "useStaging": true
+        "useStaging": true,
+        "http01Active": false,
+        "http01Port": 0,
+        "http01Bind": "",
+        "dns01Active": false,
+        "dns01Module": "",
+        "dns01ApiUser": "",
+        "dns01ApiKey": "",
+        "dns01ClientIp": "",
+        "dns01Username": "",
+        "dns01PropagationDelay": 0,
+        "bundles": []
     },
     "objects": [],
     "instanceObjects": []
