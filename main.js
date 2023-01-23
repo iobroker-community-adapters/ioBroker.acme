@@ -7,9 +7,14 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
+const pkg = require('./package.json');
 
-// Load your modules here, e.g.:
-// const fs = require("fs");
+const ACME = require('acme');
+const Keypairs = require('@root/keypairs');
+const CSR = require('@root/csr');
+const PEM = require('@root/pem');
+
+const accountObjectId = 'account';
 
 class Acme extends utils.Adapter {
 
@@ -21,10 +26,15 @@ class Acme extends utils.Adapter {
             ...options,
             name: 'acme',
         });
+
+        this.account = {
+            full: null,
+            key: null
+        };
+        this.challenges = [];
+        this.toShutdown = [];
+
         this.on('ready', this.onReady.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('objectChange', this.onObjectChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
 
@@ -32,57 +42,27 @@ class Acme extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        // Initialize your adapter here
+        this.log.debug('config: ' + JSON.stringify(this.config));
 
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
-        // this.config:
-        this.log.info('config option1: ' + this.config.option1);
-        this.log.info('config option2: ' + this.config.option2);
+        if (!this.config?.bundles?.length) {
+            this.terminate('No bundles configured - nothing to do');
+        } else {
+            // Setup challenges
+            this.initChallenges();
 
-        /*
-        For every state in the system there has to be also an object of type state
-        Here a simple template for a boolean variable named "testVariable"
-        Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-        */
-        await this.setObjectNotExistsAsync('testVariable', {
-            type: 'state',
-            common: {
-                name: 'testVariable',
-                type: 'boolean',
-                role: 'indicator',
-                read: true,
-                write: true,
-            },
-            native: {},
-        });
+            if (!Object.keys(this.challenges).length) {
+                this.log.error('Failed to initiate any challenges');
+            } else {
+                // Init ACME/account, etc
+                await this.initAcme();
 
-        // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-        this.subscribeStates('testVariable');
-        // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
-        // this.subscribeStates('lights.*');
-        // Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
-        // this.subscribeStates('*');
-
-        /*
-            setState examples
-            you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-        */
-        // the variable testVariable is set to true as command (ack=false)
-        await this.setStateAsync('testVariable', true);
-
-        // same thing, but the value is flagged "ack"
-        // ack should be always set to true if the value is received from or acknowledged from the target system
-        await this.setStateAsync('testVariable', { val: true, ack: true });
-
-        // same thing, but the state is deleted after 30s (getState will return null afterwards)
-        await this.setStateAsync('testVariable', { val: true, ack: true, expire: 30 });
-
-        // examples for the checkPassword/checkGroup functions
-        let result = await this.checkPasswordAsync('admin', 'iobroker');
-        this.log.info('check user admin pw iobroker: ' + result);
-
-        result = await this.checkGroupAsync('admin', 'admin');
-        this.log.info('check group user admin group admin: ' + result);
+                // Loop round bundles and generate certs
+                for (const bundle of this.config.bundles) {
+                    await this.generateBundle(bundle);
+                }
+            }
+        }
+        this.terminate('Done');
     }
 
     /**
@@ -91,11 +71,10 @@ class Acme extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            // Here you must clear all timeouts or intervals that may still be active
-            // clearTimeout(timeout1);
-            // clearTimeout(timeout2);
-            // ...
-            // clearInterval(interval1);
+            this.log.debug('Shutdown...');
+            for (const challenge of this.toShutdown) {
+                challenge.shutdown();
+            }
 
             callback();
         } catch (e) {
@@ -103,56 +82,154 @@ class Acme extends utils.Adapter {
         }
     }
 
-    // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
-    // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-    // /**
-    //  * Is called if a subscribed object changes
-    //  * @param {string} id
-    //  * @param {ioBroker.Object | null | undefined} obj
-    //  */
-    // onObjectChange(id, obj) {
-    //     if (obj) {
-    //         // The object was changed
-    //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-    //     } else {
-    //         // The object was deleted
-    //         this.log.info(`object ${id} deleted`);
-    //     }
-    // }
+    initChallenges() {
+        if (this.config.http01Active) {
+            this.log.debug('Init http-01 challenge server');
+            const thisChallenge = require('./lib/http-01-challenge-server').create({
+                port: this.config.http01Port,
+                address: this.config.http01Bind,
+                log: this.log
+            });
+            this.challenges['http-01'] = thisChallenge;
+            this.toShutdown.push(thisChallenge);
+        }
 
-    /**
-     * Is called if a subscribed state changes
-     * @param {string} id
-     * @param {ioBroker.State | null | undefined} state
-     */
-    onStateChange(id, state) {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        } else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
+        if (this.config.dns01Active) {
+            this.log.debug('Init dns-01 challenge');
+
+            // TODO: Is there a better way?
+            // Just add all the DNS-01 options blindly for all the modules and see what sticks ;)
+            const options = {
+                apiUser: this.config.dns01ApiUser,
+                apiKey: this.config.dns01ApiKey,
+                clientIp: this.config.dns01ClientIp,
+                username: this.config.dns01Username,
+                // TODO: not hardcoded
+                baseUrl: 'https://api.namecheap.com/xml.response'
+            };
+
+            this.log.debug('dns-01 options: ' + JSON.stringify(options));
+
+            // Do this inside try... catch as module is configurable
+            let thisChallenge;
+            try {
+                thisChallenge = require(this.config.dns01Module).create(options);
+            } catch (err) {
+                this.log.error('Failed to load dns-01 challenge module: ' + err);
+            }
+
+            if (thisChallenge) {
+                // Add extra properties
+                // TODO: only add where needed?
+                thisChallenge['propagationDelay'] = this.config.dns01PropagationDelay;
+                this.challenges['dns-01'] = thisChallenge;
+            }
         }
     }
 
-    // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
-    //  * @param {ioBroker.Message} obj
-    //  */
-    // onMessage(obj) {
-    //     if (typeof obj === 'object' && obj.message) {
-    //         if (obj.command === 'send') {
-    //             // e.g. send email or pushover or whatever
-    //             this.log.info('send command');
+    acmeNotify(ev, msg) {
+        switch (ev) {
+            case 'error':
+                this.log.error(msg.message);
+                break;
+            case 'warning':
+                this.log.warn(msg.message);
+                break;
+            default:
+                this.log.debug('ACME: ' + ev + ': ' + msg);
+        }
+    }
 
-    //             // Send response in callback if required
-    //             if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-    //         }
-    //     }
-    // }
+    async initAcme() {
+        if (!this.acme) {
+            // Doesn't exist yet, actually do init
+            const directoryUrl = this.config.useStaging ?
+                'https://acme-staging-v02.api.letsencrypt.org/directory' :
+                'https://acme-v02.api.letsencrypt.org/directory';
+            this.log.debug('Using URL: ' + directoryUrl);
 
+            this.acme = ACME.create({
+                maintainerEmail: this.config.maintainerEmail,
+                packageAgent: pkg.name + '/' + pkg.version,
+                notify: this.acmeNotify.bind(this),
+                debug: true
+            });
+            await this.acme.init(directoryUrl);
+
+            // Try and load saved object
+            const accountObject = await this.getObjectAsync(accountObjectId);
+            if (accountObject) {
+                this.log.debug('Loaded existing ACME account: ' + JSON.stringify(accountObject));
+
+                if (accountObject.native?.full?.contact != 'mailto:' + this.config.maintainerEmail) {
+                    this.log.warn('Saved account does not match maintainer email, will recreate.');
+                } else {
+                    this.account = accountObject.native;
+                }
+            }
+
+            if (!this.account.full) {
+                this.log.debug('Registering new ACME account...');
+
+                // Register new account
+                const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
+                this.log.debug('accountKeypair: ' + JSON.stringify(accountKeypair));
+                this.account.key = accountKeypair.private;
+
+                this.account.full = await this.acme.accounts.create({
+                    subscriberEmail: this.config.maintainerEmail,
+                    agreeToTerms: true,
+                    accountKey: this.account.key
+                });
+                this.log.debug('Created account: ' + JSON.stringify(this.account));
+
+                await this.extendObjectAsync(accountObjectId, { native: this.account });
+            }
+
+            this.log.debug('Account is: ' + JSON.stringify(this.account));
+        }
+    }
+
+    async generateBundle(bundle) {
+        this.log.debug('Bundle: ' + JSON.stringify(bundle));
+
+        const domains = [bundle.subject];
+        if (bundle.altNames) {
+            domains.push(...bundle.altNames.split(','));
+        }
+        this.log.debug('domains: ' + JSON.stringify(domains));
+
+        const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
+        const serverPem = await Keypairs.export({ jwk: serverKeypair.private });
+        const serverKey = await Keypairs.import({ pem: serverPem });
+
+        const csrDer = await CSR.csr({
+            jwk: serverKey,
+            domains: domains,
+            encoding: 'der'
+        });
+        const csr = PEM.packBlock({
+            type: 'CERTIFICATE REQUEST',
+            bytes: csrDer
+        });
+
+        console.info('validating domain authorization for ' + domains.join(' '));
+        const pems = await this.acme.certificates.create({
+            account: this.account.account,
+            accountKey: this.account.key,
+            csr,
+            domains: domains,
+            challenges: this.challenges
+        });
+        // const  fullchain = pems.cert + '\n' + pems.chain + '\n';
+
+        this.log.debug('Done');
+        this.log.debug('Pem:\n' + serverPem);
+        this.log.debug('Cert:\n' + pems.cert);
+        this.log.debug('Chain:\n' + pems.chain);
+
+        // TODO: save it <:o)
+    }
 }
 
 if (require.main !== module) {
