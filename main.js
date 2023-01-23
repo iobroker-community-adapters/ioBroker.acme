@@ -121,7 +121,7 @@ class Acme extends utils.Adapter {
             if (thisChallenge) {
                 // Add extra properties
                 // TODO: only add where needed?
-                thisChallenge['propagationDelay'] = this.config.dns01PropagationDelay;
+                thisChallenge['propagationDelay'] = this.config.dns01PropagationDelay * 1000;
                 this.challenges['dns-01'] = thisChallenge;
             }
         }
@@ -169,7 +169,7 @@ class Acme extends utils.Adapter {
             }
 
             if (!this.account.full) {
-                this.log.debug('Registering new ACME account...');
+                this.log.info('Registering new ACME account...');
 
                 // Register new account
                 const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
@@ -185,8 +185,6 @@ class Acme extends utils.Adapter {
 
                 await this.extendObjectAsync(accountObjectId, { native: this.account });
             }
-
-            this.log.debug('Account is: ' + JSON.stringify(this.account));
         }
     }
 
@@ -213,22 +211,29 @@ class Acme extends utils.Adapter {
             bytes: csrDer
         });
 
-        console.info('validating domain authorization for ' + domains.join(' '));
-        const pems = await this.acme.certificates.create({
-            account: this.account.account,
-            accountKey: this.account.key,
-            csr,
-            domains: domains,
-            challenges: this.challenges
-        });
-        // const  fullchain = pems.cert + '\n' + pems.chain + '\n';
+        let pems;
+        try {
+            pems = await this.acme.certificates.create({
+                account: this.account.account,
+                accountKey: this.account.key,
+                csr,
+                domains: domains,
+                challenges: this.challenges
+            });
+        } catch (err) {
+            this.log.error(`Certificate request for ${domains} failed: ${err}`);
+        }
 
-        this.log.debug('Done');
-        this.log.debug('Pem:\n' + serverPem);
-        this.log.debug('Cert:\n' + pems.cert);
-        this.log.debug('Chain:\n' + pems.chain);
+        if (pems) {
+            // const  fullchain = pems.cert + '\n' + pems.chain + '\n';
 
-        // TODO: save it <:o)
+            this.log.debug('Done');
+            this.log.debug('Pem:\n' + serverPem);
+            this.log.debug('Cert:\n' + pems.cert);
+            this.log.debug('Chain:\n' + pems.chain);
+
+            // TODO: save it <:o)
+        }
     }
 }
 
