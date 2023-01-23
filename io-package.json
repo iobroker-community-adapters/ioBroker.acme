@@ -78,6 +78,7 @@
         ]
     },
     "native": {
+        "maintainerEmail": "",
         "useStaging": true,
         "http01Active": false,
         "http01Port": 0,
@@ -92,5 +93,16 @@
         "bundles": []
     },
     "objects": [],
-    "instanceObjects": []
+    "instanceObjects": [
+        {
+            "_id": "account",
+            "type": "meta",
+            "common": {
+                "name": "account",
+                "type": "json",
+                "role": "json"
+            },
+            "native": {}
+        }
+    ]
 }
