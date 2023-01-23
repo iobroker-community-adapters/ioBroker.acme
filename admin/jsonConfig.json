@@ -127,7 +127,16 @@
                     "validatorErrorText": "DNS-01 module is mandatory",
                     "validatorNoSaveOnError": true
                 },
-                "dns01ApiUser": {
+                "_todo": {
+                    "newLine": true,
+                    "type": "header",
+                    "size": 1,
+                    "text": "Todo!",
+                    "sm": 12,
+                    "md": 6,
+                    "hidden": "data.dns01Module != 'acme-dns-01-route53'"
+                },
+                "dns01OapiUser": {
                     "newLine": true,
                     "type": "text",
                     "label": "DNS-01 API user",
@@ -135,7 +144,7 @@
                     "md": 6,
                     "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
                 },
-                "dns01ApiKey": {
+                "dns01OapiKey": {
                     "newLine": true,
                     "type": "text",
                     "label": "DNS-01 API key",
@@ -143,7 +152,7 @@
                     "md": 12,
                     "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
                 },
-                "dns01ClientIp": {
+                "dns01OclientIp": {
                     "newLine": true,
                     "type": "text",
                     "label": "DNS-01 Client IP",
@@ -151,18 +160,49 @@
                     "md": 6,
                     "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
                 },
-                "dns01Username": {
+                "dns01Okey": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "DNS-01 Key",
+                    "sm": 12,
+                    "md": 6,
+                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
+                },
+                "dns01Osecret": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "DNS-01 Secret",
+                    "sm": 12,
+                    "md": 6,
+                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
+                },
+                "dns01Otoken": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "DNS-01 Token",
+                    "sm": 12,
+                    "md": 6,
+                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
+                },
+                "dns01Ousername": {
                     "newLine": true,
                     "type": "text",
                     "label": "DNS-01 Username",
                     "sm": 12,
                     "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+                    "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom'].includes(data.dns01Module)"
                 },
-                "dns01PropagationDelay": {
+                "dns01OverifyPropagation": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "DNS-01 Verify propagation",
+                    "sm": 12,
+                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-cloudflare'"
+                },
+                "dns01PpropagationDelay": {
                     "newLine": true,
                     "type": "number",
-                    "label": "DNS-01 Propogation delay (in seconds)",
+                    "label": "DNS-01 Propogation delay (in milliseconds)",
                     "min": 0,
                     "sm": 12,
                     "md": 6,

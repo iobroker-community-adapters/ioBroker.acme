@@ -88,8 +88,12 @@
         "dns01OapiUser": "",
         "dns01OapiKey": "",
         "dns01OclientIp": "",
+        "dns01Okey": "",
+        "dns01Osecret": "",
+        "dns01Otoken": "",
         "dns01Ousername": "",
-        "dns01PpropagationDelay": 0,
+        "dns01OverifyPropagation": false,
+        "dns01PpropagationDelay": 120000,
         "bundles": []
     },
     "objects": [],
