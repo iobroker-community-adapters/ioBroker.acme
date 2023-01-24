@@ -12,7 +12,7 @@
 
 ## ACME adapter for ioBroker
 
-Generates certificate bundles using ACME challenges.
+Generates certificates using ACME challenges.
 
 ## Usage
 
