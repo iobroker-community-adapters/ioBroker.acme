@@ -44,8 +44,8 @@ class Acme extends utils.Adapter {
     async onReady() {
         this.log.debug('config: ' + JSON.stringify(this.config));
 
-        if (!this.config?.bundles?.length) {
-            this.terminate('No bundles configured - nothing to do');
+        if (!this.config?.collections?.length) {
+            this.terminate('No collections configured - nothing to do');
         } else {
             // Setup challenges
             this.initChallenges();
@@ -56,9 +56,9 @@ class Acme extends utils.Adapter {
                 // Init ACME/account, etc
                 await this.initAcme();
 
-                // Loop round bundles and generate certs
-                for (const bundle of this.config.bundles) {
-                    await this.generateBundle(bundle);
+                // Loop round collections and generate certs
+                for (const collection of this.config.collections) {
+                    await this.generateCollection(collection);
                 }
             }
         }
@@ -200,12 +200,12 @@ class Acme extends utils.Adapter {
         }
     }
 
-    async generateBundle(bundle) {
-        this.log.debug('Bundle: ' + JSON.stringify(bundle));
+    async generateCollection(collection) {
+        this.log.debug('Collection: ' + JSON.stringify(collection));
 
-        const domains = [bundle.subject];
-        if (bundle.altNames) {
-            domains.push(...bundle.altNames.split(','));
+        const domains = [collection.subject];
+        if (collection.altNames) {
+            domains.push(...collection.altNames.split(','));
         }
         this.log.debug('domains: ' + JSON.stringify(domains));
 
@@ -237,7 +237,7 @@ class Acme extends utils.Adapter {
         }
 
         if (pems) {
-            // const  fullchain = pems.cert + '\n' + pems.chain + '\n';
+            // const  fullchain = pems.cert + '\n' + pems.chain + '\n'; 
 
             this.log.debug('Done');
             this.log.debug('Pem:\n' + serverPem);

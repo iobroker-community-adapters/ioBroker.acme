@@ -30,7 +30,7 @@
             "zh-cn": "ACME"
         },
         "desc": {
-            "en": "Generates certificate bundles using ACME challenges",
+            "en": "Generates certificates using ACME challenges",
             "de": "Generiert Zertifikatsbündel mithilfe von ACME-Herausforderungen",
             "ru": "Генерирует пакеты сертификатов, используя вызовы ACME.",
             "pt": "Gera pacotes de certificados usando desafios ACME",
@@ -94,7 +94,7 @@
         "dns01Ousername": "",
         "dns01OverifyPropagation": false,
         "dns01PpropagationDelay": 120000,
-        "bundles": []
+        "collections": []
     },
     "objects": [],
     "instanceObjects": [

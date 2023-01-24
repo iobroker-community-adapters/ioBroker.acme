@@ -210,13 +210,13 @@
                 }
             }
         },
-        "bundlesTab": {
+        "collectionsTab": {
             "type": "panel",
-            "label": "Bundles",
+            "label": "Collections",
             "items": {
-                "bundles": {
+                "collections": {
                     "type": "table",
-                    "help": "ID is internal identifier used to reference a bundle and must be alphanumeric only.<br/>Subject and Alt names are passed to CA.",
+                    "help": "ID is internal identifier used to reference a collection and must be alphanumeric only.<br/>Subject and Alt names are passed to CA.",
                     "items": [
                         {
                             "type": "text",
@@ -237,7 +237,7 @@
                         }
                     ],
                     "sm": 12,
-                    "validator": "!data.bundles.find(bundle => (!bundle.id || bundle.id.match(/[^a-z0-9]/i)))",
+                    "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i)))",
                     "validatorErrorText": "ID must be alphanumeric only. No special characters or space",
                     "validatorNoSaveOnError": true
                 }
