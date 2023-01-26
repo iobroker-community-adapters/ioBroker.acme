@@ -216,7 +216,7 @@
             "items": {
                 "collections": {
                     "type": "table",
-                    "help": "ID is internal identifier used to reference a collection and must be alphanumeric only.<br/>Subject and Alt names are passed to CA.",
+                    "help": "ID is internal identifier used to reference a collection and must be alphanumeric only.<br/>Common and Alt names are passed to CA.",
                     "items": [
                         {
                             "type": "text",
@@ -226,8 +226,8 @@
                         },
                         {
                             "type": "text",
-                            "attr": "subject",
-                            "title": "Subject",
+                            "attr": "commonName",
+                            "title": "Common name",
                             "width": "30%"
                         },
                         {
@@ -237,8 +237,8 @@
                         }
                     ],
                     "sm": 12,
-                    "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i)))",
-                    "validatorErrorText": "ID must be alphanumeric only. No special characters or space",
+                    "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i))) && !data.collections.find(collection => (collection.commonName.replaceAll(' ', '') == ''))",
+                    "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
                     "validatorNoSaveOnError": true
                 }
             }

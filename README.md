@@ -24,7 +24,7 @@ Two methods of challenge verification are implemented:
 
 * http-01: The adapter starts it's own http-01 challenge server on the configured port and address.
   
-   For http-01 challenge to be successful the challenge server's port/address must be publicly reachable from port 80 of the FQDN given in a collection subject from the open internet. Configure your firewall accordingly.
+   For http-01 challenge to be successful the challenge server's port/address must be publicly reachable from port 80 of the FQDN given in a collection common/alt names from the open internet. Configure your firewall accordingly.
 * dns-01: Various dns-01 challenges are implemented.
 
 ## References
