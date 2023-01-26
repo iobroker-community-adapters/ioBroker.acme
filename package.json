@@ -33,7 +33,8 @@
     "acme-dns-01-namedotcom": "*",
     "acme-dns-01-route53": "*",
     "acme-dns-01-vultr": "*",
-    "http": "*"
+    "http": "*",
+    "x509.js": "*"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.5.9",
