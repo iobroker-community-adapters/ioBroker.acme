@@ -64,6 +64,19 @@ class Acme extends utils.Adapter {
                     await this.generateCollection(collection);
                 }
             }
+
+            // Purge any collections we created in the past but are not configured now and have also expired.
+            // TODO: Maybe add options to the list like this?
+            //       const existingCollectionIds = this.listCertificateCollectionIdsAsync({ expired: true, from: this.namespace });
+            const existingCollectionIds = await this.listCertificateCollectionIdsAsync();
+            this.log.debug(`existingCollectionIds: ${JSON.stringify(existingCollectionIds)}`);
+            for (const collectionId of existingCollectionIds) {
+                const collection = await this.getCertificateCollectionAsync(collectionId);
+                if (collection.from == this.namespace && collection.tsExpires < Date.now()) {
+                    this.log.info(`Removing expired and deconfigured collection ${collectionId}`);
+                    await this.delCertificateCollectionAsync(collectionId);
+                }
+            }
         }
         this.terminate('Done');
     }
