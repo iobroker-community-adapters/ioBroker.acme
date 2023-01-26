@@ -13,8 +13,11 @@ const ACME = require('acme');
 const Keypairs = require('@root/keypairs');
 const CSR = require('@root/csr');
 const PEM = require('@root/pem');
+const x509 = require('x509.js');
 
 const accountObjectId = 'account';
+// Renew 7 days before expiry
+const renewWindow = 60 * 60 * 24 * 7 * 1000;
 
 class Acme extends utils.Adapter {
 
@@ -200,51 +203,128 @@ class Acme extends utils.Adapter {
         }
     }
 
+    // TODO: this belongs in some util class or whatever
+    _arraysMatch(arr1, arr2) {
+        if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
+            // How can they be matching arrays if not even arrays?
+            return false;
+        }
+
+        if (arr1 === arr2) {
+            // Some dummy passed in the same objects so of course they are the same!
+            return true;
+        }
+
+        if (arr1.length !== arr2.length) {
+            // Cannot be the same if the length doesn't match.
+            return false;
+        }
+
+        if (!arr1.every(key => arr2.includes(key))) {
+            // arr1 has something that arr2 doesn't
+            return false;
+        }
+
+        return true;
+    }
+
     async generateCollection(collection) {
         this.log.debug('Collection: ' + JSON.stringify(collection));
 
-        const domains = [collection.subject];
+        // Create domains now as will be used to test any existing collection.
+        const domains = [collection.commonName];
         if (collection.altNames) {
-            domains.push(...collection.altNames.split(','));
+            domains.push(...collection.altNames.replaceAll(' ', '').split(','));
         }
         this.log.debug('domains: ' + JSON.stringify(domains));
 
-        const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
-        const serverPem = await Keypairs.export({ jwk: serverKeypair.private });
-        const serverKey = await Keypairs.import({ pem: serverPem });
+        // Get existing collection & see if it needs renewing
+        let create = false;
+        const existingCollection = await this.getCertificateCollectionAsync(collection.id);
+        if (!existingCollection) {
+            this.log.info(`Collection ${collection.id} does not exist - will create`);
+            create = true;
+        } else {
+            this.log.debug(`Existing: ${collection.id}: ${JSON.stringify(existingCollection)}`);
 
-        const csrDer = await CSR.csr({
-            jwk: serverKey,
-            domains: domains,
-            encoding: 'der'
-        });
-        const csr = PEM.packBlock({
-            type: 'CERTIFICATE REQUEST',
-            bytes: csrDer
-        });
+            try {
+                // Decode certificate to check not due for renewal and parts match what is configured.
+                const crt = x509.parseCert(existingCollection.cert);
+                this.log.debug(`Existing cert: ${JSON.stringify(crt)}`);
 
-        let pems;
-        try {
-            pems = await this.acme.certificates.create({
-                account: this.account.account,
-                accountKey: this.account.key,
-                csr,
-                domains: domains,
-                challenges: this.challenges
-            });
-        } catch (err) {
-            this.log.error(`Certificate request for ${domains} failed: ${err}`);
+                if (Date.now() > Date.parse(crt.notAfter) - renewWindow) {
+                    this.log.info(`Collection ${collection.id} expiring soon - will renew`);
+                    create = true;
+                } else if (collection.commonName != crt.subject.commonName) {
+                    this.log.info(`Collection ${collection.id} common name does not match - will renew`);
+                    create = true;
+                } else if (!this._arraysMatch(domains, crt.altNames)) {
+                    this.log.info(`Collection ${collection.id} alt names do not match - will renew`);
+                    create = true;
+                } else {
+                    this.log.debug(`Collection ${collection.id} certificate already looks good`);
+                }
+            } catch (err) {
+                this.log.error(`Collection ${collection.id} exists but looks invalid (${err}) - will renew`);
+                create = true;
+            }
         }
 
-        if (pems) {
-            // const  fullchain = pems.cert + '\n' + pems.chain + '\n'; 
+        if (create) {
+            const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
+            const serverPem = await Keypairs.export({ jwk: serverKeypair.private });
+            const serverKey = await Keypairs.import({ pem: serverPem });
+
+            const csrDer = await CSR.csr({
+                jwk: serverKey,
+                domains: domains,
+                encoding: 'der'
+            });
+            const csr = PEM.packBlock({
+                type: 'CERTIFICATE REQUEST',
+                bytes: csrDer
+            });
+
+            let pems;
+            try {
+                pems = await this.acme.certificates.create({
+                    account: this.account.account,
+                    accountKey: this.account.key,
+                    csr,
+                    domains: domains,
+                    challenges: this.challenges
+                });
+            } catch (err) {
+                this.log.error(`Certificate request for ${collection.id} (${domains}) failed: ${err}`);
+            }
 
             this.log.debug('Done');
-            this.log.debug('Pem:\n' + serverPem);
-            this.log.debug('Cert:\n' + pems.cert);
-            this.log.debug('Chain:\n' + pems.chain);
 
-            // TODO: save it <:o)
+            if (pems) {
+                let collectionToSet = {
+                    from: this.namespace,
+                    key: serverPem,
+                    cert: pems.cert,
+                    chain: [pems.cert, pems.chain]
+                };
+
+                // Decode certificate to get expiry.
+                // Kindof handy that this happens to verify certificate looks good too.
+                try {
+                    const crt = x509.parseCert(collectionToSet.cert);
+                    this.log.debug(`New certs notBefore ${crt.notBefore} notAfter ${crt.notAfter}`);
+                    collectionToSet.tsExpires = Date.parse(crt.notAfter);
+                } catch (err) {
+                    this.log.error(`Certificate returned for ${collectionToSet.id} looks invalid - not saving`);
+                    collectionToSet = null;
+                }
+
+                if (collectionToSet) {
+                    this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
+                    // Save it
+                    await this.setCertificateCollectionAsync(collection.id, collectionToSet);
+                }
+            }
         }
     }
 }
