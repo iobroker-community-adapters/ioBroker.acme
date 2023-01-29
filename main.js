@@ -290,7 +290,7 @@ class Acme extends utils.Adapter {
 
             const csrDer = await CSR.csr({
                 jwk: serverKey,
-                domains: domains,
+                domains,
                 encoding: 'der'
             });
             const csr = PEM.packBlock({
@@ -304,7 +304,7 @@ class Acme extends utils.Adapter {
                     account: this.account.account,
                     accountKey: this.account.key,
                     csr,
-                    domains: domains,
+                    domains,
                     challenges: this.challenges
                 });
             } catch (err) {
@@ -318,7 +318,8 @@ class Acme extends utils.Adapter {
                     from: this.namespace,
                     key: serverPem,
                     cert: pems.cert,
-                    chain: [pems.cert, pems.chain]
+                    chain: [pems.cert, pems.chain],
+                    domains
                 };
 
                 // Decode certificate to get expiry.
