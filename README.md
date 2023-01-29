@@ -8,7 +8,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.acme.png?downloads=true)](https://nodei.co/npm/iobroker.acme/)
 
-**Tests:** ![Test and Release](https://github.com/raintonr/ioBroker.acme/workflows/Test%20and%20Release/badge.svg)
+**Tests:** ![Test and Release](https://github.com/iobroker-community-adapters/ioBroker.acme/workflows/Test%20and%20Release/badge.svg)
 
 ## ACME adapter for ioBroker
 
