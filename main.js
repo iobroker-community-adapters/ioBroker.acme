@@ -75,7 +75,8 @@ class Acme extends utils.Adapter {
                 await this.delCertificateCollectionAsync(collectionId);
             }
         }
-        this.terminate('Done');
+
+        this.terminate('Processing complete');
     }
 
     /**
@@ -334,6 +335,7 @@ class Acme extends utils.Adapter {
                     this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
                     // Save it
                     await this.setCertificateCollectionAsync(collection.id, collectionToSet);
+                    this.log.info(`Collection ${collection.id} order success`);
                 }
             }
         }
