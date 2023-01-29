@@ -59,6 +59,7 @@
         "loglevel": "info",
         "mode": "schedule",
         "schedule": "0 24 * * *",
+        "allowInit": true,
         "type": "general",
         "compact": true,
         "connectionType": "cloud",
