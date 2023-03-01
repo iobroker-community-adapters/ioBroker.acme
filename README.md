@@ -11,35 +11,32 @@
 **Tests:** ![Test and Release](https://github.com/iobroker-community-adapters/ioBroker.acme/workflows/Test%20and%20Release/badge.svg)
 
 ## ACME adapter for ioBroker
-
-Generates certificates using ACME challenges.
+This adapter generates certificates using ACME challenges.
 
 ## Usage
-
 The adapter starts periodically (default at midnight) and after configuration updates to generate any required certificates (new or soon to expire).
 
-Currently orders are processed with the Let's Encrypt certificate authority and thus are free of charge.
+Currently, orders are processed with the Let's Encrypt certificate authority and thus are free of charge.
 
-Certificate details are stored in a 'certificate collection' object which includes other relevant details such as expiry date, domains to be secured and private key. These objects are referenced by their collection ID.
+Certificate details are stored in a 'certificate collection' object which includes other relevant details such as expiry date, domains to be secured and private key.
+These objects are referenced by their collection ID.
 
-Adapters which need certificates to secure their communications (eg. [web adapter](https://www.npmjs.com/package/iobroker.web)) are able to load and utilise certificate collections.
+Adapters which need certificates to secure their communications (e.g. [web adapter](https://www.npmjs.com/package/iobroker.web)) are able to load and utilise certificate collections.
 
 Storage and use is handled by an interface contained with the [core ioBroker controller](https://www.npmjs.com/package/iobroker.js-controller).
 
 ### ACME Challenges
-
 Two methods of challenge verification are implemented and at least one should be enabled in the configuration page.
 
 Note that wildcard certificate orders can only be validated using the dns-01 challenge.
 
-* http-01: The adapter starts it's own http-01 challenge server on the configured port and address.
-  
-   For http-01 challenge to be successful the challenge server's port/address must be publicly reachable from port 80 of the FQDN given in a collection common/alt names from the open internet. Configure your firewall accordingly.
+* http-01: The adapter starts its own http-01 challenge server on the configured port and address.
+  For http-01 challenge to be successful the challenge server's port/address must be publicly reachable from port 80 of the FQDN given in a collection common/alt names from the open internet.
+  Configure your firewall accordingly.
 
 * dns-01: Various dns-01 challenges plugins are implemented for popular domain hosting platforms.
 
 #### References
-
 See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ## Changelog
@@ -47,6 +44,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (bluefox) now all running on the same port adapters will be stopped before update
 
 ### 0.0.1 (2023-01-29)
 * (Robin Rainton) initial release.

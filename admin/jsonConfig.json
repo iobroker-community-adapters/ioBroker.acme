@@ -1,247 +1,247 @@
 {
-    "type": "tabs",
-    "items": {
-        "mainTab": {
-            "type": "panel",
-            "label": "Main",
-            "items": {
-                "maintainerEmail": {
-                    "type": "text",
-                    "label": "Maintainer email passed to CA",
-                    "sm": 12,
-                    "md": 6,
-                    "validator": "data.maintainerEmail",
-                    "validatorErrorText": "Maintainer email must be specified",
-                    "validatorNoSaveOnError": true
-                },
-                "useStaging": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "Use staging server",
-                    "help": "Useful for testing/challenge verification purposes.",
-                    "sm": 12,
-                    "md": 6
-                }
-            }
+  "type": "tabs",
+  "items": {
+    "mainTab": {
+      "type": "panel",
+      "label": "Main",
+      "items": {
+        "maintainerEmail": {
+          "type": "text",
+          "label": "Maintainer email passed to CA",
+          "sm": 12,
+          "md": 6,
+          "validator": "data.maintainerEmail",
+          "validatorErrorText": "Maintainer email must be specified",
+          "validatorNoSaveOnError": true
         },
-        "challengesTab": {
-            "type": "panel",
-            "label": "Challenges",
-            "items": {
-                "http01Active": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "Use HTTP-01 challenges",
-                    "help": "Activate HTTP-01 challenge verification.",
-                    "sm": 12,
-                    "md": 6,
-                    "validator": "data.dns01Active || data.http01Active",
-                    "validatorErrorText": "At least one challenge mechanism must be active",
-                    "validatorNoSaveOnError": true
-                },
-                "http01Port": {
-                    "newLine": true,
-                    "type": "number",
-                    "min": 1,
-                    "max": 65565,
-                    "label": "HTTP-01 challenge listen port",
-                    "help": "Connections from the Internet to port 80 of FQDN must arrive here.<br/>Setup your firewall/port forwarding appropriately.",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.http01Active",
-                    "validator": "!data.http01Active || data.http01Port",
-                    "validatorErrorText": "Listen port is mandatory",
-                    "validatorNoSaveOnError": true
-                },
-                "http01Bind": {
-                    "type": "ip",
-                    "label": "HTTP-01 challenge listen address",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.http01Active",
-                    "validator": "!data.http01Active || data.http01Bind",
-                    "validatorErrorText": "Listen address is mandatory",
-                    "validatorNoSaveOnError": true
-                },
-                "dns01Active": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "Use DNS-01 challenges",
-                    "help": "Activate DNS-01 challenge verification.",
-                    "sm": 12,
-                    "md": 6,
-                    "validator": "data.dns01Active || data.http01Active",
-                    "validatorErrorText": "At least one challenge mechanism must be active",
-                    "validatorNoSaveOnError": true
-                },
-                "dns01Module": {
-                    "newLine": true,
-                    "type": "select",
-                    "label": "DNS-01 challenge module",
-                    "options": [
-                        {
-                            "label": "CloudFlare",
-                            "value": "acme-dns-01-cloudflare"
-                        },
-                        {
-                            "label": "Digital Ocean",
-                            "value": "acme-dns-01-digitalocean"
-                        },
-                        {
-                            "label": "DNSimple",
-                            "value": "acme-dns-01-dnsimple"
-                        },
-                        {
-                            "label": "DuckDNS",
-                            "value": "acme-dns-01-duckdns"
-                        },
-                        {
-                            "label": "GoDaddy",
-                            "value": "acme-dns-01-godaddy"
-                        },
-                        {
-                            "label": "Gandi",
-                            "value": "acme-dns-01-gandi"
-                        },
-                        {
-                            "label": "Namecheap",
-                            "value": "acme-dns-01-namecheap"
-                        },
-                        {
-                            "label": "Name.com",
-                            "value": "acme-dns-01-namedotcom"
-                        },
-                        {
-                            "label": "Route53 (AWS)",
-                            "value": "acme-dns-01-route53"
-                        },
-                        {
-                            "label": "Vultr",
-                            "value": "acme-dns-01-vultr"
-                        }
-                    ],
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active",
-                    "validator": "!data.dns01Active || data.dns01Module",
-                    "validatorErrorText": "DNS-01 module is mandatory",
-                    "validatorNoSaveOnError": true
-                },
-                "_todo": {
-                    "newLine": true,
-                    "type": "header",
-                    "size": 1,
-                    "text": "Todo!",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "data.dns01Module != 'acme-dns-01-route53'"
-                },
-                "dns01OapiUser": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 API user",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
-                },
-                "dns01OapiKey": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 API key",
-                    "sm": 12,
-                    "md": 12,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
-                },
-                "dns01OclientIp": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 Client IP",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
-                },
-                "dns01Okey": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 Key",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
-                },
-                "dns01Osecret": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 Secret",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
-                },
-                "dns01Otoken": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 Token",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
-                },
-                "dns01Ousername": {
-                    "newLine": true,
-                    "type": "text",
-                    "label": "DNS-01 Username",
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom'].includes(data.dns01Module)"
-                },
-                "dns01OverifyPropagation": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "DNS-01 Verify propagation",
-                    "sm": 12,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-cloudflare'"
-                },
-                "dns01PpropagationDelay": {
-                    "newLine": true,
-                    "type": "number",
-                    "label": "DNS-01 Propogation delay (in milliseconds)",
-                    "min": 0,
-                    "sm": 12,
-                    "md": 6,
-                    "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
-                }
-            }
-        },
-        "collectionsTab": {
-            "type": "panel",
-            "label": "Collections",
-            "items": {
-                "collections": {
-                    "type": "table",
-                    "help": "ID is internal identifier used to reference a collection and must be alphanumeric only.<br/>Common and Alt names are passed to CA.",
-                    "items": [
-                        {
-                            "type": "text",
-                            "attr": "id",
-                            "title": "ID",
-                            "width": "10%"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "commonName",
-                            "title": "Common name",
-                            "width": "30%"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "altNames",
-                            "title": "Alt names"
-                        }
-                    ],
-                    "sm": 12,
-                    "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i))) && !data.collections.find(collection => (collection.commonName.replaceAll(' ', '') == ''))",
-                    "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
-                    "validatorNoSaveOnError": true
-                }
-            }
+        "useStaging": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": "Use staging server",
+          "help": "Useful for testing/challenge verification purposes.",
+          "sm": 12,
+          "md": 6
         }
+      }
+    },
+    "challengesTab": {
+      "type": "panel",
+      "label": "Challenges",
+      "items": {
+        "http01Active": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": "Use HTTP-01 challenges",
+          "help": "Activate HTTP-01 challenge verification.",
+          "sm": 12,
+          "md": 6,
+          "validator": "data.dns01Active || data.http01Active",
+          "validatorErrorText": "At least one challenge mechanism must be active",
+          "validatorNoSaveOnError": true
+        },
+        "port": {
+          "newLine": true,
+          "type": "number",
+          "min": 1,
+          "max": 65565,
+          "label": "HTTP-01 challenge listen port",
+          "help": "Connections from the Internet to port 80 of FQDN must arrive here.<br/>Setup your firewall/port forwarding appropriately.",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.http01Active",
+          "validator": "!data.http01Active || data.http01Port",
+          "validatorErrorText": "Listen port is mandatory",
+          "validatorNoSaveOnError": true
+        },
+        "bind": {
+          "type": "ip",
+          "label": "HTTP-01 challenge listen address",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.http01Active",
+          "validator": "!data.http01Active || data.http01Bind",
+          "validatorErrorText": "Listen address is mandatory",
+          "validatorNoSaveOnError": true
+        },
+        "dns01Active": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": "Use DNS-01 challenges",
+          "help": "Activate DNS-01 challenge verification.",
+          "sm": 12,
+          "md": 6,
+          "validator": "data.dns01Active || data.http01Active",
+          "validatorErrorText": "At least one challenge mechanism must be active",
+          "validatorNoSaveOnError": true
+        },
+        "dns01Module": {
+          "newLine": true,
+          "type": "select",
+          "label": "DNS-01 challenge module",
+          "options": [
+            {
+              "label": "CloudFlare",
+              "value": "acme-dns-01-cloudflare"
+            },
+            {
+              "label": "Digital Ocean",
+              "value": "acme-dns-01-digitalocean"
+            },
+            {
+              "label": "DNSimple",
+              "value": "acme-dns-01-dnsimple"
+            },
+            {
+              "label": "DuckDNS",
+              "value": "acme-dns-01-duckdns"
+            },
+            {
+              "label": "GoDaddy",
+              "value": "acme-dns-01-godaddy"
+            },
+            {
+              "label": "Gandi",
+              "value": "acme-dns-01-gandi"
+            },
+            {
+              "label": "Namecheap",
+              "value": "acme-dns-01-namecheap"
+            },
+            {
+              "label": "Name.com",
+              "value": "acme-dns-01-namedotcom"
+            },
+            {
+              "label": "Route53 (AWS)",
+              "value": "acme-dns-01-route53"
+            },
+            {
+              "label": "Vultr",
+              "value": "acme-dns-01-vultr"
+            }
+          ],
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active",
+          "validator": "!data.dns01Active || data.dns01Module",
+          "validatorErrorText": "DNS-01 module is mandatory",
+          "validatorNoSaveOnError": true
+        },
+        "_todo": {
+          "newLine": true,
+          "type": "header",
+          "size": 1,
+          "text": "Todo!",
+          "sm": 12,
+          "md": 6,
+          "hidden": "data.dns01Module != 'acme-dns-01-route53'"
+        },
+        "dns01OapiUser": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 API user",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+        },
+        "dns01OapiKey": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 API key",
+          "sm": 12,
+          "md": 12,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+        },
+        "dns01OclientIp": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Client IP",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+        },
+        "dns01Okey": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Key",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
+        },
+        "dns01Osecret": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Secret",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
+        },
+        "dns01Otoken": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Token",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
+        },
+        "dns01Ousername": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Username",
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom'].includes(data.dns01Module)"
+        },
+        "dns01OverifyPropagation": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": "DNS-01 Verify propagation",
+          "sm": 12,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-cloudflare'"
+        },
+        "dns01PpropagationDelay": {
+          "newLine": true,
+          "type": "number",
+          "label": "DNS-01 Propogation delay (in milliseconds)",
+          "min": 0,
+          "sm": 12,
+          "md": 6,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+        }
+      }
+    },
+    "collectionsTab": {
+      "type": "panel",
+      "label": "Collections",
+      "items": {
+        "collections": {
+          "type": "table",
+          "help": "ID is internal identifier used to reference a collection and must be alphanumeric only.<br/>Common and Alt names are passed to CA.",
+          "items": [
+            {
+              "type": "text",
+              "attr": "id",
+              "title": "ID",
+              "width": "10%"
+            },
+            {
+              "type": "text",
+              "attr": "commonName",
+              "title": "Common name",
+              "width": "30%"
+            },
+            {
+              "type": "text",
+              "attr": "altNames",
+              "title": "Alt names"
+            }
+          ],
+          "sm": 12,
+          "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i))) && !data.collections.find(collection => (collection.commonName.replaceAll(' ', '') == ''))",
+          "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
+          "validatorNoSaveOnError": true
+        }
+      }
     }
+  }
 }

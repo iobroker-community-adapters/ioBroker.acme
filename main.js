@@ -20,7 +20,6 @@ const accountObjectId = 'account';
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
 
 class Acme extends utils.Adapter {
-
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
      */
@@ -45,11 +44,13 @@ class Acme extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        this.log.debug('config: ' + JSON.stringify(this.config));
+        this.log.debug(`config: ${JSON.stringify(this.config)}`);
 
         if (!this.config?.collections?.length) {
             this.terminate('No collections configured - nothing to order');
         } else {
+            await this.stopAdaptersOnSamePort();
+
             // Setup challenges
             this.initChallenges();
 
@@ -70,11 +71,13 @@ class Acme extends utils.Adapter {
         const collections = await this.getCertificateCollectionAsync();
         this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
         for (const [collectionId, collection] of Object.entries(collections)) {
-            if (collection.from == this.namespace && collection.tsExpires < Date.now()) {
+            if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
                 this.log.info(`Removing expired and de-configured collection ${collectionId}`);
                 await this.delCertificateCollectionAsync(collectionId);
             }
         }
+
+        await this.restoreAdaptersOnSamePort();
 
         this.terminate('Processing complete');
     }
@@ -100,8 +103,8 @@ class Acme extends utils.Adapter {
         if (this.config.http01Active) {
             this.log.debug('Init http-01 challenge server');
             const thisChallenge = require('./lib/http-01-challenge-server').create({
-                port: this.config.http01Port,
-                address: this.config.http01Bind,
+                port: this.config.port,
+                address: this.config.bind,
                 log: this.log
             });
             this.challenges['http-01'] = thisChallenge;
@@ -132,14 +135,14 @@ class Acme extends utils.Adapter {
                     break;
             }
 
-            this.log.debug('dns-01 options: ' + JSON.stringify(dns01Options));
+            this.log.debug(`dns-01 options: ${JSON.stringify(dns01Options)}`);
 
             // Do this inside try... catch as module is configurable
             let thisChallenge;
             try {
                 thisChallenge = require(this.config.dns01Module).create(dns01Options);
             } catch (err) {
-                this.log.error('Failed to load dns-01 challenge module: ' + err);
+                this.log.error(`Failed to load dns-01 challenge module: ${err}`);
             }
 
             if (thisChallenge) {
@@ -162,7 +165,7 @@ class Acme extends utils.Adapter {
                 this.log.warn(msg.message);
                 break;
             default:
-                this.log.debug('ACME: ' + ev + ': ' + msg);
+                this.log.debug(`ACME: ${ev}: ${msg}`);
         }
     }
 
@@ -172,11 +175,11 @@ class Acme extends utils.Adapter {
             const directoryUrl = this.config.useStaging ?
                 'https://acme-staging-v02.api.letsencrypt.org/directory' :
                 'https://acme-v02.api.letsencrypt.org/directory';
-            this.log.debug('Using URL: ' + directoryUrl);
+            this.log.debug(`Using URL: ${directoryUrl}`);
 
             this.acme = ACME.create({
                 maintainerEmail: this.config.maintainerEmail,
-                packageAgent: pkg.name + '/' + pkg.version,
+                packageAgent: `${pkg.name}/${pkg.version}`,
                 notify: this.acmeNotify.bind(this),
                 debug: true
             });
@@ -187,7 +190,7 @@ class Acme extends utils.Adapter {
             if (accountObject) {
                 this.log.debug('Loaded existing ACME account: ' + JSON.stringify(accountObject));
 
-                if (accountObject.native?.full?.contact != 'mailto:' + this.config.maintainerEmail) {
+                if (accountObject.native?.full?.contact !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
                 } else {
                     this.account = accountObject.native;
@@ -207,10 +210,37 @@ class Acme extends utils.Adapter {
                     agreeToTerms: true,
                     accountKey: this.account.key
                 });
-                this.log.debug('Created account: ' + JSON.stringify(this.account));
+                this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
 
                 await this.extendObjectAsync(accountObjectId, { native: this.account });
             }
+        }
+    }
+
+    async stopAdaptersOnSamePort() {
+        if (this.config.http01Active) {
+            const result = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
+            const instances = result.rows.map(row => row.value);
+            const adapters = instances.filter(instance => instance.common.enabled && instance.common.port === this.config.port);
+            if (adapters.length) {
+                this.stoppedAdapters = adapters.map(adapter => adapter._id);
+                for (let i = 0; i < this.stoppedAdapters.length; i++) {
+                    const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
+                    config.common.enabled = false;
+                    await this.setForeignObjectAsync(config._id, config);
+                }
+            }
+        }
+    }
+
+    async restoreAdaptersOnSamePort() {
+        if (this.stoppedAdapters) {
+            for (let i = 0; i < this.stoppedAdapters.length; i++) {
+                const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
+                config.common.enabled = true;
+                await this.setForeignObjectAsync(config._id, config);
+            }
+            this.stoppedAdapters = null;
         }
     }
 
@@ -231,23 +261,18 @@ class Acme extends utils.Adapter {
             return false;
         }
 
-        if (!arr1.every(key => arr2.includes(key))) {
-            // arr1 has something that arr2 doesn't
-            return false;
-        }
-
-        return true;
+        return arr1.every(key => arr2.includes(key));
     }
 
     async generateCollection(collection) {
-        this.log.debug('Collection: ' + JSON.stringify(collection));
+        this.log.debug(`Collection: ${JSON.stringify(collection)}`);
 
         // Create domains now as will be used to test any existing collection.
         const domains = [collection.commonName];
         if (collection.altNames) {
             domains.push(...collection.altNames.replaceAll(' ', '').split(','));
         }
-        this.log.debug('domains: ' + JSON.stringify(domains));
+        this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
         // Get existing collection & see if it needs renewing
         let create = false;
@@ -266,7 +291,7 @@ class Acme extends utils.Adapter {
                 if (Date.now() > Date.parse(crt.notAfter) - renewWindow) {
                     this.log.info(`Collection ${collection.id} expiring soon - will renew`);
                     create = true;
-                } else if (collection.commonName != crt.subject.commonName) {
+                } else if (collection.commonName !== crt.subject.commonName) {
                     this.log.info(`Collection ${collection.id} common name does not match - will renew`);
                     create = true;
                 } else if (!this._arraysMatch(domains, crt.altNames)) {
@@ -321,7 +346,7 @@ class Acme extends utils.Adapter {
                 };
 
                 // Decode certificate to get expiry.
-                // Kindof handy that this happens to verify certificate looks good too.
+                // Kind of handy that this happens to verify certificate looks good too.
                 try {
                     const crt = x509.parseCert(collectionToSet.cert);
                     this.log.debug(`New certs notBefore ${crt.notBefore} notAfter ${crt.notAfter}`);

@@ -1,113 +1,113 @@
 {
-    "common": {
-        "name": "acme",
-        "version": "0.0.1",
-        "news": {
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "zh-cn": "首次出版"
-            }
-        },
-        "title": "ACME",
-        "titleLang": {
-            "en": "ACME",
-            "de": "ACME",
-            "ru": "ACME",
-            "pt": "ACME",
-            "nl": "ACME",
-            "fr": "ACME",
-            "it": "ACME",
-            "es": "ACME",
-            "pl": "ACME",
-            "zh-cn": "ACME"
-        },
-        "desc": {
-            "en": "Generates certificates using ACME challenges",
-            "de": "Generiert Zertifikatsbündel mithilfe von ACME-Herausforderungen",
-            "ru": "Генерирует пакеты сертификатов, используя вызовы ACME.",
-            "pt": "Gera pacotes de certificados usando desafios ACME",
-            "nl": "Genereert certificaatbundels met behulp van ACME-uitdagingen",
-            "fr": "Génère des ensembles de certificats à l'aide des défis ACME",
-            "it": "Genera pacchetti di certificati utilizzando le sfide ACME",
-            "es": "Genera paquetes de certificados usando desafíos ACME",
-            "pl": "Generuje pakiety certyfikatów przy użyciu wyzwań ACME",
-            "zh-cn": "使用 ACME 挑战生成证书包"
-        },
-        "authors": [
-            "Robin Rainton <robin@rainton.com>"
-        ],
-        "keywords": [
-            "certificate",
-            "SSL",
-            "ACME"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "main": "main.js",
-        "icon": "acme.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.acme/main/admin/acme.png",
-        "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
-        "loglevel": "info",
-        "mode": "schedule",
-        "schedule": "0 24 * * *",
-        "allowInit": true,
-        "type": "general",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=5.0.0-alpha"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=5.0.0"
-            }
-        ]
+  "common": {
+    "name": "acme",
+    "version": "0.0.1",
+    "news": {
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "maintainerEmail": "",
-        "useStaging": true,
-        "http01Active": false,
-        "http01Port": 0,
-        "http01Bind": "",
-        "dns01Active": false,
-        "dns01Module": "",
-        "dns01OapiUser": "",
-        "dns01OapiKey": "",
-        "dns01OclientIp": "",
-        "dns01Okey": "",
-        "dns01Osecret": "",
-        "dns01Otoken": "",
-        "dns01Ousername": "",
-        "dns01OverifyPropagation": false,
-        "dns01PpropagationDelay": 120000,
-        "collections": []
+    "title": "ACME",
+    "titleLang": {
+      "en": "ACME",
+      "de": "ACME",
+      "ru": "ACME",
+      "pt": "ACME",
+      "nl": "ACME",
+      "fr": "ACME",
+      "it": "ACME",
+      "es": "ACME",
+      "pl": "ACME",
+      "zh-cn": "ACME"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "account",
-            "type": "meta",
-            "common": {
-                "name": "account",
-                "type": "json",
-                "role": "json"
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Generates certificates using ACME challenges",
+      "de": "Generiert Zertifikatsbündel mithilfe von ACME-Herausforderungen",
+      "ru": "Генерирует пакеты сертификатов, используя вызовы ACME.",
+      "pt": "Gera pacotes de certificados usando desafios ACME",
+      "nl": "Genereert certificaatbundels met behulp van ACME-uitdagingen",
+      "fr": "Génère des ensembles de certificats à l'aide des défis ACME",
+      "it": "Genera pacchetti di certificati utilizzando le sfide ACME",
+      "es": "Genera paquetes de certificados usando desafíos ACME",
+      "pl": "Generuje pakiety certyfikatów przy użyciu wyzwań ACME",
+      "zh-cn": "使用 ACME 挑战生成证书包"
+    },
+    "authors": [
+      "Robin Rainton <robin@rainton.com>"
+    ],
+    "keywords": [
+      "certificate",
+      "SSL",
+      "ACME"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "icon": "acme.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.acme/main/admin/acme.png",
+    "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
+    "loglevel": "info",
+    "mode": "schedule",
+    "schedule": "0 24 * * *",
+    "allowInit": true,
+    "type": "general",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=5.0.0-alpha"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=5.0.0"
+      }
     ]
+  },
+  "native": {
+    "maintainerEmail": "",
+    "useStaging": true,
+    "http01Active": false,
+    "port": 0,
+    "bind": "",
+    "dns01Active": false,
+    "dns01Module": "",
+    "dns01OapiUser": "",
+    "dns01OapiKey": "",
+    "dns01OclientIp": "",
+    "dns01Okey": "",
+    "dns01Osecret": "",
+    "dns01Otoken": "",
+    "dns01Ousername": "",
+    "dns01OverifyPropagation": false,
+    "dns01PpropagationDelay": 120000,
+    "collections": []
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "account",
+      "type": "meta",
+      "common": {
+        "name": "account",
+        "type": "json",
+        "role": "json"
+      },
+      "native": {}
+    }
+  ]
 }
