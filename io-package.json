@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "news": {
+      "0.0.2": {
+        "en": "now all running on the same port adapters will be stopped before update",
+        "de": "jetzt alle auf den gleichen port-adaptern laufen wird gestoppt, bevor update",
+        "ru": "теперь все работает на тех же порта адаптеры будут остановлены перед обновлением",
+        "pt": "agora todos os adaptadores da mesma porta serão parados antes da atualização",
+        "nl": "iedereen die aan dezelfde havenadapters werkt wordt tegengehouden voor de update",
+        "fr": "maintenant tous courir sur les mêmes adaptateurs de port seront arrêtés avant mise à jour",
+        "it": "ora tutto in esecuzione sugli stessi adattatori di porta verrà interrotto prima dell'aggiornamento",
+        "es": "ahora todos corriendo en los mismos adaptadores de puerto se detendrán antes de la actualización",
+        "pl": "obecnie wszystkie kursy na tych samych adaptatorach będą zatrzymywane przed aktualizacją",
+        "uk": "тепер всі запущені на одному портові адаптери будуть припинені до оновлення",
+        "zh-cn": "现在,在更新港口后,将停止对同一港口的改造。"
+      },
       "0.0.1": {
         "en": "initial release",
         "de": "Erstveröffentlichung",
