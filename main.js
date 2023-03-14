@@ -300,6 +300,9 @@ class Acme extends utils.Adapter {
                 } else if (!this._arraysMatch(domains, crt.altNames)) {
                     this.log.info(`Collection ${collection.id} alt names do not match - will renew`);
                     create = true;
+                } else if (this.config.useStaging != (typeof (existingCollection.staging) == undefined ? false : existingCollection.staging)) {
+                    this.log.info(`Collection ${collection.id} staging flags do not match - will renew`);
+                    create = true;
                 } else {
                     this.log.debug(`Collection ${collection.id} certificate already looks good`);
                 }
@@ -345,7 +348,8 @@ class Acme extends utils.Adapter {
                     key: serverPem,
                     cert: pems.cert,
                     chain: [pems.cert, pems.chain],
-                    domains
+                    domains,
+                    staging: this.config.useStaging
                 };
 
                 // Decode certificate to get expiry.
