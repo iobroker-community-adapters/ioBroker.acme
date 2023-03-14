@@ -49,7 +49,7 @@
           "sm": 12,
           "md": 6,
           "hidden": "!data.http01Active",
-          "validator": "!data.http01Active || data.http01Port",
+          "validator": "!data.http01Active || data.port",
           "validatorErrorText": "Listen port is mandatory",
           "validatorNoSaveOnError": true
         },
@@ -59,7 +59,7 @@
           "sm": 12,
           "md": 6,
           "hidden": "!data.http01Active",
-          "validator": "!data.http01Active || data.http01Bind",
+          "validator": "!data.http01Active || data.bind",
           "validatorErrorText": "Listen address is mandatory",
           "validatorNoSaveOnError": true
         },
