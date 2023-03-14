@@ -7,6 +7,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
+const { CertificateManager } = require('@iobroker/webserver');
 const pkg = require('./package.json');
 
 const ACME = require('acme');
@@ -46,6 +47,8 @@ class Acme extends utils.Adapter {
     async onReady() {
         this.log.debug(`config: ${JSON.stringify(this.config)}`);
 
+        this.certManager = new CertificateManager({ adapter: this });
+
         if (!this.config?.collections?.length) {
             this.terminate('No collections configured - nothing to order');
         } else {
@@ -68,12 +71,12 @@ class Acme extends utils.Adapter {
         }
 
         // Purge any collections we created in the past but are not configured now and have also expired.
-        const collections = await this.getCertificateCollectionAsync();
+        const collections = await this.certManager.getAllCollections();
         this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
         for (const [collectionId, collection] of Object.entries(collections)) {
             if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
                 this.log.info(`Removing expired and de-configured collection ${collectionId}`);
-                await this.delCertificateCollectionAsync(collectionId);
+                await this.certManager.delCollection(collectionId);
             }
         }
 
@@ -190,7 +193,7 @@ class Acme extends utils.Adapter {
             if (accountObject) {
                 this.log.debug('Loaded existing ACME account: ' + JSON.stringify(accountObject));
 
-                if (accountObject.native?.full?.contact !== `mailto:${this.config.maintainerEmail}`) {
+                if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
                 } else {
                     this.account = accountObject.native;
@@ -276,7 +279,7 @@ class Acme extends utils.Adapter {
 
         // Get existing collection & see if it needs renewing
         let create = false;
-        const existingCollection = await this.getCertificateCollectionAsync(collection.id);
+        const existingCollection = await this.certManager.getCollection(collection.id);
         if (!existingCollection) {
             this.log.info(`Collection ${collection.id} does not exist - will create`);
             create = true;
@@ -359,7 +362,7 @@ class Acme extends utils.Adapter {
                 if (collectionToSet) {
                     this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
                     // Save it
-                    await this.setCertificateCollectionAsync(collection.id, collectionToSet);
+                    await this.certManager.setCollection(collection.id, collectionToSet);
                     this.log.info(`Collection ${collection.id} order success`);
                 }
             }

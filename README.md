@@ -44,11 +44,15 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (raintonr) Use @iobroker/webserver (#10).
+
 ### 0.0.2 (2023-03-01)
-* (bluefox) now all running on the same port adapters will be stopped before update
+* (bluefox) Now all running on the same port adapters will be stopped before update.
 
 ### 0.0.1 (2023-01-29)
-* (Robin Rainton) initial release.
+* (Robin Rainton) Initial release.
 
 ## License
 MIT License
