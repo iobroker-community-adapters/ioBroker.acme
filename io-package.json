@@ -82,7 +82,7 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=5.0.0-alpha"
+        "js-controller": ">=4.0.0"
       }
     ],
     "globalDependencies": [
