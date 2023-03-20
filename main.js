@@ -32,7 +32,7 @@ class Acme extends utils.Adapter {
 
         this.account = {
             full: null,
-            key: null
+            key: null,
         };
         this.challenges = [];
         this.toShutdown = [];
@@ -191,7 +191,7 @@ class Acme extends utils.Adapter {
             // Try and load saved object
             const accountObject = await this.getObjectAsync(accountObjectId);
             if (accountObject) {
-                this.log.debug('Loaded existing ACME account: ' + JSON.stringify(accountObject));
+                this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
 
                 if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
@@ -205,7 +205,7 @@ class Acme extends utils.Adapter {
 
                 // Register new account
                 const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
-                this.log.debug('accountKeypair: ' + JSON.stringify(accountKeypair));
+                this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
                 this.account.key = accountKeypair.private;
 
                 this.account.full = await this.acme.accounts.create({
@@ -224,7 +224,14 @@ class Acme extends utils.Adapter {
         if (this.config.http01Active) {
             const result = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
             const instances = result.rows.map(row => row.value);
-            const adapters = instances.filter(instance => instance.common.enabled && instance.common.port === this.config.port);
+            const adapters = instances.filter(instance =>
+                instance.common.enabled &&
+                instance.native && (
+                    (instance.native.port === this.config.port) ||
+                    (instance.native.leEnabled && instance.native.leUpdate && instance.native.leCheckPort === this.config.port)
+                )
+            );
+
             if (adapters.length) {
                 this.stoppedAdapters = adapters.map(adapter => adapter._id);
                 for (let i = 0; i < this.stoppedAdapters.length; i++) {
@@ -334,7 +341,7 @@ class Acme extends utils.Adapter {
                     accountKey: this.account.key,
                     csr,
                     domains,
-                    challenges: this.challenges
+                    challenges: this.challenges,
                 });
             } catch (err) {
                 this.log.error(`Certificate request for ${collection.id} (${domains}) failed: ${err}`);
@@ -349,7 +356,7 @@ class Acme extends utils.Adapter {
                     cert: pems.cert,
                     chain: [pems.cert, pems.chain],
                     domains,
-                    staging: this.config.useStaging
+                    staging: this.config.useStaging,
                 };
 
                 // Decode certificate to get expiry.

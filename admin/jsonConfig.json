@@ -41,7 +41,7 @@
         },
         "port": {
           "newLine": true,
-          "type": "number",
+          "type": "port",
           "min": 1,
           "max": 65565,
           "label": "HTTP-01 challenge listen port",
