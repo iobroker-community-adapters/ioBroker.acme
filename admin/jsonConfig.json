@@ -1,5 +1,6 @@
 {
   "type": "tabs",
+  "i18n": true,
   "items": {
     "mainTab": {
       "type": "panel",
@@ -10,6 +11,7 @@
           "label": "Maintainer email passed to CA",
           "sm": 12,
           "md": 6,
+          "lg": 3,
           "validator": "data.maintainerEmail",
           "validatorErrorText": "Maintainer email must be specified",
           "validatorNoSaveOnError": true
@@ -20,7 +22,8 @@
           "label": "Use staging server",
           "help": "Useful for testing/challenge verification purposes.",
           "sm": 12,
-          "md": 6
+          "md": 6,
+          "lg": 3
         }
       }
     },
@@ -35,6 +38,7 @@
           "help": "Activate HTTP-01 challenge verification.",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "validator": "data.dns01Active || data.http01Active",
           "validatorErrorText": "At least one challenge mechanism must be active",
           "validatorNoSaveOnError": true
@@ -48,6 +52,7 @@
           "help": "Connections from the Internet to port 80 of FQDN must arrive here.<br/>Setup your firewall/port forwarding appropriately.",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.http01Active",
           "validator": "!data.http01Active || data.port",
           "validatorErrorText": "Listen port is mandatory",
@@ -58,6 +63,8 @@
           "label": "HTTP-01 challenge listen address",
           "sm": 12,
           "md": 6,
+          "lg": 4,
+          "listenOnAllPorts": true,
           "hidden": "!data.http01Active",
           "validator": "!data.http01Active || data.bind",
           "validatorErrorText": "Listen address is mandatory",
@@ -70,6 +77,7 @@
           "help": "Activate DNS-01 challenge verification.",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "validator": "data.dns01Active || data.http01Active",
           "validatorErrorText": "At least one challenge mechanism must be active",
           "validatorNoSaveOnError": true
@@ -78,6 +86,7 @@
           "newLine": true,
           "type": "select",
           "label": "DNS-01 challenge module",
+          "noTranslation": true,
           "options": [
             {
               "label": "CloudFlare",
@@ -122,6 +131,7 @@
           ],
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active",
           "validator": "!data.dns01Active || data.dns01Module",
           "validatorErrorText": "DNS-01 module is mandatory",
@@ -133,7 +143,6 @@
           "size": 1,
           "text": "Todo!",
           "sm": 12,
-          "md": 6,
           "hidden": "data.dns01Module != 'acme-dns-01-route53'"
         },
         "dns01OapiUser": {
@@ -142,6 +151,7 @@
           "label": "DNS-01 API user",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
         },
         "dns01OapiKey": {
@@ -158,6 +168,7 @@
           "label": "DNS-01 Client IP",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
         },
         "dns01Okey": {
@@ -166,6 +177,7 @@
           "label": "DNS-01 Key",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
         },
         "dns01Osecret": {
@@ -174,6 +186,7 @@
           "label": "DNS-01 Secret",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
         },
         "dns01Otoken": {
@@ -182,6 +195,7 @@
           "label": "DNS-01 Token",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
         },
         "dns01Ousername": {
@@ -190,6 +204,7 @@
           "label": "DNS-01 Username",
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom'].includes(data.dns01Module)"
         },
         "dns01OverifyPropagation": {
@@ -197,15 +212,17 @@
           "type": "checkbox",
           "label": "DNS-01 Verify propagation",
           "sm": 12,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-cloudflare'"
         },
         "dns01PpropagationDelay": {
           "newLine": true,
           "type": "number",
-          "label": "DNS-01 Propogation delay (in milliseconds)",
+          "label": "DNS-01 Propagation delay (in milliseconds)",
           "min": 0,
           "sm": 12,
           "md": 6,
+          "lg": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
         }
       }
