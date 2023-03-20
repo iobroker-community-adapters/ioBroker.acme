@@ -30,5 +30,6 @@
   "Common name": "Распространенное имя",
   "Alt names": "Альтернативные имена",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D должен быть только буквенно-цифровым. Без специальных символов и пробелов. Общее имя не может быть пустым",
-  "Todo!": "Делать!"
+  "Todo!": "Делать!",
+  "Domain (Common name)": "Домен (обычное имя)"
 }

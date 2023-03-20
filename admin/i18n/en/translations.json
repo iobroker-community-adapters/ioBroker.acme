@@ -30,5 +30,6 @@
   "Common name": "Common name",
   "Alt names": "Alt names",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D must be alphanumeric only. No special characters or space. Common name cannot be blank",
-  "Todo!": "Todo!"
+  "Todo!": "Todo!",
+  "Domain (Common name)": "Domain (Common name)"
 }

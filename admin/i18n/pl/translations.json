@@ -30,5 +30,6 @@
   "Common name": "Nazwa zwyczajowa",
   "Alt names": "Alternatywne nazwy",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D musi zawierać wyłącznie znaki alfanumeryczne. Bez znaków specjalnych i spacji. Nazwa zwyczajowa nie może być pusta",
-  "Todo!": "Do zrobienia!"
+  "Todo!": "Do zrobienia!",
+  "Domain (Common name)": "Domena (nazwa zwyczajowa)"
 }

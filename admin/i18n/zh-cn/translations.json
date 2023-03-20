@@ -30,5 +30,6 @@
   "Common name": "常用名",
   "Alt names": "别名",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D 只能是字母数字。没有特殊字符或空格。通用名称不能为空",
-  "Todo!": "去做！"
+  "Todo!": "去做！",
+  "Domain (Common name)": "域（通用名称）"
 }

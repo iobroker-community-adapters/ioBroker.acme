@@ -244,7 +244,7 @@
             {
               "type": "text",
               "attr": "commonName",
-              "title": "Common name",
+              "title": "Domain (Common name)",
               "width": "30%"
             },
             {
@@ -254,6 +254,7 @@
             }
           ],
           "sm": 12,
+          "md": 8,
           "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i))) && !data.collections.find(collection => (collection.commonName.replaceAll(' ', '') == ''))",
           "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
           "validatorNoSaveOnError": true

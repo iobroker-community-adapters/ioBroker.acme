@@ -30,5 +30,6 @@
   "Common name": "Gemeinsamen Namen",
   "Alt names": "Alternative Namen",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D darf nur alphanumerisch sein. Keine Sonderzeichen oder Leerzeichen. Allgemeiner Name darf nicht leer sein",
-  "Todo!": "Machen!"
+  "Todo!": "Machen!",
+  "Domain (Common name)": "Domäne (allgemeiner Name)"
 }

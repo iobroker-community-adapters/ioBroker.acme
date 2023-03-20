@@ -278,9 +278,9 @@ class Acme extends utils.Adapter {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
 
         // Create domains now as will be used to test any existing collection.
-        const domains = [collection.commonName];
+        const domains = collection.commonName.split(',').map(d => d.trim()).filter(n => n);
         if (collection.altNames) {
-            domains.push(...collection.altNames.replaceAll(' ', '').split(','));
+            domains.push(...collection.altNames.replaceAll(' ', '').split(',').filter(n => n));
         }
         this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
@@ -327,11 +327,11 @@ class Acme extends utils.Adapter {
             const csrDer = await CSR.csr({
                 jwk: serverKey,
                 domains,
-                encoding: 'der'
+                encoding: 'der',
             });
             const csr = PEM.packBlock({
                 type: 'CERTIFICATE REQUEST',
-                bytes: csrDer
+                bytes: csrDer,
             });
 
             let pems;

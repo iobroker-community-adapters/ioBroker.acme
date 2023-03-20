@@ -30,5 +30,6 @@
   "Common name": "Gemeenschappelijke naam",
   "Alt names": "Alternatieve namen",
   "D must be alphanumeric only. No special characters or space. Common name cannot be blank": "D mag alleen alfanumeriek zijn. Geen speciale tekens of spatie. Algemene naam mag niet leeg zijn",
-  "Todo!": "Te doen!"
+  "Todo!": "Te doen!",
+  "Domain (Common name)": "Domein (algemene naam)"
 }
