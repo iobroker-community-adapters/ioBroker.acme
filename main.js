@@ -72,12 +72,16 @@ class Acme extends utils.Adapter {
 
         // Purge any collections we created in the past but are not configured now and have also expired.
         const collections = await this.certManager.getAllCollections();
-        this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
-        for (const [collectionId, collection] of Object.entries(collections)) {
-            if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
-                this.log.info(`Removing expired and de-configured collection ${collectionId}`);
-                await this.certManager.delCollection(collectionId);
+        if (collections) {
+            this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
+            for (const [collectionId, collection] of Object.entries(collections)) {
+                if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
+                    this.log.info(`Removing expired and de-configured collection ${collectionId}`);
+                    await this.certManager.delCollection(collectionId);
+                }
             }
+        } else {
+            this.log.debug(`No collections found`);
         }
 
         await this.restoreAdaptersOnSamePort();
