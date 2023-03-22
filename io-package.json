@@ -108,7 +108,11 @@
     "dns01Ousername": "",
     "dns01OverifyPropagation": false,
     "dns01PpropagationDelay": 120000,
-    "collections": []
+    "collections": [{
+      "id": "exampleDomain",
+      "commonName": "example.com",
+      "altNames": "*.example.com,你好.example.com"
+    }]
   },
   "objects": [],
   "instanceObjects": [
