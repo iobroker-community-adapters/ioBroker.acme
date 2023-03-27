@@ -17,6 +17,15 @@ const styles = () => ({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    ok: {
+        color: '#0ba20b'
+    },
+    warn: {
+        color: '#f57d1d'
+    },
+    error: {
+        color: '#c42c3a'
+    },
 });
 
 class AcmeComponent extends ConfigGeneric {
@@ -41,7 +50,7 @@ class AcmeComponent extends ConfigGeneric {
             collections = {};
         }
 
-        this.setState({ collections }, () => this.readData());
+        this.setState({ collections });
     }
 
     async componentWillUnmount() {
@@ -67,17 +76,35 @@ class AcmeComponent extends ConfigGeneric {
                             <TableRow>
                                 <TableCell>{I18n.t('custom_acme_id')}</TableCell>
                                 <TableCell>{I18n.t('custom_acme_status')}</TableCell>
+                                <TableCell>{I18n.t('custom_acme_domains')}</TableCell>
+                                <TableCell>{I18n.t('custom_acme_staging')}</TableCell>
+                                <TableCell>{I18n.t('custom_acme_expires')}</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {Object.keys(this.state.collections).map(id => <TableRow
-                                key={id}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">{id}</TableCell>
-                                <TableCell><pre>{JSON.stringify(this.state.collections[id])}</pre></TableCell>
-                            </TableRow>)}
+                            {Object.keys(this.state.collections).map(id => {
+                                const collection = this.state.collections[id];
+                                let status;
+                                if (new Date(collection.expires).getTime() > Date.now() && !collection.staging) {
+                                    status = <span className={this.props.classes.ok}>OK</span>;
+                                } else if (new Date(collection.expires).getTime() <= Date.now()) {
+                                    status = <span className={this.props.classes.error}>{I18n.t('custom_acme_expired')}</span>;
+                                } else if (collection.staging) {
+                                    status = <span className={this.props.classes.warn}>{I18n.t('custom_acme_staging')}</span>;
+                                }
+
+                                return <TableRow
+                                    key={id}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">{id}</TableCell>
+                                    <TableCell>{status}</TableCell>
+                                    <TableCell>{collection.domains.join(', ')}</TableCell>
+                                    <TableCell className={collection.staging ? this.props.classes.warn : ''}>{collection.staging ? '✓' : ''}</TableCell>
+                                    <TableCell className={new Date(collection.expires).getTime() > Date.now() ? this.props.classes.error : ''}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
+                                </TableRow>;
+                            })}
                         </TableBody>
                     </Table>
                 </TableContainer>

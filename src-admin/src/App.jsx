@@ -18,7 +18,7 @@ const styles = theme => ({
     },
     item: {
         padding: 50,
-        width: 400
+        width: '100%',
     }
 });
 
