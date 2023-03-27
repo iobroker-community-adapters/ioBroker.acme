@@ -230,9 +230,14 @@ class Acme extends utils.Adapter {
             const instances = result.rows.map(row => row.value);
             const adapters = instances.filter(instance =>
                 instance.common.enabled &&
-                instance.native && (
+                 nstance.native && (
                     (instance.native.port === this.config.port) ||
-                    (instance.native.leEnabled && instance.native.leUpdate && instance.native.leCheckPort === this.config.port)
+                    (
+                        instance.native.secure &&
+                        instance.native.leEnabled &&
+                        instance.native.leUpdate &&
+                        instance.native.leCheckPort === this.config.port
+                    )
                 )
             );
 
