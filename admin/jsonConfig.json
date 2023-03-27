@@ -269,7 +269,9 @@
           "type": "custom",
           "i18n": true,
           "url": "custom/customComponents.js",
-          "name": "ConfigCustomAcmeSet/Components/AcmeComponent"
+          "name": "ConfigCustomAcmeSet/Components/AcmeComponent",
+          "sm": 12,
+          "md": 8
         }
       }
     }

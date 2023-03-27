@@ -86,9 +86,9 @@ class AcmeComponent extends ConfigGeneric {
                             {Object.keys(this.state.collections).map(id => {
                                 const collection = this.state.collections[id];
                                 let status;
-                                if (new Date(collection.expires).getTime() > Date.now() && !collection.staging) {
+                                if (new Date(collection.tsExpires).getTime() > Date.now() && !collection.staging) {
                                     status = <span className={this.props.classes.ok}>OK</span>;
-                                } else if (new Date(collection.expires).getTime() <= Date.now()) {
+                                } else if (new Date(collection.tsExpires).getTime() <= Date.now()) {
                                     status = <span className={this.props.classes.error}>{I18n.t('custom_acme_expired')}</span>;
                                 } else if (collection.staging) {
                                     status = <span className={this.props.classes.warn}>{I18n.t('custom_acme_staging')}</span>;
@@ -102,7 +102,7 @@ class AcmeComponent extends ConfigGeneric {
                                     <TableCell>{status}</TableCell>
                                     <TableCell>{collection.domains.join(', ')}</TableCell>
                                     <TableCell className={collection.staging ? this.props.classes.warn : ''}>{collection.staging ? '✓' : ''}</TableCell>
-                                    <TableCell className={new Date(collection.expires).getTime() > Date.now() ? this.props.classes.error : ''}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
+                                    <TableCell className={new Date(collection.tsExpires).getTime() < Date.now() ? this.props.classes.error : ''}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
                                 </TableRow>;
                             })}
                         </TableBody>
