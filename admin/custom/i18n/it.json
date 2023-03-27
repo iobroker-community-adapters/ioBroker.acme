@@ -1,5 +1,9 @@
 {
   "custom_acme_id": "ID",
   "custom_acme_status": "Stato",
-  "custom_acme_title": "Stato delle collezioni"
+  "custom_acme_title": "Stato delle collezioni",
+  "custom_acme_domains": "Domini",
+  "custom_acme_staging": "Test",
+  "custom_acme_expires": "Scade",
+  "custom_acme_expired": "scaduto"
 }
