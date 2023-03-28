@@ -71,6 +71,16 @@ Example scenarios:
        - Give the existing service a different hostname to the one a certificate is required for and configure that hostname to resolve to the same address.
        - Configure the proxy to forward requests to either the existing service or ACME adapter based on the name used.
 
+    4. Run ACME manually only when required port access is available. **Not recommended**, but should work:
+
+        - Disable (stop) the ACME adapter after installation.
+        - Shortly before certificate order or renewal is required (renewal will occur up to 7 days before expiry) manually perform the following steps:
+          - Setup any firewall/port forwarding/other maintenance required to allow ACME to run on the configured port, and for that port to be accessible from the public internet.
+          - Start ACME manually from the IoB Admin Instances page.
+          - Wait for ACME to complete any certificate orders.
+          - Stop ACME manually from the IoB Admin Instances page.
+        - These steps will be required every time a certificate order/renewal is required and as such this method is **not recommended**. ACME is designed to facilitate a fully automated process.
+
 #### DNS-01
 
 Various DNS-01 challenge plugins are implemented for popular domain hosting platforms.
