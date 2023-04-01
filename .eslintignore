@@ -1,1 +1,5 @@
 **/.eslintrc.js
+admin/**/*.js
+src-admin/**/*.js
+admin/*.js
+src-admin/*.js

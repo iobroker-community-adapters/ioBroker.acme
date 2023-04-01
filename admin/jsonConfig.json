@@ -239,7 +239,7 @@
               "type": "text",
               "attr": "id",
               "title": "ID",
-              "width": "10%"
+              "width": "150px"
             },
             {
               "type": "text",
@@ -255,9 +255,23 @@
           ],
           "sm": 12,
           "md": 8,
-          "validator": "!data.collections.find(collection => (!collection.id || collection.id.match(/[^a-z0-9]/i))) && !data.collections.find(collection => (collection.commonName.replaceAll(' ', '') == ''))",
+          "validator": "!data.collections.find(c => (!c.id || c.id.match(/[^a-z0-9]/i))) && !data.collections.find(c => ((c.commonName || '').replaceAll(' ', '') == ''))",
           "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
           "validatorNoSaveOnError": true
+        }
+      }
+    },
+    "statusTab": {
+      "type": "panel",
+      "label": "Status",
+      "items": {
+        "collections": {
+          "type": "custom",
+          "i18n": true,
+          "url": "custom/customComponents.js",
+          "name": "ConfigCustomAcmeSet/Components/AcmeComponent",
+          "sm": 12,
+          "md": 8
         }
       }
     }

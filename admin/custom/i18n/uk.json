@@ -1,0 +1,9 @@
+{
+  "custom_acme_id": "ID",
+  "custom_acme_status": "Статус",
+  "custom_acme_title": "Стан колекцій",
+  "custom_acme_domains": "Домени",
+  "custom_acme_staging": "Тест",
+  "custom_acme_expires": "Термін дії закінчується",
+  "custom_acme_expired": "закінчився"
+}

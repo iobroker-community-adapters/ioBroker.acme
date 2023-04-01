@@ -1,0 +1,9 @@
+{
+  "custom_acme_id": "ID",
+  "custom_acme_status": "地位",
+  "custom_acme_title": "馆藏状况",
+  "custom_acme_domains": "域",
+  "custom_acme_staging": "测试",
+  "custom_acme_expires": "过期",
+  "custom_acme_expired": "已到期"
+}
