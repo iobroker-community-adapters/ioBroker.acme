@@ -21,7 +21,7 @@
     "node": ">= 14"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^2.6.7",
+    "@iobroker/adapter-core": "^2.6.8",
     "@iobroker/webserver": "^0.2.1",
     "acme": "^3.0.3",
     "acme-dns-01-cloudflare": "^1.2.5",
