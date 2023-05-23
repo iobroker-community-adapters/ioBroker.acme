@@ -293,7 +293,7 @@ class Acme extends utils.Adapter {
         }
         this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
-        // Get existing collection & see if it needs renewing
+        // Get the existing collection & see if it needs renewing
         let create = false;
         const existingCollection = await this.certManager.getCollection(collection.id);
         if (!existingCollection) {
