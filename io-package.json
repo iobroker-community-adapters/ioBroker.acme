@@ -5,16 +5,16 @@
     "news": {
       "0.1.0": {
         "en": "Use @iobroker/webserver (#10).\nCorrected detection of instances on the same port\nImplemented the monitoring of the collection's status",
-        "de": "Verwenden Sie @iobroker/webserver (#10.).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
-        "ru": "Используйте @iobroker/webserver (#10.).\nИсправлено обнаружение инстанций в том же порту\nРеализован мониторинг состояния коллекции",
-        "pt": "Use @iobroker/webserver (#10.).\nDetecção correta de instâncias na mesma porta\nImplementado o monitoramento do status da coleção",
+        "de": "Verwenden Sie @iobroker/webserver #(10).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
+        "ru": "Используйте @iobroker/webserver #(10).\nИсправлено обнаружение инстанций в том же порту\nРеализован мониторинг состояния коллекции",
+        "pt": "Use @iobroker/webserver #(10).\nDetecção correta de instâncias na mesma porta\nImplementado o monitoramento do status da coleção",
         "nl": "Gebruik @iobroker/webserver (10).\nVertaling:\nImplementeerde het monitoren van de staat van de collectie",
-        "fr": "Utiliser @iobroker/webserver (#10.).\nDétection corrigée des instances sur le même port\nMise en œuvre de la surveillance du statut de la collection",
-        "it": "Usa @iobroker/webserver (#10.).\nRilevamento corretto delle istanze sulla stessa porta\nImplementato il monitoraggio dello stato della collezione",
-        "es": "Use @iobroker/webserver (#10.).\nDetección corregida de casos en el mismo puerto\nImplementó el monitoreo del estado de la colección",
-        "pl": "Używa @iobroker/webserver (#10).\nPoprawne wykrycie instancji w tym samym porcie\nPoprawiono monitorowanie statusu kolekcji",
-        "uk": "Використовуйте @iobroker/webserver (#10.).\nВиправлено виявлення екземплярів на одному порту\nРеалізовано моніторинг стану колекції",
-        "zh-cn": "使用@iobroker/webserver(第10号).\n对同一港口的事例进行纠正\nA. 实施监测收集状况"
+        "fr": "Utilisez @iobroker/webserver #(10).\nDétection corrigée des instances sur le même port\nMise en œuvre de la surveillance du statut de la collection",
+        "it": "Usa @iobroker/webserver #(10).\nRilevamento corretto delle istanze sulla stessa porta\nImplementato il monitoraggio dello stato della collezione",
+        "es": "Use @iobroker/webserver #(10).\nDetección corregida de casos en el mismo puerto\nImplementó el monitoreo del estado de la colección",
+        "pl": "Użycie @iobroker/webserver #(10).\nPoprawne wykrycie instancji w tym samym porcie\nPoprawiono monitorowanie statusu kolekcji",
+        "uk": "Використовуйте @iobroker/webserver #(10).\nВиправлено виявлення екземплярів на одному порту\nРеалізовано моніторинг стану колекції",
+        "zh-cn": "使用@iobroker/webserver (10)。.\n对同一港口的事例进行纠正\nA. 实施监测收集状况"
       },
       "0.0.2": {
         "en": "now all running on the same port adapters will be stopped before update",
