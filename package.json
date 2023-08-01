@@ -18,10 +18,10 @@
     "url": "https://github.com/iobroker-community-adapters/ioBroker.acme.git"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">=16"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^2.6.8",
+    "@iobroker/adapter-core": "^3.0.3",
     "@iobroker/webserver": "^0.3.6",
     "acme": "^3.0.3",
     "acme-dns-01-cloudflare": "^1.2.5",

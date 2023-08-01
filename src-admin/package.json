@@ -1,5 +1,5 @@
 {
-    "name": "iobroker-admin-component-telegram",
+    "name": "iobroker-admin-component-acme",
     "private": true,
     "version": "0.1.0",
     "scripts": {
