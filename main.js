@@ -112,7 +112,7 @@ class Acme extends utils.Adapter {
             const thisChallenge = require('./lib/http-01-challenge-server').create({
                 port: this.config.port,
                 address: this.config.bind,
-                log: this.log
+                log: this.log,
             });
             this.challenges['http-01'] = thisChallenge;
             this.toShutdown.push(thisChallenge);
@@ -135,7 +135,7 @@ class Acme extends utils.Adapter {
                 }
             }
 
-            // Add module specific options
+            // Add the module-specific options
             switch (this.config.dns01Module) {
                 case 'acme-dns-01-namecheap':
                     dns01Options['baseUrl'] = 'https://api.namecheap.com/xml.response';
@@ -207,7 +207,7 @@ class Acme extends utils.Adapter {
             if (!this.account.full) {
                 this.log.info('Registering new ACME account...');
 
-                // Register new account
+                // Register a new account
                 const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
                 this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
                 this.account.key = accountKeypair.private;
@@ -229,6 +229,7 @@ class Acme extends utils.Adapter {
             const result = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
             const instances = result.rows.map(row => row.value);
             const adapters = instances.filter(instance =>
+                instance._id.substring('system.adapter.'.length) !== this.namespace &&
                 instance.common.enabled &&
                 instance.native && (
                     (instance.native.port === this.config.port) ||
