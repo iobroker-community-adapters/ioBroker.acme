@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "news": {
+      "1.0.0": {
+        "en": "Do not stop own instance on update\nMinimal supported Node.js version is 16",
+        "de": "Nicht aufhören eigene Instanz auf Update\nMinimal unterstützt Node.js-Version ist 16",
+        "ru": "Не останавливайте собственный экземпляр на обновлении\nМинимальная поддержка версии Node.js 16",
+        "pt": "Não pare a própria instância em atualização\nMinimal suportado Node.js versão é 16",
+        "nl": "Stop niet met eigen instantie\nMinimale ondersteuning Nodejs versie 16",
+        "fr": "Ne pas arrêter propre instance sur la mise à jour\nVersion Minimal supportée Node.js est 16",
+        "it": "Non interrompere l'istanza su aggiornamento\nMinimal supportato Node.js versione è 16",
+        "es": "No detenga su propio ejemplo en la actualización\nMinimal compatible Node.js versión es 16",
+        "pl": "Nie zatrzymuje własnego przykładu w aktualizacji\nWersja Minimal wspierana przez Node jest 16",
+        "uk": "Не зупиняйте власний екземпляр на оновлення\nВерсія Node.js - 16",
+        "zh-cn": "不要阻止自己更新的事例\n明米支助的Nodejs版本为16。"
+      },
       "0.2.0": {
         "en": "Use @iobroker/webserver (#10).\nCorrected detection of instances on the same port\nImplemented the monitoring of the collection's status",
         "de": "Verwenden Sie @iobroker/webserver #(10).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
