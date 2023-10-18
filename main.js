@@ -245,6 +245,7 @@ class Acme extends utils.Adapter {
             if (adapters.length) {
                 this.stoppedAdapters = adapters.map(adapter => adapter._id);
                 for (let i = 0; i < this.stoppedAdapters.length; i++) {
+                    this.log.info(`Stop the instance on port ${this.config.port}: ${this.stoppedAdapters[i]}`);
                     const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
                     config.common.enabled = false;
                     await this.setForeignObjectAsync(config._id, config);
@@ -256,6 +257,7 @@ class Acme extends utils.Adapter {
     async restoreAdaptersOnSamePort() {
         if (this.stoppedAdapters) {
             for (let i = 0; i < this.stoppedAdapters.length; i++) {
+                this.log.info(`Start the instance on port ${this.config.port}: ${this.stoppedAdapters[i]}`);
                 const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
                 config.common.enabled = true;
                 await this.setForeignObjectAsync(config._id, config);
