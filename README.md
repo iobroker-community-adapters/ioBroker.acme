@@ -95,6 +95,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 ### **WORK IN PROGRESS**
 * (bluefox) Do not stop own instance on update
+* (bluefox) Minimal supported Node.js version is 16
 
 ### 0.2.0 (2023-05-23)
 * (raintonr) Use @iobroker/webserver (#10).
