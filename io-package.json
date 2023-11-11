@@ -84,7 +84,7 @@
     "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
     "loglevel": "info",
     "mode": "schedule",
-    "schedule": "0 24 * * *",
+    "schedule": "0 0 * * *",
     "allowInit": true,
     "type": "general",
     "compact": true,
