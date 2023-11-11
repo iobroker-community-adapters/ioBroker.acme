@@ -88,7 +88,6 @@ class Acme extends utils.Adapter {
             await this.restoreAdaptersOnSamePort();
 
             this.terminate('Processing complete');
-            
         } catch (error) {
             this.errorHandler(`[onReady] ${error}`);
         }
@@ -424,8 +423,8 @@ class Acme extends utils.Adapter {
      */
     errorHandler(error) {
         try {
-        let errorMsg = error;
-        if (error instanceof Error && error.stack != null) errorMsg = error.stack;
+            let errorMsg = error;
+            if (error instanceof Error && error.stack != null) errorMsg = error.stack;
             // Currenlty not needed, if you want to use the Sentry this part can be activated
             // try {
             //     if (!disableSentry) {
