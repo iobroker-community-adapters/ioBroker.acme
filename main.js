@@ -58,35 +58,49 @@ class Acme extends utils.Adapter {
             if (!Object.keys(this.challenges).length) {
                 this.log.error('Failed to initiate any challenges');
             } else {
-                // Init ACME/account, etc
-                await this.initAcme();
+                try {
+                    // Init ACME/account, etc
+                    await this.initAcme();
 
-                // Loop round collections and generate certs
-                for (const collection of this.config.collections) {
-                    await this.generateCollection(collection);
+                    // Loop round collections and generate certs
+                    for (const collection of this.config.collections) {
+                        await this.generateCollection(collection);
+                    }
+                } catch (err) {
+                    this.log.error(`Failed in ACME init/generation: ${err}`);
                 }
             }
         }
 
         // Purge any collections we created in the past but are not configured now and have also expired.
-        const collections = await this.certManager.getAllCollections();
-        if (collections) {
-            this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
-            for (const [collectionId, collection] of Object.entries(collections)) {
-                if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
-                    this.log.info(`Removing expired and de-configured collection ${collectionId}`);
-                    await this.certManager.delCollection(collectionId);
+        try {
+            const collections = await this.certManager.getAllCollections();
+            if (collections) {
+                this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
+                for (const [collectionId, collection] of Object.entries(collections)) {
+                    if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
+                        this.log.info(`Removing expired and de-configured collection ${collectionId}`);
+                        await this.certManager.delCollection(collectionId);
+                    }
                 }
+            } else {
+                this.log.debug(`No collections found`);
             }
-        } else {
-            this.log.debug(`No collections found`);
+        } catch (err) {
+            this.log.error(`Failed in existing collection check/purge: ${err}`);
         }
 
         this.log.debug('Shutdown...');
+
         for (const challenge of this.toShutdown) {
             challenge.shutdown();
         }
-        await this.restoreAdaptersOnSamePort();
+
+        try {
+            await this.restoreAdaptersOnSamePort();
+        } catch (err) {
+            this.log.error(`Failed to restore adapters on same port: ${err}`);
+        }
 
         this.terminate('Processing complete');
     }
@@ -290,7 +304,7 @@ class Acme extends utils.Adapter {
         if (!this.stoppedAdapters) {
             this.log.debug('No previously shutdown adapters to restart');
         } else {
-            this.log.info('Starting adapter(s) previously shutdown...`');
+            this.log.info('Starting adapter(s) previously shutdown...');
             for (let i = 0; i < this.stoppedAdapters.length; i++) {
                 const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
                 this.log.info(`Starting ${config._id}`);
