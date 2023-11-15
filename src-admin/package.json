@@ -1,7 +1,7 @@
 {
     "name": "iobroker-admin-component-acme",
     "private": true,
-    "version": "0.1.1",
+    "version": "0.1.2",
     "scripts": {
         "start": "set PORT=4173 && craco start",
         "build": "craco build"

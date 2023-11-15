@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "news": {
+      "0.1.2": {
+        "en": "Issues reported by adapter checker have been fixed.\nRelease 0.1.1 has been released again due to error during deploy.",
+        "de": "Die vom Adapter-Checker gemeldeten Probleme wurden behoben.\nDas Release 0.1.1 wurde wegen eines Fehlers beim Deploy wieder nochmals freigegeben.",
+        "ru": "Были исправлены проблемы, которые сообщили адаптер проверки.\nРелиз 0.1.1 был выпущен снова из-за ошибки во время развертывания.",
+        "pt": "Questões relatadas pelo verificador do adaptador foram corrigidas.\nA versão 0.1.1 foi liberada novamente devido ao erro durante a implementação.",
+        "nl": "Issues gemeld door adapter checker zijn gerepareerd.\nLaat 0.1.1 weer vrij door fouten tijdens de inzet.",
+        "fr": "Les problèmes signalés par l'adaptateur ont été corrigés.\nLa version 0.1.1 a été relâchée en raison d'une erreur lors du déploiement.",
+        "it": "I problemi riportati dall'adattatore checker sono stati fissati.\nRilasciare 0.1.1 è stato rilasciato di nuovo a causa di errore durante la distribuzione.",
+        "es": "Se han solucionado las cuestiones comunicadas por el control del adaptador.\nEl lanzamiento 0.1.1 ha sido lanzado de nuevo debido al error durante el despliegue.",
+        "pl": "Doniesienia o problemach doniesionych przez kontrolera adaptera zostały ustalone.\nWersja 0.1.1 została wydana ponownie z powodu błędu.",
+        "uk": "Виправлено випуски, які повідомляються перевірником адаптера.\nВипущено повторно через помилку під час розгортання.",
+        "zh-cn": "适应检查员所报告的问题已经确定。.\n由于部署期间出现错误,释放了1,0.1号。."
+      },
       "0.1.1": {
         "en": "Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).\nFixed ACME notify messages (#64).",
         "de": "Verschiedene Verbesserungen beim Start/Stopp anderer Adapter unter Verwendung von HTTP Challenge Server-Port-Fixing-Restartschleife (#43.).\nFeste ACME-Nachrichten (#64.).",

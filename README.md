@@ -93,7 +93,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.2 (2023-11-15)
  * (mcm1957) Issues reported by adapter checker have been fixed.
  * (mcm1957) Release 0.1.1 has been released again due to error during deploy.
 
