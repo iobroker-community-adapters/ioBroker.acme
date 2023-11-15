@@ -93,8 +93,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.1.1 (2023-11-15)
  * (raintonr) Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).
  * (raintonr) Fixed ACME notify messages (#64).
 
