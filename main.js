@@ -164,16 +164,8 @@ class Acme extends utils.Adapter {
     }
 
     acmeNotify(ev, msg) {
-        switch (ev) {
-            case 'error':
-                this.log.error(msg.message);
-                break;
-            case 'warning':
-                this.log.warn(msg.message);
-                break;
-            default:
-                this.log.debug(`ACME: ${ev}: ${msg}`);
-        }
+        const logLevel = ev === 'error' ? this.log.error : ev === 'warning' ? this.log.warn : this.log.debug;
+        logLevel(`ACMENotify - ${ev}: ${JSON.stringify(msg)}`);
     }
 
     async initAcme() {
