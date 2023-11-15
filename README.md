@@ -96,6 +96,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ### **WORK IN PROGRESS**
  * (raintonr) Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).
+ * (raintonr) Fixed ACME notify messages (#64).
 
 ### 0.1.0 (2023-08-01)
 * (raintonr) Use @iobroker/webserver (#10).
