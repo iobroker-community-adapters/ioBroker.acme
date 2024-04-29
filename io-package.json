@@ -103,7 +103,10 @@
       "SSL",
       "ACME"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
     "main": "main.js",
     "icon": "acme.png",
@@ -111,6 +114,7 @@
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.acme/main/admin/acme.png",
     "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
     "loglevel": "info",
+    "tier": 3,
     "mode": "schedule",
     "schedule": "0 0 * * *",
     "allowInit": true,
@@ -123,12 +127,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=5.0.0"
+        "js-controller": ">=5.0.19"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=6.4.0"
+        "admin": ">=6.13.16"
       }
     ]
   },
