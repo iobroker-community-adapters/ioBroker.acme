@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "news": {
+      "1.1.0": {
+        "en": "Changed GUI for admin v7",
+        "de": "Geänderte GUI für admin v7",
+        "ru": "Изменение GUI для admin v7",
+        "pt": "GUI alterada para admin v7",
+        "nl": "GUI gewijzigd voor admin v7",
+        "fr": "GUI modifié pour admin v7",
+        "it": "GUI modificata per admin v7",
+        "es": "GUI cambiado para admin v7",
+        "pl": "Zmieniony interfejs dla admin v7",
+        "uk": "Змінений графічний інтерфейс для адміністратора v7",
+        "zh-cn": "管理员 v7 更改的图形用户界面"
+      },
       "1.0.0": {
         "en": "Do not stop own instance on update\nMinimal supported Node.js version is 16",
         "de": "Nicht aufhören eigene Instanz auf Update\nMinimal unterstützt Node.js-Version ist 16",
