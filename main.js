@@ -374,7 +374,7 @@ class Acme extends utils.Adapter {
         }
 
         if (create) {
-            // stopAdaptersOnSamePort can be called many times as has it's own checks to prevent unnecessary action.
+            // stopAdaptersOnSamePort can be called many times as has its own checks to prevent unnecessary action.
             await this.stopAdaptersOnSamePort();
 
             const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
