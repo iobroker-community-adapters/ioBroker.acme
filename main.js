@@ -36,9 +36,9 @@ class Acme extends utils.Adapter {
         };
         this.challenges = [];
         this.toShutdown = [];
+        this.donePortCheck = false;
 
         this.on('ready', this.onReady.bind(this));
-        this.on('unload', this.onUnload.bind(this));
     }
 
     /**
@@ -52,67 +52,67 @@ class Acme extends utils.Adapter {
         if (!this.config?.collections?.length) {
             this.terminate('No collections configured - nothing to order');
         } else {
-            await this.stopAdaptersOnSamePort();
-
             // Setup challenges
             this.initChallenges();
 
             if (!Object.keys(this.challenges).length) {
                 this.log.error('Failed to initiate any challenges');
             } else {
-                // Init ACME/account, etc
-                await this.initAcme();
+                try {
+                    // Init ACME/account, etc
+                    await this.initAcme();
 
-                // Loop round collections and generate certs
-                for (const collection of this.config.collections) {
-                    await this.generateCollection(collection);
+                    // Loop round collections and generate certs
+                    for (const collection of this.config.collections) {
+                        await this.generateCollection(collection);
+                    }
+                } catch (err) {
+                    this.log.error(`Failed in ACME init/generation: ${err}`);
                 }
             }
         }
 
         // Purge any collections we created in the past but are not configured now and have also expired.
-        const collections = await this.certManager.getAllCollections();
-        if (collections) {
-            this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
-            for (const [collectionId, collection] of Object.entries(collections)) {
-                if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
-                    this.log.info(`Removing expired and de-configured collection ${collectionId}`);
-                    await this.certManager.delCollection(collectionId);
+        try {
+            const collections = await this.certManager.getAllCollections();
+            if (collections) {
+                this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
+                for (const [collectionId, collection] of Object.entries(collections)) {
+                    if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
+                        this.log.info(`Removing expired and de-configured collection ${collectionId}`);
+                        await this.certManager.delCollection(collectionId);
+                    }
                 }
+            } else {
+                this.log.debug(`No collections found`);
             }
-        } else {
-            this.log.debug(`No collections found`);
+        } catch (err) {
+            this.log.error(`Failed in existing collection check/purge: ${err}`);
         }
 
-        await this.restoreAdaptersOnSamePort();
+        this.log.debug('Shutdown...');
+
+        for (const challenge of this.toShutdown) {
+            challenge.shutdown();
+        }
+
+        try {
+            await this.restoreAdaptersOnSamePort();
+        } catch (err) {
+            this.log.error(`Failed to restore adapters on same port: ${err}`);
+        }
 
         this.terminate('Processing complete');
-    }
-
-    /**
-     * Is called when adapter shuts down - callback has to be called under any circumstances!
-     * @param {() => void} callback
-     */
-    onUnload(callback) {
-        try {
-            this.log.debug('Shutdown...');
-            for (const challenge of this.toShutdown) {
-                challenge.shutdown();
-            }
-
-            callback();
-        } catch (e) {
-            callback();
-        }
     }
 
     initChallenges() {
         if (this.config.http01Active) {
             this.log.debug('Init http-01 challenge server');
+            // This does not actually cause the challenge server to start listening so we don't need to do port check at this time.
             const thisChallenge = require('./lib/http-01-challenge-server').create({
                 port: this.config.port,
                 address: this.config.bind,
-                log: this.log,
+                log: this.log
             });
             this.challenges['http-01'] = thisChallenge;
             this.toShutdown.push(thisChallenge);
@@ -135,7 +135,7 @@ class Acme extends utils.Adapter {
                 }
             }
 
-            // Add the module-specific options
+            // Add module specific options
             switch (this.config.dns01Module) {
                 case 'acme-dns-01-namecheap':
                     dns01Options['baseUrl'] = 'https://api.namecheap.com/xml.response';
@@ -164,16 +164,8 @@ class Acme extends utils.Adapter {
     }
 
     acmeNotify(ev, msg) {
-        switch (ev) {
-            case 'error':
-                this.log.error(msg.message);
-                break;
-            case 'warning':
-                this.log.warn(msg.message);
-                break;
-            default:
-                this.log.debug(`ACME: ${ev}: ${msg}`);
-        }
+        const logLevel = ev === 'error' ? this.log.error : ev === 'warning' ? this.log.warn : this.log.debug;
+        logLevel(`ACMENotify - ${ev}: ${JSON.stringify(msg)}`);
     }
 
     async initAcme() {
@@ -207,7 +199,7 @@ class Acme extends utils.Adapter {
             if (!this.account.full) {
                 this.log.info('Registering new ACME account...');
 
-                // Register a new account
+                // Register new account
                 const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
                 this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
                 this.account.key = accountKeypair.private;
@@ -225,44 +217,94 @@ class Acme extends utils.Adapter {
     }
 
     async stopAdaptersOnSamePort() {
-        if (this.config.http01Active) {
+        // TODO: Maybe this should be in some sort of utility so other adapters can 'grab' a port in use?
+        // Stop conflicting adapters using our challenge server port only if we are going to need it and haven't already checked.
+        if (this.config.http01Active && !this.donePortCheck) {
+            // TODO: is there a better way than hardcoding this 'system.adapter.' part?
+            const us = `system.adapter.${this.namespace}`;
+            const host = this.host;
+            const bind = this.config.bind;
+            const port = this.config.port;
+            this.log.debug(`Checking for adapter other than us (${us}) on our host/bind/port ${host}/${bind}/${port}...`);
             const result = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
             const instances = result.rows.map(row => row.value);
             const adapters = instances.filter(instance =>
-                instance._id.substring('system.adapter.'.length) !== this.namespace &&
+                // (this.log.debug(`id: ${instance._id}, enabled: ${instance.common.enabled}, host: ${instance.common.host}, port: ${instance.native.port}, bind: ${instance.native.bind}, `)) &&
+                instance &&
+                // Instance isn't us
+                instance._id !== us &&
+                // Instance is enabled
                 instance.common.enabled &&
+                // Instance is on same host as us
+                instance.common.host === host &&
                 instance.native && (
-                    (instance.native.port === this.config.port) ||
                     (
-                        instance.native.secure &&
-                        instance.native.leEnabled &&
-                        instance.native.leUpdate &&
-                        instance.native.leCheckPort === this.config.port
+                        // Instance has a bind address
+                        typeof (instance.native.bind) === 'string' &&
+                        (
+                            // Instance is on our bind address, or...
+                            instance.native.bind === bind ||
+                            // We are using v4 address and instance is on all v4 interfaces, or...
+                            (bind.includes('.') && instance.native.bind === '0.0.0.0') ||
+                            // Instance is on v4 address and we will listen on all, or...
+                            (instance.native.bind.includes('.') && bind === '0.0.0.0') ||
+                            // We are using v6 address and instance is on all v4 interfaces, or...
+                            (bind.includes(':') && instance.native.bind === '::') ||
+                            // Instance is on v6 address and we will listen on all, or...
+                            (instance.native.bind.includes(':') && bind === '::') ||
+                            // TODO: These last two seem odd and maybe needs further investigation, but...
+                            // Instance is on all v6 and we want all v4, or...
+                            (instance.native.bind === '::' && bind === '0.0.0.0') ||
+                            // Instance is on all v4 and we want all v6, or...
+                            (instance.native.bind === '0.0.0.0' && bind === '::')
+                        )
+                    ) &&
+                    (
+                        // Port numbers are sometimes string and sometimes integer so don't use '==='!
+                        // Instance wants same port as us, or...
+                        instance.native.port == port ||
+                        // Instance is using LE still and it wants same port as us
+                        (
+                            instance.native.secure &&
+                            instance.native.leEnabled &&
+                            instance.native.leUpdate &&
+                            instance.native.leCheckPort == port
+                        )
                     )
                 )
             );
 
-            if (adapters.length) {
+            if (!adapters.length) {
+                this.log.debug('No adapters found on same port, nothing to stop');
+            } else {
+                this.log.info(`Stopping adapter(s) on our host/bind/port ${host}/${bind}/${port}...`);
                 this.stoppedAdapters = adapters.map(adapter => adapter._id);
                 for (let i = 0; i < this.stoppedAdapters.length; i++) {
-                    this.log.info(`Stop the instance on port ${this.config.port}: ${this.stoppedAdapters[i]}`);
                     const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
-                    config.common.enabled = false;
-                    await this.setForeignObjectAsync(config._id, config);
+                    if (config) {
+                        this.log.info(`Stopping ${config._id}`);
+                        config.common.enabled = false;
+                        await this.setForeignObjectAsync(config._id, config);
+                    }
                 }
             }
+            this.donePortCheck = true;
         }
     }
 
     async restoreAdaptersOnSamePort() {
-        if (this.stoppedAdapters) {
+        if (!this.stoppedAdapters) {
+            this.log.debug('No previously shutdown adapters to restart');
+        } else {
+            this.log.info('Starting adapter(s) previously shutdown...');
             for (let i = 0; i < this.stoppedAdapters.length; i++) {
-                this.log.info(`Start the instance on port ${this.config.port}: ${this.stoppedAdapters[i]}`);
                 const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
+                this.log.info(`Starting ${config._id}`);
                 config.common.enabled = true;
                 await this.setForeignObjectAsync(config._id, config);
             }
             this.stoppedAdapters = null;
+            this.donePortCheck = false;
         }
     }
 
@@ -296,7 +338,7 @@ class Acme extends utils.Adapter {
         }
         this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
-        // Get the existing collection & see if it needs renewing
+        // Get existing collection & see if it needs renewing
         let create = false;
         const existingCollection = await this.certManager.getCollection(collection.id);
         if (!existingCollection) {
@@ -332,6 +374,9 @@ class Acme extends utils.Adapter {
         }
 
         if (create) {
+            // stopAdaptersOnSamePort can be called many times as has it's own checks to prevent unnecessary action.
+            await this.stopAdaptersOnSamePort();
+
             const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
             const serverPem = await Keypairs.export({ jwk: serverKeypair.private });
             const serverKey = await Keypairs.import({ pem: serverPem });

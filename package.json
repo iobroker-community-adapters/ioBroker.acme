@@ -1,6 +1,6 @@
 {
   "name": "iobroker.acme",
-  "version": "1.1.0",
+  "version": "0.1.2",
   "description": "Generates certificate bundles using ACME challenges",
   "author": {
     "name": "Robin Rainton",
@@ -18,7 +18,7 @@
     "url": "https://github.com/iobroker-community-adapters/ioBroker.acme.git"
   },
   "engines": {
-    "node": ">= 16"
+    "node": ">=18"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.1.6",

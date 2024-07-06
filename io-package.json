@@ -1,35 +1,35 @@
 {
   "common": {
     "name": "acme",
-    "version": "1.1.0",
+    "version": "0.1.2",
     "news": {
-      "1.1.0": {
-        "en": "Changed GUI for admin v7",
-        "de": "Geänderte GUI für admin v7",
-        "ru": "Изменение GUI для admin v7",
-        "pt": "GUI alterada para admin v7",
-        "nl": "GUI gewijzigd voor admin v7",
-        "fr": "GUI modifié pour admin v7",
-        "it": "GUI modificata per admin v7",
-        "es": "GUI cambiado para admin v7",
-        "pl": "Zmieniony interfejs dla admin v7",
-        "uk": "Змінений графічний інтерфейс для адміністратора v7",
-        "zh-cn": "管理员 v7 更改的图形用户界面"
+      "0.1.2": {
+        "en": "Issues reported by adapter checker have been fixed.\nRelease 0.1.1 has been released again due to error during deploy.",
+        "de": "Die vom Adapter-Checker gemeldeten Probleme wurden behoben.\nDas Release 0.1.1 wurde wegen eines Fehlers beim Deploy wieder nochmals freigegeben.",
+        "ru": "Были исправлены проблемы, которые сообщили адаптер проверки.\nРелиз 0.1.1 был выпущен снова из-за ошибки во время развертывания.",
+        "pt": "Questões relatadas pelo verificador do adaptador foram corrigidas.\nA versão 0.1.1 foi liberada novamente devido ao erro durante a implementação.",
+        "nl": "Issues gemeld door adapter checker zijn gerepareerd.\nLaat 0.1.1 weer vrij door fouten tijdens de inzet.",
+        "fr": "Les problèmes signalés par l'adaptateur ont été corrigés.\nLa version 0.1.1 a été relâchée en raison d'une erreur lors du déploiement.",
+        "it": "I problemi riportati dall'adattatore checker sono stati fissati.\nRilasciare 0.1.1 è stato rilasciato di nuovo a causa di errore durante la distribuzione.",
+        "es": "Se han solucionado las cuestiones comunicadas por el control del adaptador.\nEl lanzamiento 0.1.1 ha sido lanzado de nuevo debido al error durante el despliegue.",
+        "pl": "Doniesienia o problemach doniesionych przez kontrolera adaptera zostały ustalone.\nWersja 0.1.1 została wydana ponownie z powodu błędu.",
+        "uk": "Виправлено випуски, які повідомляються перевірником адаптера.\nВипущено повторно через помилку під час розгортання.",
+        "zh-cn": "适应检查员所报告的问题已经确定。.\n由于部署期间出现错误,释放了1,0.1号。."
       },
-      "1.0.0": {
-        "en": "Do not stop own instance on update\nMinimal supported Node.js version is 16",
-        "de": "Nicht aufhören eigene Instanz auf Update\nMinimal unterstützt Node.js-Version ist 16",
-        "ru": "Не останавливайте собственный экземпляр на обновлении\nМинимальная поддержка версии Node.js 16",
-        "pt": "Não pare a própria instância em atualização\nMinimal suportado Node.js versão é 16",
-        "nl": "Stop niet met eigen instantie\nMinimale ondersteuning Nodejs versie 16",
-        "fr": "Ne pas arrêter propre instance sur la mise à jour\nVersion Minimal supportée Node.js est 16",
-        "it": "Non interrompere l'istanza su aggiornamento\nMinimal supportato Node.js versione è 16",
-        "es": "No detenga su propio ejemplo en la actualización\nMinimal compatible Node.js versión es 16",
-        "pl": "Nie zatrzymuje własnego przykładu w aktualizacji\nWersja Minimal wspierana przez Node jest 16",
-        "uk": "Не зупиняйте власний екземпляр на оновлення\nВерсія Node.js - 16",
-        "zh-cn": "不要阻止自己更新的事例\n明米支助的Nodejs版本为16。"
+      "0.1.1": {
+        "en": "Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).\nFixed ACME notify messages (#64).",
+        "de": "Verschiedene Verbesserungen beim Start/Stopp anderer Adapter unter Verwendung von HTTP Challenge Server-Port-Fixing-Restartschleife (#43.).\nFeste ACME-Nachrichten (#64.).",
+        "ru": "Различные улучшения в запуске / остановке других адаптеров с помощью HTTP-задач серверного порта фиксации перезагрузки (#43.).\nИсправлена информация о ACME (#64.).",
+        "pt": "Várias melhorias no início / parada de outros adaptadores usando HTTP desafio servidor de fixação de rede de reinício (#43.).\nCorrigido mensagens de notificação ACME (#64.).",
+        "nl": "Verschillende verbetering in begin/stop van andere adapters met HTP uitdagingsservice aan het repareren.\nGefixeerde ACME berichten (64).",
+        "fr": "Diverses améliorations dans le démarrage/arrêt d'autres adaptateurs à l'aide d'une boucle de redémarrage HTTP (#43.).\nACME fixe avise les messages (#64.).",
+        "it": "Vari miglioramenti nell'avvio/arresto di altri adattatori utilizzando HTTP sfida server porta fissaggio loop di riavvio (#43.).\nFisso ACME notifica messaggi (#64.).",
+        "es": "Diversas mejoras en el inicio/stop de otros adaptadores utilizando el puerto de servidor de desafío HTTP fijando el bucle de reinicio (#43.).\nACME fijo notificando mensajes (#64.).",
+        "pl": "Różne ulepszenia na start/stopie innych adapterów za pomocą serwera HTTP naprawiających pętlę startową (#43).\nFixed ACME notify (#64) (ang.).",
+        "uk": "Різні поліпшення в старті / стопі інших адаптерів за допомогою сервера HTTP виклику, що фіксує перезавантаження петлі (#43.).\nВиправлено повідомлення ACME (#64.).",
+        "zh-cn": "其他适应人员在开工/装修休息室(第43号)时的开工/装修各种改进。.\n固定的中小企业通知(第64号)."
       },
-      "0.2.0": {
+      "0.1.0": {
         "en": "Use @iobroker/webserver (#10).\nCorrected detection of instances on the same port\nImplemented the monitoring of the collection's status",
         "de": "Verwenden Sie @iobroker/webserver #(10).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
         "ru": "Используйте @iobroker/webserver #(10).\nИсправлено обнаружение инстанций в том же порту\nРеализован мониторинг состояния коллекции",
@@ -41,19 +41,6 @@
         "pl": "Użycie @iobroker/webserver #(10).\nPoprawne wykrycie instancji w tym samym porcie\nPoprawiono monitorowanie statusu kolekcji",
         "uk": "Використовуйте @iobroker/webserver #(10).\nВиправлено виявлення екземплярів на одному порту\nРеалізовано моніторинг стану колекції",
         "zh-cn": "使用@iobroker/webserver (10)。.\n对同一港口的事例进行纠正\nA. 实施监测收集状况"
-      },
-      "0.1.0": {
-        "en": "Use @iobroker/webserver (#10).\nCorrected detection of instances on the same port\nImplemented the monitoring of the collection's status",
-        "de": "Verwenden Sie @iobroker/webserver (#10.).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
-        "ru": "Используйте @iobroker/webserver (#10.).\nИсправлено обнаружение инстанций в том же порту\nРеализован мониторинг состояния коллекции",
-        "pt": "Use @iobroker/webserver (#10.).\nDetecção correta de instâncias na mesma porta\nImplementado o monitoramento do status da coleção",
-        "nl": "Gebruik @iobroker/webserver (10).\nVertaling:\nImplementeerde het monitoren van de staat van de collectie",
-        "fr": "Utiliser @iobroker/webserver (#10.).\nDétection corrigée des instances sur le même port\nMise en œuvre de la surveillance du statut de la collection",
-        "it": "Usa @iobroker/webserver (#10.).\nRilevamento corretto delle istanze sulla stessa porta\nImplementato il monitoraggio dello stato della collezione",
-        "es": "Use @iobroker/webserver (#10.).\nDetección corregida de casos en el mismo puerto\nImplementó el monitoreo del estado de la colección",
-        "pl": "Używa @iobroker/webserver (#10).\nPoprawne wykrycie instancji w tym samym porcie\nPoprawiono monitorowanie statusu kolekcji",
-        "uk": "Використовуйте @iobroker/webserver (#10.).\nВиправлено виявлення екземплярів на одному порту\nРеалізовано моніторинг стану колекції",
-        "zh-cn": "使用@iobroker/webserver(第10号).\n对同一港口的事例进行纠正\nA. 实施监测收集状况"
       },
       "0.0.2": {
         "en": "now all running on the same port adapters will be stopped before update",
@@ -78,10 +65,10 @@
         "it": "Versione iniziale",
         "es": "Versión inicial",
         "pl": "Pierwsze wydanie",
+        "uk": "початковий реліз",
         "zh-cn": "首次出版"
       }
     },
-    "title": "ACME",
     "titleLang": {
       "en": "ACME",
       "de": "ACME",
@@ -92,6 +79,7 @@
       "it": "ACME",
       "es": "ACME",
       "pl": "ACME",
+      "uk": "ACME",
       "zh-cn": "ACME"
     },
     "desc": {
@@ -104,6 +92,7 @@
       "it": "Genera pacchetti di certificati utilizzando le sfide ACME",
       "es": "Genera paquetes de certificados usando desafíos ACME",
       "pl": "Generuje pakiety certyfikatów przy użyciu wyzwań ACME",
+      "uk": "Генерація сертифікатів за викликами ACME",
       "zh-cn": "使用 ACME 挑战生成证书包"
     },
     "authors": [
@@ -114,7 +103,10 @@
       "SSL",
       "ACME"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
     "main": "main.js",
     "icon": "acme.png",
@@ -122,8 +114,9 @@
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.acme/main/admin/acme.png",
     "readme": "https://github.com/iobroker-community-adapters/ioBroker.acme/blob/main/README.md",
     "loglevel": "info",
+    "tier": 3,
     "mode": "schedule",
-    "schedule": "0 24 * * *",
+    "schedule": "0 0 * * *",
     "allowInit": true,
     "type": "general",
     "compact": true,
@@ -134,17 +127,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=4.0.0"
+        "js-controller": ">=5.0.19"
       }
     ],
-    "tier": 1,
-    "licenseInformation": {
-      "type": "free",
-      "license": "MIT"
-    },
     "globalDependencies": [
       {
-        "admin": ">=6.4.0"
+        "admin": ">=6.13.16"
       }
     ]
   },
