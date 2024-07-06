@@ -124,6 +124,11 @@
         "js-controller": ">=4.0.0"
       }
     ],
+    "tier": 1,
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
     "globalDependencies": [
       {
         "admin": ">=6.4.0"

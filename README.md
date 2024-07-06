@@ -93,6 +93,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (bluefox) Changed GUI for admin v7
+
 ### 1.0.0 (2023-10-18)
 * (bluefox) Do not stop own instance on update
 * (bluefox) Minimal supported Node.js version is 16
@@ -111,7 +114,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ## License
 MIT License
 
-Copyright (c) 2023 Robin Rainton <robin@rainton.com>
+Copyright (c) 2023-2024 Robin Rainton <robin@rainton.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
