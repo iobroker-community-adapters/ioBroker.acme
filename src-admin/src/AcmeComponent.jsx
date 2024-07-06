@@ -1,15 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
 
-import { LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import {
+    LinearProgress, Table, TableBody,
+    TableCell, TableContainer,
+    TableHead, TableRow, Paper,
+} from '@mui/material';
 // important to make from package and not from some children.
 // invalid
 // import ConfigGeneric from '@iobroker/adapter-react-v5/ConfigGeneric';
 // valid
-import { ConfigGeneric, i18n as I18n } from '@iobroker/adapter-react-v5';
+import { ConfigGeneric, I18n } from '@iobroker/adapter-react-v5';
 
-const styles = () => ({
+const styles = {
     table: {
         minWidth: 400,
     },
@@ -26,7 +29,7 @@ const styles = () => ({
     error: {
         color: '#c42c3a'
     },
-});
+};
 
 class AcmeComponent extends ConfigGeneric {
     constructor(props) {
@@ -87,11 +90,11 @@ class AcmeComponent extends ConfigGeneric {
                                 const collection = this.state.collections[id];
                                 let status;
                                 if (new Date(collection.tsExpires).getTime() > Date.now() && !collection.staging) {
-                                    status = <span className={this.props.classes.ok}>OK</span>;
+                                    status = <span style={styles.ok}>OK</span>;
                                 } else if (new Date(collection.tsExpires).getTime() <= Date.now()) {
-                                    status = <span className={this.props.classes.error}>{I18n.t('custom_acme_expired')}</span>;
+                                    status = <span style={styles.error}>{I18n.t('custom_acme_expired')}</span>;
                                 } else if (collection.staging) {
-                                    status = <span className={this.props.classes.warn}>{I18n.t('custom_acme_staging')}</span>;
+                                    status = <span style={styles.warn}>{I18n.t('custom_acme_staging')}</span>;
                                 }
 
                                 return <TableRow
@@ -101,8 +104,8 @@ class AcmeComponent extends ConfigGeneric {
                                     <TableCell component="th" scope="row">{id}</TableCell>
                                     <TableCell>{status}</TableCell>
                                     <TableCell>{collection.domains.join(', ')}</TableCell>
-                                    <TableCell className={collection.staging ? this.props.classes.warn : ''}>{collection.staging ? '✓' : ''}</TableCell>
-                                    <TableCell className={new Date(collection.tsExpires).getTime() < Date.now() ? this.props.classes.error : ''}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
+                                    <TableCell style={collection.staging ? styles.warn : undefined}>{collection.staging ? '✓' : ''}</TableCell>
+                                    <TableCell style={new Date(collection.tsExpires).getTime() < Date.now() ? styles.error : undefined}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
                                 </TableRow>;
                             })}
                         </TableBody>
@@ -118,7 +121,6 @@ AcmeComponent.propTypes = {
     themeType: PropTypes.string,
     themeName: PropTypes.string,
     style: PropTypes.object,
-    className: PropTypes.string,
     data: PropTypes.object.isRequired,
     attr: PropTypes.string,
     schema: PropTypes.object,
@@ -126,4 +128,4 @@ AcmeComponent.propTypes = {
     onChange: PropTypes.func,
 };
 
-export default withStyles(styles)(AcmeComponent);
+export default AcmeComponent;

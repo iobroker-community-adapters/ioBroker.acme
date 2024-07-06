@@ -3,24 +3,22 @@
 import React from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 
-import withStyles from '@mui/styles/withStyles';
-
-import GenericApp from '@iobroker/adapter-react-v5/GenericApp';
-import { I18n, Loader } from '@iobroker/adapter-react-v5';
+import { Box } from '@mui/material';
+import { I18n, Loader, GenericApp } from '@iobroker/adapter-react-v5';
 
 import AcmeComponent from './AcmeComponent';
 
-const styles = theme => ({
-    app: {
+const styles = {
+    app: theme => ({
         backgroundColor: theme.palette.background.default,
         color: theme.palette.text.primary,
         height: '100%',
-    },
+    }),
     item: {
         padding: 50,
         width: '100%',
     }
-});
+};
 
 class App extends GenericApp {
     constructor(props) {
@@ -53,15 +51,15 @@ class App extends GenericApp {
         if (!this.state.loaded) {
             return <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
-                    <Loader theme={this.state.themeType} />
+                    <Loader themeType={this.state.themeType} />
                 </ThemeProvider>
             </StyledEngineProvider>;
         }
 
         return <StyledEngineProvider injectFirst>
             <ThemeProvider theme={this.state.theme}>
-                <div className={this.props.classes.app}>
-                    <div className={this.props.classes.item}>
+                <Box sx={styles.app}>
+                    <div style={styles.item}>
                         <AcmeComponent
                             socket={this.socket}
                             themeType={this.state.themeType}
@@ -74,15 +72,13 @@ class App extends GenericApp {
                                 name: 'ConfigCustomAcmeSet/Components/AcmeComponent',
                                 type: 'custom',
                             }}
-                            onChange={data => {
-                                this.setState({ data });
-                            }}
+                            onChange={data => this.setState({ data })}
                         />
                     </div>
-                </div>
+                </Box>
             </ThemeProvider>
         </StyledEngineProvider>;
     }
 }
 
-export default withStyles(styles)(App);
+export default App;

@@ -96,6 +96,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### **WORK IN PROGRESS**
 * (mcm1957) Adapter requires node.js >= 18 and js-controller >= 5 now
 * (mcm1957) Dependencies have been updated
+* (bluefox) Prepared for admin v7
 
 ### 0.1.2 (2023-11-15)
  * (mcm1957) Issues reported by adapter checker have been fixed.
