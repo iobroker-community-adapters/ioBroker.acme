@@ -78,6 +78,7 @@
     "test": "npm run test:js && npm run test:package",
     "check": "tsc --noEmit -p tsconfig.check.json",
     "lint": "eslint .",
+    "prepublishOnly": "npm run build",
     "build": "gulp",
     "translate": "translate-adapter",
     "dev-server": "dev-server",
