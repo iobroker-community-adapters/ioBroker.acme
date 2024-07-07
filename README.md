@@ -93,7 +93,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.0.1 (2024-07-06)
 * (mcm1957) Adapter requires node.js >= 18 and js-controller >= 5 now
 * (mcm1957) Dependencies have been updated
 * (bluefox) Prepared for admin v7
