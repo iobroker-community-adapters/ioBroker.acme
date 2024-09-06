@@ -9,6 +9,7 @@
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.acme",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "certificate",
     "SSL",
     "ACME"
