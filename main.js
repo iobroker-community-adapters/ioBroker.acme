@@ -112,7 +112,7 @@ class Acme extends utils.Adapter {
             const thisChallenge = require('./lib/http-01-challenge-server').create({
                 port: this.config.port,
                 address: this.config.bind,
-                log: this.log
+                log: this.log,
             });
             this.challenges['http-01'] = thisChallenge;
             this.toShutdown.push(thisChallenge);
@@ -171,16 +171,16 @@ class Acme extends utils.Adapter {
     async initAcme() {
         if (!this.acme) {
             // Doesn't exist yet, actually do init
-            const directoryUrl = this.config.useStaging ?
-                'https://acme-staging-v02.api.letsencrypt.org/directory' :
-                'https://acme-v02.api.letsencrypt.org/directory';
+            const directoryUrl = this.config.useStaging
+                ? 'https://acme-staging-v02.api.letsencrypt.org/directory'
+                : 'https://acme-v02.api.letsencrypt.org/directory';
             this.log.debug(`Using URL: ${directoryUrl}`);
 
             this.acme = ACME.create({
                 maintainerEmail: this.config.maintainerEmail,
                 packageAgent: `${pkg.name}/${pkg.version}`,
                 notify: this.acmeNotify.bind(this),
-                debug: true
+                debug: true,
             });
             await this.acme.init(directoryUrl);
 
@@ -207,7 +207,7 @@ class Acme extends utils.Adapter {
                 this.account.full = await this.acme.accounts.create({
                     subscriberEmail: this.config.maintainerEmail,
                     agreeToTerms: true,
-                    accountKey: this.account.key
+                    accountKey: this.account.key,
                 });
                 this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
 
@@ -225,53 +225,50 @@ class Acme extends utils.Adapter {
             const host = this.host;
             const bind = this.config.bind;
             const port = this.config.port;
-            this.log.debug(`Checking for adapter other than us (${us}) on our host/bind/port ${host}/${bind}/${port}...`);
-            const result = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
+            this.log.debug(
+                `Checking for adapter other than us (${us}) on our host/bind/port ${host}/${bind}/${port}...`,
+            );
+            const result = await this.getObjectViewAsync('system', 'instance', {
+                startkey: 'system.adapter.',
+                endkey: 'system.adapter.\u9999',
+            });
             const instances = result.rows.map(row => row.value);
-            const adapters = instances.filter(instance =>
-                // (this.log.debug(`id: ${instance._id}, enabled: ${instance.common.enabled}, host: ${instance.common.host}, port: ${instance.native.port}, bind: ${instance.native.bind}, `)) &&
-                instance &&
-                // Instance isn't us
-                instance._id !== us &&
-                // Instance is enabled
-                instance.common.enabled &&
-                // Instance is on same host as us
-                instance.common.host === host &&
-                instance.native && (
-                    (
-                        // Instance has a bind address
-                        typeof (instance.native.bind) === 'string' &&
-                        (
-                            // Instance is on our bind address, or...
-                            instance.native.bind === bind ||
-                            // We are using v4 address and instance is on all v4 interfaces, or...
-                            (bind.includes('.') && instance.native.bind === '0.0.0.0') ||
-                            // Instance is on v4 address and we will listen on all, or...
-                            (instance.native.bind.includes('.') && bind === '0.0.0.0') ||
-                            // We are using v6 address and instance is on all v4 interfaces, or...
-                            (bind.includes(':') && instance.native.bind === '::') ||
-                            // Instance is on v6 address and we will listen on all, or...
-                            (instance.native.bind.includes(':') && bind === '::') ||
-                            // TODO: These last two seem odd and maybe needs further investigation, but...
-                            // Instance is on all v6 and we want all v4, or...
-                            (instance.native.bind === '::' && bind === '0.0.0.0') ||
-                            // Instance is on all v4 and we want all v6, or...
-                            (instance.native.bind === '0.0.0.0' && bind === '::')
-                        )
-                    ) &&
-                    (
-                        // Port numbers are sometimes string and sometimes integer so don't use '==='!
-                        // Instance wants same port as us, or...
-                        instance.native.port == port ||
+            const adapters = instances.filter(
+                instance =>
+                    // (this.log.debug(`id: ${instance._id}, enabled: ${instance.common.enabled}, host: ${instance.common.host}, port: ${instance.native.port}, bind: ${instance.native.bind}, `)) &&
+                    instance &&
+                    // Instance isn't us
+                    instance._id !== us &&
+                    // Instance is enabled
+                    instance.common.enabled &&
+                    // Instance is on same host as us
+                    instance.common.host === host &&
+                    instance.native &&
+                    // Instance has a bind address
+                    typeof instance.native.bind === 'string' &&
+                    // Instance is on our bind address, or...
+                    (instance.native.bind === bind ||
+                        // We are using v4 address and instance is on all v4 interfaces, or...
+                        (bind.includes('.') && instance.native.bind === '0.0.0.0') ||
+                        // Instance is on v4 address and we will listen on all, or...
+                        (instance.native.bind.includes('.') && bind === '0.0.0.0') ||
+                        // We are using v6 address and instance is on all v4 interfaces, or...
+                        (bind.includes(':') && instance.native.bind === '::') ||
+                        // Instance is on v6 address and we will listen on all, or...
+                        (instance.native.bind.includes(':') && bind === '::') ||
+                        // TODO: These last two seem odd and maybe needs further investigation, but...
+                        // Instance is on all v6 and we want all v4, or...
+                        (instance.native.bind === '::' && bind === '0.0.0.0') ||
+                        // Instance is on all v4 and we want all v6, or...
+                        (instance.native.bind === '0.0.0.0' && bind === '::')) &&
+                    // Port numbers are sometimes string and sometimes integer so don't use '==='!
+                    // Instance wants same port as us, or...
+                    (instance.native.port == port ||
                         // Instance is using LE still and it wants same port as us
-                        (
-                            instance.native.secure &&
+                        (instance.native.secure &&
                             instance.native.leEnabled &&
                             instance.native.leUpdate &&
-                            instance.native.leCheckPort == port
-                        )
-                    )
-                )
+                            instance.native.leCheckPort == port)),
             );
 
             if (!adapters.length) {
@@ -299,9 +296,11 @@ class Acme extends utils.Adapter {
             this.log.info('Starting adapter(s) previously shutdown...');
             for (let i = 0; i < this.stoppedAdapters.length; i++) {
                 const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);
-                this.log.info(`Starting ${config._id}`);
-                config.common.enabled = true;
-                await this.setForeignObjectAsync(config._id, config);
+                if (config) {
+                    this.log.info(`Starting ${config._id}`);
+                    config.common.enabled = true;
+                    await this.setForeignObjectAsync(config._id, config);
+                }
             }
             this.stoppedAdapters = null;
             this.donePortCheck = false;
@@ -332,15 +331,23 @@ class Acme extends utils.Adapter {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
 
         // Create domains now as will be used to test any existing collection.
-        const domains = collection.commonName.split(',').map(d => d.trim()).filter(n => n);
+        const domains = collection.commonName
+            .split(',')
+            .map(d => d.trim())
+            .filter(n => n);
         if (collection.altNames) {
-            domains.push(...collection.altNames.replaceAll(' ', '').split(',').filter(n => n));
+            domains.push(
+                ...collection.altNames
+                    .replaceAll(' ', '')
+                    .split(',')
+                    .filter(n => n),
+            );
         }
         this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
         // Get existing collection & see if it needs renewing
         let create = false;
-        const existingCollection = await this.certManager.getCollection(collection.id);
+        const existingCollection = await this.certManager?.getCollection(collection.id);
         if (!existingCollection) {
             this.log.info(`Collection ${collection.id} does not exist - will create`);
             create = true;
@@ -422,7 +429,7 @@ class Acme extends utils.Adapter {
                     const crt = x509.parseCert(collectionToSet.cert);
                     this.log.debug(`New certs notBefore ${crt.notBefore} notAfter ${crt.notAfter}`);
                     collectionToSet.tsExpires = Date.parse(crt.notAfter);
-                } catch (err) {
+                } catch {
                     this.log.error(`Certificate returned for ${collectionToSet.id} looks invalid - not saving`);
                     collectionToSet = null;
                 }
@@ -430,7 +437,7 @@ class Acme extends utils.Adapter {
                 if (collectionToSet) {
                     this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
                     // Save it
-                    await this.certManager.setCollection(collection.id, collectionToSet);
+                    await this.certManager?.setCollection(collection.id, collectionToSet);
                     this.log.info(`Collection ${collection.id} order success`);
                 }
             }
@@ -443,7 +450,7 @@ if (require.main !== module) {
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
      */
-    module.exports = (options) => new Acme(options);
+    module.exports = options => new Acme(options);
 } else {
     // otherwise start the instance directly
     new Acme();

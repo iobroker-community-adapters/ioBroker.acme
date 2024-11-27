@@ -1,16 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import {
-    LinearProgress, Table, TableBody,
-    TableCell, TableContainer,
-    TableHead, TableRow, Paper,
-} from '@mui/material';
+import { LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 // important to make from package and not from some children.
 // invalid
-// import ConfigGeneric from '@iobroker/adapter-react-v5/ConfigGeneric';
+// import I18n from '@iobroker/adapter-react-v5/Components/I18n';
 // valid
-import { ConfigGeneric, I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/adapter-react-v5';
+import { ConfigGeneric } from '@iobroker/json-config';
 
 const styles = {
     table: {
@@ -21,22 +18,22 @@ const styles = {
         fontWeight: 'bold',
     },
     ok: {
-        color: '#0ba20b'
+        color: '#0ba20b',
     },
     warn: {
-        color: '#f57d1d'
+        color: '#f57d1d',
     },
     error: {
-        color: '#c42c3a'
+        color: '#c42c3a',
     },
 };
 
 class AcmeComponent extends ConfigGeneric {
     constructor(props) {
         super(props);
-        this.state = {
+        Object.assign(this.state, {
             collections: null,
-        };
+        });
     }
 
     async componentDidMount() {
@@ -62,19 +59,26 @@ class AcmeComponent extends ConfigGeneric {
 
     onCertsChanged = (id, obj) => {
         if (id === 'system.certificates' && obj) {
-            this.readData(obj)
-                .catch(() => {});
+            this.readData(obj).catch(() => {});
         }
     };
 
     renderItem() {
         if (!this.state.collections) {
             return <LinearProgress />;
-        } else {
-            return <div style={{ width: '100%'}}>
+        }
+
+        return (
+            <div style={{ width: '100%' }}>
                 <h4>{I18n.t('custom_acme_title')}</h4>
-                <TableContainer component={Paper} style={{ width: '100%' }}>
-                    <Table style={{ width: '100%' }} size="small">
+                <TableContainer
+                    component={Paper}
+                    style={{ width: '100%' }}
+                >
+                    <Table
+                        style={{ width: '100%' }}
+                        size="small"
+                    >
                         <TableHead>
                             <TableRow>
                                 <TableCell>{I18n.t('custom_acme_id')}</TableCell>
@@ -97,22 +101,39 @@ class AcmeComponent extends ConfigGeneric {
                                     status = <span style={styles.warn}>{I18n.t('custom_acme_staging')}</span>;
                                 }
 
-                                return <TableRow
-                                    key={id}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell component="th" scope="row">{id}</TableCell>
-                                    <TableCell>{status}</TableCell>
-                                    <TableCell>{collection.domains.join(', ')}</TableCell>
-                                    <TableCell style={collection.staging ? styles.warn : undefined}>{collection.staging ? '✓' : ''}</TableCell>
-                                    <TableCell style={new Date(collection.tsExpires).getTime() < Date.now() ? styles.error : undefined}>{new Date(collection.tsExpires).toLocaleString()}</TableCell>
-                                </TableRow>;
+                                return (
+                                    <TableRow
+                                        key={id}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell
+                                            component="th"
+                                            scope="row"
+                                        >
+                                            {id}
+                                        </TableCell>
+                                        <TableCell>{status}</TableCell>
+                                        <TableCell>{collection.domains.join(', ')}</TableCell>
+                                        <TableCell style={collection.staging ? styles.warn : undefined}>
+                                            {collection.staging ? '✓' : ''}
+                                        </TableCell>
+                                        <TableCell
+                                            style={
+                                                new Date(collection.tsExpires).getTime() < Date.now()
+                                                    ? styles.error
+                                                    : undefined
+                                            }
+                                        >
+                                            {new Date(collection.tsExpires).toLocaleString()}
+                                        </TableCell>
+                                    </TableRow>
+                                );
                             })}
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </div>;
-        }
+            </div>
+        );
     }
 }
 

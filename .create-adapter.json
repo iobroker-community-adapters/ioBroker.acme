@@ -4,15 +4,9 @@
     "adapterName": "acme",
     "title": "acme",
     "description": "Generates certificate bundles using ACME challenges",
-    "keywords": [
-        "certificate",
-        "SSL",
-        "ACME"
-    ],
+    "keywords": ["certificate", "SSL", "ACME"],
     "expert": "no",
-    "features": [
-        "adapter"
-    ],
+    "features": ["adapter"],
     "adminFeatures": [],
     "type": "general",
     "startMode": "daemon",
@@ -22,10 +16,7 @@
     "language": "JavaScript",
     "nodeVersion": "14",
     "adminUi": "none",
-    "tools": [
-        "ESLint",
-        "type checking"
-    ],
+    "tools": ["ESLint", "type checking"],
     "releaseScript": "yes",
     "devServer": "yes",
     "devServerPort": 8081,
