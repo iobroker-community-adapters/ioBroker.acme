@@ -3,10 +3,7 @@ const { ProvidePlugin } = require('webpack');
 const cracoModuleFederation = require('@iobroker/adapter-react-v5/craco-module-federation');
 
 module.exports = {
-    plugins: [
-        { plugin: CracoEsbuildPlugin },
-        { plugin: cracoModuleFederation, options: { useNamedChunkIds: true } }
-    ],
+    plugins: [{ plugin: CracoEsbuildPlugin }, { plugin: cracoModuleFederation, options: { useNamedChunkIds: true } }],
     devServer: {
         proxy: {
             '/files': 'http://localhost:8081',
@@ -14,7 +11,7 @@ module.exports = {
             '/session': 'http://localhost:8081',
             '/log': 'http://localhost:8081',
             '/lib': 'http://localhost:8081',
-        }
+        },
     },
     webpack: {
         output: {
