@@ -2,15 +2,33 @@
 // using the actual properties present in io-package.json
 // in order to provide typings for adapter.config properties
 
-import { native } from '../io-package.json';
-
-type _AdapterConfig = typeof native;
-
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
     namespace ioBroker {
-        interface AdapterConfig extends _AdapterConfig {
-            // Do not enter anything here!
+        interface AdapterConfig {
+            maintainerEmail: string;
+            useStaging: boolean;
+            http01Active: boolean;
+            port: number;
+            bind: string;
+            dns01Active: boolean;
+            dns01Module: string;
+            dns01OapiUser: string;
+            dns01OapiKey: string;
+            dns01OclientIp: string;
+            dns01Okey: string;
+            dns01Osecret: string;
+            dns01Otoken: string;
+            dns01Ousername: string;
+            dns01OverifyPropagation: boolean;
+            dns01PpropagationDelay: number;
+            collections: [
+                {
+                    id: string;
+                    commonName: string;
+                    altNames: string;
+                },
+            ];
         }
     }
 }

@@ -30,6 +30,9 @@ export default [
         rules: {
             'jsdoc/require-jsdoc': 'off',
             'jsdoc/require-param': 'off',
+            'jsdoc/require-param-description': 'off',
+            'jsdoc/no-defaults': 'off',
+            'jsdoc/no-types': 'off',
 
             '@typescript-eslint/no-require-imports': 'off',
         },
