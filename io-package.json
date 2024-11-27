@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "news": {
+      "1.0.3": {
+        "en": "Migrated GUI for admin 7 (one more time)",
+        "de": "Migrated GUI für admin 7 (eine weitere Zeit)",
+        "ru": "Migrated GUI for admin 7 (еще один раз)",
+        "pt": "GUI migrado para admin 7 (mais uma vez)",
+        "nl": "GUI migreren voor admin 7 (nog één keer)",
+        "fr": "GUI migré pour admin 7 (une fois de plus)",
+        "it": "GUI migrata per admin 7 (un'altra volta)",
+        "es": "GUI migrado para admin 7 (una vez más)",
+        "pl": "Migrated GUI for admin 7 (jeszcze raz)",
+        "uk": "Migrated GUI for admin 7 (тільки раз)",
+        "zh-cn": "为管理 7 添加了图形用户界面( 一次)"
+      },
       "1.0.1": {
         "en": "Adapter requires node.js >= 18 and js-controller >= 5 now\nDependencies have been updated\nPrepared for admin v7",
         "de": "Adapter benötigt node.js >= 18 und js-controller >= 5 jetzt\nAbhängigkeiten wurden aktualisiert\nVorbereitet für admin v7",
