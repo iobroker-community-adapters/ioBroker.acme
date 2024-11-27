@@ -97,8 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.0.2 (2024-11-27)
 
 - (@GermanBluefox) Migrated GUI for admin 7 (one more time)
 
@@ -123,10 +122,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 - (raintonr) Use @iobroker/webserver (#10).
 - (bluefox) Corrected detection of instances on the same port
 - (bluefox) Implemented the monitoring of the collection's status
-
-### 0.0.2 (2023-03-01)
-
-- (bluefox) Now all running on the same port adapters will be stopped before update.
 
 ## License
 
