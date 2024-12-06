@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "news": {
+      "1.0.4": {
+        "en": "Corrected error with admin 7.4.3",
+        "de": "Fehler behoben mit admin 7.4.3",
+        "ru": "Исправленная ошибка с admin 7.4.3",
+        "pt": "Erro correto com admin 7.4.3",
+        "nl": "Gecorrigeerde fout met admin 7.4.3",
+        "fr": "Erreur corrigée avec admin 7.4.3",
+        "it": "Errore corretto con admin 7.4.3",
+        "es": "Error corregido con admin 7.4.3",
+        "pl": "Skorygowany błąd z admin 7.4.3",
+        "uk": "Виправлена помилка з адміністратором 7.4.3",
+        "zh-cn": "更正错误,附则 7.4.3"
+      },
       "1.0.3": {
         "en": "Migrated GUI for admin 7 (one more time)",
         "de": "Migrated GUI für admin 7 (eine weitere Zeit)",
@@ -80,19 +93,6 @@
         "pl": "obecnie wszystkie kursy na tych samych adaptatorach będą zatrzymywane przed aktualizacją",
         "uk": "тепер всі запущені на одному портові адаптери будуть припинені до оновлення",
         "zh-cn": "现在,在更新港口后,将停止对同一港口的改造。"
-      },
-      "0.0.1": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "початковий реліз",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {

@@ -97,7 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.0.4 (2024-12-06)
 
 - (@GermanBluefox) Corrected error with admin 7.4.3
 
@@ -120,12 +120,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 - (raintonr) Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).
 - (raintonr) Fixed ACME notify messages (#64).
-
-### 0.1.0 (2023-08-01)
-
-- (raintonr) Use @iobroker/webserver (#10).
-- (bluefox) Corrected detection of instances on the same port
-- (bluefox) Implemented the monitoring of the collection's status
 
 ## License
 
