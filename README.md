@@ -97,6 +97,10 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Corrected error with admin 7.4.3
+
 ### 1.0.3 (2024-11-27)
 
 - (@GermanBluefox) Migrated GUI for admin 7 (one more time)

@@ -31,6 +31,7 @@ const styles = {
 class AcmeComponent extends ConfigGeneric {
     constructor(props) {
         super(props);
+        this.socket = this.props.oContext ? this.props.oContext.socket : this.props.socket;
         Object.assign(this.state, {
             collections: null,
         });
@@ -39,11 +40,11 @@ class AcmeComponent extends ConfigGeneric {
     async componentDidMount() {
         super.componentDidMount();
         await this.readData();
-        await this.props.socket.subscribeObject('system.certificates', this.onCertsChanged);
+        await this.socket.subscribeObject('system.certificates', this.onCertsChanged);
     }
 
     async readData(obj) {
-        let collections = obj || (await this.props.socket.getObject('system.certificates'));
+        let collections = obj || (await this.socket.getObject('system.certificates'));
         if (collections?.native?.collections) {
             collections = collections.native.collections;
         } else {
@@ -54,7 +55,7 @@ class AcmeComponent extends ConfigGeneric {
     }
 
     async componentWillUnmount() {
-        await this.props.socket.unsubscribeObject('system.certificates', this.onCertsChanged);
+        await this.socket.unsubscribeObject('system.certificates', this.onCertsChanged);
     }
 
     onCertsChanged = (id, obj) => {
@@ -138,8 +139,9 @@ class AcmeComponent extends ConfigGeneric {
 }
 
 AcmeComponent.propTypes = {
-    socket: PropTypes.object.isRequired,
-    themeType: PropTypes.string,
+    socket: PropTypes.object, // this is in oContext
+    oContext: PropTypes.object.isRequired,
+    themeType: PropTypes.string, // this is in oContext
     themeName: PropTypes.string,
     style: PropTypes.object,
     data: PropTypes.object.isRequired,
