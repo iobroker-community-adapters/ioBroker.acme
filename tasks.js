@@ -31,5 +31,8 @@ if (process.argv.includes('--0-clean')) {
     npmInstall(srcAdmin)
         .then(() => buildReact(srcAdmin, { rootDir: __dirname, craco: true }))
         .then(() => copyAllFiles())
-        .catch(e => console.error(`Cannot build: ${e}`));
+        .catch(e => {
+            console.error(`Cannot build: ${e}`);
+            process.exit(2);
+        });
 }

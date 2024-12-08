@@ -239,7 +239,7 @@
               "type": "text",
               "attr": "id",
               "title": "ID",
-              "width": "150px"
+              "width": "200px"
             },
             {
               "type": "text",
@@ -254,7 +254,9 @@
             }
           ],
           "sm": 12,
-          "md": 8,
+          "md": 12,
+          "lg": 12,
+          "xl": 8,
           "validator": "!data.collections.find(c => (!c.id || c.id.match(/[^a-z0-9]/i))) && !data.collections.find(c => ((c.commonName || '').replaceAll(' ', '') == ''))",
           "validatorErrorText": "ID must be alphanumeric only. No special characters or space. Common name cannot be blank",
           "validatorNoSaveOnError": true
