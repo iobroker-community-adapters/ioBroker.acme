@@ -3,19 +3,6 @@
     "name": "acme",
     "version": "1.0.4",
     "news": {
-      "1.0.4": {
-        "en": "Corrected error with admin 7.4.3",
-        "de": "Fehler behoben mit admin 7.4.3",
-        "ru": "Исправленная ошибка с admin 7.4.3",
-        "pt": "Erro correto com admin 7.4.3",
-        "nl": "Gecorrigeerde fout met admin 7.4.3",
-        "fr": "Erreur corrigée avec admin 7.4.3",
-        "it": "Errore corretto con admin 7.4.3",
-        "es": "Error corregido con admin 7.4.3",
-        "pl": "Skorygowany błąd z admin 7.4.3",
-        "uk": "Виправлена помилка з адміністратором 7.4.3",
-        "zh-cn": "更正错误,附则 7.4.3"
-      },
       "1.0.3": {
         "en": "Migrated GUI for admin 7 (one more time)",
         "de": "Migrated GUI für admin 7 (eine weitere Zeit)",
