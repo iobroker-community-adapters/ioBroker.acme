@@ -1,4 +1,9 @@
 # Older changes
+## 0.1.1 (2023-11-15)
+
+- (raintonr) Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).
+- (raintonr) Fixed ACME notify messages (#64).
+
 ## 0.1.0 (2023-08-01)
 
 - (raintonr) Use @iobroker/webserver (#10).
