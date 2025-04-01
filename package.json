@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.2.3",
-    "@iobroker/webserver": "^1.0.6",
+    "@iobroker/webserver": "^1.2.4",
     "acme": "^3.0.3",
     "acme-dns-01-cloudflare": "^1.2.5",
     "acme-dns-01-digitalocean": "^3.0.1",
