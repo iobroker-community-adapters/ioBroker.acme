@@ -15,3 +15,5 @@ Thumbs.db
 # i18n intermediate files
 src-admin/build
 src-admin/package-lock.json
+#ignore .commitinfo created by ioBroker release script
+.commitinfo
