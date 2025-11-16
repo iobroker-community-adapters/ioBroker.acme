@@ -22,7 +22,7 @@
         "@rollup/plugin-babel": "^6.0.4",
         "@rollup/plugin-commonjs": "^28.0.1",
         "@rollup/plugin-node-resolve": "^15.3.0",
-        "@rollup/plugin-replace": "^6.0.1",
+        "@rollup/plugin-replace": "^6.0.3",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@craco/craco": "^7.1.0",
