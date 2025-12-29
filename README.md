@@ -93,6 +93,10 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+- (@copilot) Adapter requires admin 7.6.17 now
+
+
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
