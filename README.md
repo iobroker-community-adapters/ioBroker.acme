@@ -91,17 +91,14 @@ Various DNS-01 challenge plugins are implemented for popular domain hosting plat
 
 See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
-## Changelog
-
-### **WORK IN PROGRESS**
-- (@copilot) Adapter requires admin 7.6.17 now
-
-
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+## Changelog
+
 ### **WORK IN PROGRESS**
+- (@copilot) Adapter requires admin 7.6.17 now
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 6.17.14 now
 - (mcm1957) Dependencies have been updated
 
