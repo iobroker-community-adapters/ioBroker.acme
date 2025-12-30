@@ -130,6 +130,8 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 MIT License
 
+
+Copyright (c) 2026 iobroker-community-adapters <iobroker-community-adapters@gmx.de>  
 Copyright (c) 2023-2025 ioBroker Community Developers <iobroker-community-adapters@gmx.de>  
 Copyright (c) 2023 Robin Rainton <robin@rainton.com>
 
