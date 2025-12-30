@@ -2,10 +2,10 @@
   "name": "iobroker.acme",
   "version": "1.0.6",
   "description": "Generates certificate bundles using ACME challenges",
-  "author": {
-    "name": "Robin Rainton",
-    "email": "robin@rainton.com"
-  },
+  "author": "Robin Rainton <robin@rainton.com>",
+  "contributors": [
+    "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"
+  ],
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.acme",
   "license": "MIT",
   "keywords": [
@@ -85,11 +85,5 @@
   "bugs": {
     "url": "https://github.com/iobroker-community-adapters/ioBroker.acme/issues"
   },
-  "readmeFilename": "README.md",
-  "contributors": [
-    {
-      "name": "iobroker-community-adapters",
-      "email": "iobroker-community-adapters@gmx.de"
-    }
-  ]
+  "readmeFilename": "README.md"
 }
