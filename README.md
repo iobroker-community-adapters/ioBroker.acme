@@ -97,8 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 2.0.0 (2026-02-12)
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
 - (@GermanBluefox) Adater was migrated to TypeScript and vite
@@ -121,11 +120,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 - (mcm1957) Adapter requires node.js >= 18 and js-controller >= 5 now
 - (mcm1957) Dependencies have been updated
 - (bluefox) Prepared for admin v7
-
-### 0.1.2 (2023-11-15)
-
-- (mcm1957) Issues reported by the adapter checker have been fixed.
-- (mcm1957) Release 0.1.1 has been released again due to an error during deployment.
 
 ## License
 

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "1.0.6",
+    "version": "2.0.0",
     "news": {
+      "2.0.0": {
+        "en": "Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now\nDependencies have been updated\nAdater was migrated to TypeScript and vite",
+        "de": "Adapter benötigt node.js >= 20, js-controller >= 6.0.11 und admin >= 7.6.17 jetzt\nAbhängigkeiten wurden aktualisiert\nAdater wurde zu TypeScript und Vite migriert",
+        "ru": "Адаптер требует node.js >= 20, js-контроллер >= 6.0.11 и админ >= 7.6.17 сейчас\nЗависимости были обновлены\nAdater был перенесен в TypeScript и Vite",
+        "pt": "O adaptador necessita de nodo.js >= 20, js-controlador >= 6.0.11 e administrador >= 7.6.17 agora\nAs dependências foram atualizadas\nO Adater foi migrado para TypeScript e vite",
+        "nl": "Voor adapters zijn node.js < 20, js-controller <= 6,0.11 en admin <= 7.6.17 nu vereist\nAfhankelijkheden zijn bijgewerkt\nAdater werd gemigreerd naar TypeScript en vite",
+        "fr": "Adapter nécessite node.js >= 20, js-controller >= 6.0.11 et admin >= 7.6.17 maintenant\nLes dépendances ont été actualisées\nAdater a été migré vers TypeScript et vite",
+        "it": "Adattatore richiede node.js >= 20, js-controller >= 6.0.11 e admin >= 7.6.17 ora\nLe dipendenze sono state aggiornate\nAdater è stato migrato a TypeScript e vite",
+        "es": "Adaptador requiere node.js ю= 20, js-controller √= 6.0.11 y admin= 7.6.17 ahora\nSe han actualizado las dependencias\nAdater fue migrado a TipoScript y vite",
+        "pl": "Adapter wymaga node.js > = 20, kontroler js- i admin > = 7.6.17\nZaktualizowano zależności\nAdater został przeniesiony do TypeScript i vite",
+        "uk": "Адаптер вимагає node.js >= 20, js-controller >= 6.0.11 і admin >= 7.6.17 тепер\nЗалежність було оновлено\nAdater був мігрований до TypeScript і vite",
+        "zh-cn": "适配器需要节点.js >= 20,js控制器 >= 6.0.11和admin >= 7.6.17 现在\n依赖关系已更新\n已迁移到 TypeScript 和 vite"
+      },
       "1.0.6": {
         "en": "Missing size attributes for jsonCOnfig have been added.\nDependencies have been updated",
         "de": "Fehlende Größenattribute für jsonCOnfig wurden hinzugefügt.\nAbhängigkeiten wurden aktualisiert",
@@ -80,19 +93,6 @@
         "pl": "Różne ulepszenia na start/stopie innych adapterów za pomocą serwera HTTP naprawiających pętlę startową (#43).\nFixed ACME notify (#64) (ang.).",
         "uk": "Різні поліпшення в старті / стопі інших адаптерів за допомогою сервера HTTP виклику, що фіксує перезавантаження петлі (#43.).\nВиправлено повідомлення ACME (#64.).",
         "zh-cn": "其他适应人员在开工/装修休息室(第43号)时的开工/装修各种改进。.\n固定的中小企业通知(第64号)."
-      },
-      "0.1.0": {
-        "en": "Use @iobroker/webserver (#10).\nCorrected detection of instances on the same port\nImplemented the monitoring of the collection's status",
-        "de": "Verwenden Sie @iobroker/webserver #(10).\nKorrigierte Erkennung von Instanzen auf demselben Port\nDurchführung der Überwachung des Status der Sammlung",
-        "ru": "Используйте @iobroker/webserver #(10).\nИсправлено обнаружение инстанций в том же порту\nРеализован мониторинг состояния коллекции",
-        "pt": "Use @iobroker/webserver #(10).\nDetecção correta de instâncias na mesma porta\nImplementado o monitoramento do status da coleção",
-        "nl": "Gebruik @iobroker/webserver (10).\nVertaling:\nImplementeerde het monitoren van de staat van de collectie",
-        "fr": "Utilisez @iobroker/webserver #(10).\nDétection corrigée des instances sur le même port\nMise en œuvre de la surveillance du statut de la collection",
-        "it": "Usa @iobroker/webserver #(10).\nRilevamento corretto delle istanze sulla stessa porta\nImplementato il monitoraggio dello stato della collezione",
-        "es": "Use @iobroker/webserver #(10).\nDetección corregida de casos en el mismo puerto\nImplementó el monitoreo del estado de la colección",
-        "pl": "Użycie @iobroker/webserver #(10).\nPoprawne wykrycie instancji w tym samym porcie\nPoprawiono monitorowanie statusu kolekcji",
-        "uk": "Використовуйте @iobroker/webserver #(10).\nВиправлено виявлення екземплярів на одному порту\nРеалізовано моніторинг стану колекції",
-        "zh-cn": "使用@iobroker/webserver (10)。.\n对同一港口的事例进行纠正\nA. 实施监测收集状况"
       }
     },
     "titleLang": {
