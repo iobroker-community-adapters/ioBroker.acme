@@ -101,6 +101,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### **WORK IN PROGRESS**
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
+- (@GermanBluefox) Adater was migrated to TypeScript and vite
 
 ### 1.0.6 (2024-12-27)
 

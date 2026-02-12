@@ -1,30 +1,69 @@
-'use strict';
-
 /*
  * Created with @iobroker/create-adapter v2.3.0
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
-const utils = require('@iobroker/adapter-core');
-const { CertificateManager } = require('@iobroker/webserver');
-const pkg = require('./package.json');
+import * as utils from '@iobroker/adapter-core';
+import { CertificateManager, type CertificateCollection } from '@iobroker/webserver';
+import ACME from 'acme';
+import Keypairs from '@root/keypairs';
+import CSR from '@root/csr';
+import PEM from '@root/pem';
+import x509 from 'x509.js';
 
-const ACME = require('acme');
-const Keypairs = require('@root/keypairs');
-const CSR = require('@root/csr');
-const PEM = require('@root/pem');
-const x509 = require('x509.js');
+import type { AdapterOptions } from '@iobroker/adapter-core';
+
+import pkg from '../package.json';
+import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
+import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
 
-class Acme extends utils.Adapter {
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    constructor(options) {
+interface AcmeAccount {
+    full: Record<string, any> | null;
+    key: Record<string, any> | null;
+}
+
+interface ChallengeHandler {
+    init: (opts: Record<string, unknown>) => Promise<null>;
+    set: (data: any) => Promise<null>;
+    get: (data: any) => Promise<any>;
+    remove: (data: any) => Promise<null>;
+    shutdown: () => void;
+}
+
+class AcmeAdapter extends utils.Adapter {
+    declare config: AcmeAdapterConfig;
+    private account: AcmeAccount;
+    private readonly challenges: Record<string, ChallengeHandler>;
+    private readonly toShutdown: ChallengeHandler[];
+    private donePortCheck: boolean;
+    private certManager: CertificateManager | undefined;
+    private acme: {
+        init: (directoryUrl: string) => Promise<void>;
+        accounts: {
+            create: (options: {
+                subscriberEmail: string;
+                agreeToTerms: boolean;
+                accountKey: Record<string, any>;
+            }) => Promise<Record<string, any>>;
+        };
+        certificates: {
+            create: (options: {
+                account: Record<string, any>;
+                accountKey: Record<string, string | Buffer>;
+                csr: string;
+                domains: string[];
+                challenges: Record<string, ChallengeHandler>;
+            }) => Promise<{ cert: string; chain: string }>;
+        };
+    } | null = null;
+    private stoppedAdapters: string[] | null | undefined;
+
+    constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
             name: 'acme',
@@ -34,7 +73,7 @@ class Acme extends utils.Adapter {
             full: null,
             key: null,
         };
-        this.challenges = [];
+        this.challenges = {};
         this.toShutdown = [];
         this.donePortCheck = false;
 
@@ -44,7 +83,7 @@ class Acme extends utils.Adapter {
     /**
      * Is called when databases are connected and adapter received configuration.
      */
-    async onReady() {
+    async onReady(): Promise<void> {
         this.log.debug(`config: ${JSON.stringify(this.config)}`);
 
         this.certManager = new CertificateManager({ adapter: this });
@@ -53,7 +92,7 @@ class Acme extends utils.Adapter {
             this.terminate('No collections configured - nothing to order');
         } else {
             // Setup challenges
-            this.initChallenges();
+            await this.initChallenges();
 
             if (!Object.keys(this.challenges).length) {
                 this.log.error('Failed to initiate any challenges');
@@ -105,11 +144,11 @@ class Acme extends utils.Adapter {
         this.terminate('Processing complete');
     }
 
-    initChallenges() {
+    async initChallenges(): Promise<void> {
         if (this.config.http01Active) {
             this.log.debug('Init http-01 challenge server');
-            // This does not actually cause the challenge server to start listening so we don't need to do port check at this time.
-            const thisChallenge = require('./lib/http-01-challenge-server').create({
+            // This does not actually cause the challenge server to start listening, so we don't need to do port check at this time.
+            const thisChallenge = createHttp01ChallengeServer({
                 port: this.config.port,
                 address: this.config.bind,
                 log: this.log,
@@ -123,8 +162,8 @@ class Acme extends utils.Adapter {
 
             // TODO: Is there a better way?
             // Just add all the DNS-01 options blindly for all the modules and see what sticks ;)
-            const dns01Options = {};
-            const dns01Props = {};
+            const dns01Options: Record<string, any> = {};
+            const dns01Props: Record<string, any> = {};
             for (const [key, value] of Object.entries(this.config)) {
                 if (key.startsWith('dns01O')) {
                     // An option...
@@ -135,19 +174,25 @@ class Acme extends utils.Adapter {
                 }
             }
 
-            // Add module specific options
+            // Add the module-specific options
             switch (this.config.dns01Module) {
                 case 'acme-dns-01-namecheap':
-                    dns01Options['baseUrl'] = 'https://api.namecheap.com/xml.response';
+                    dns01Options.baseUrl = 'https://api.namecheap.com/xml.response';
                     break;
             }
 
             this.log.debug(`dns-01 options: ${JSON.stringify(dns01Options)}`);
 
-            // Do this inside try... catch as module is configurable
-            let thisChallenge;
+            // Do this inside try... catch as the module is configurable
+            let thisChallenge: ChallengeHandler | undefined;
             try {
-                thisChallenge = require(this.config.dns01Module).create(dns01Options);
+                // Dynamic import - module name comes from config
+                const dns01Module = await import(this.config.dns01Module);
+                if (dns01Module.default) {
+                    thisChallenge = dns01Module.default.create(dns01Options);
+                } else {
+                    thisChallenge = dns01Module.create(dns01Options);
+                }
             } catch (err) {
                 this.log.error(`Failed to load dns-01 challenge module: ${err}`);
             }
@@ -156,19 +201,19 @@ class Acme extends utils.Adapter {
                 // Add extra properties
                 // TODO: only add where needed?
                 for (const [key, value] of Object.entries(dns01Props)) {
-                    thisChallenge[key] = value;
+                    (thisChallenge as any)[key] = value;
                 }
                 this.challenges['dns-01'] = thisChallenge;
             }
         }
     }
 
-    acmeNotify(ev, msg) {
+    acmeNotify(ev: string, msg: unknown): void {
         const logLevel = ev === 'error' ? this.log.error : ev === 'warning' ? this.log.warn : this.log.debug;
         logLevel(`ACMENotify - ${ev}: ${JSON.stringify(msg)}`);
     }
 
-    async initAcme() {
+    async initAcme(): Promise<void> {
         if (!this.acme) {
             // Doesn't exist yet, actually do init
             const directoryUrl = this.config.useStaging
@@ -182,9 +227,9 @@ class Acme extends utils.Adapter {
                 notify: this.acmeNotify.bind(this),
                 debug: true,
             });
-            await this.acme.init(directoryUrl);
+            await this.acme!.init(directoryUrl);
 
-            // Try and load saved object
+            // Try and load a saved object
             const accountObject = await this.getObjectAsync(accountObjectId);
             if (accountObject) {
                 this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
@@ -192,7 +237,7 @@ class Acme extends utils.Adapter {
                 if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
                 } else {
-                    this.account = accountObject.native;
+                    this.account = accountObject.native as AcmeAccount;
                 }
             }
 
@@ -200,23 +245,28 @@ class Acme extends utils.Adapter {
                 this.log.info('Registering new ACME account...');
 
                 // Register a new account
-                const accountKeypair = await Keypairs.generate({ kty: 'EC', format: 'jwk' });
+                const accountKeypair: { [name: string]: any } = await Keypairs.generate({
+                    kty: 'EC',
+                    format: 'jwk',
+                });
                 this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
                 this.account.key = accountKeypair.private;
 
-                this.account.full = await this.acme.accounts.create({
+                this.account.full = await this.acme!.accounts.create({
                     subscriberEmail: this.config.maintainerEmail,
                     agreeToTerms: true,
-                    accountKey: this.account.key,
+                    accountKey: this.account.key!,
                 });
                 this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
 
-                await this.extendObjectAsync(accountObjectId, { native: this.account });
+                await this.extendObjectAsync(accountObjectId, {
+                    native: this.account,
+                });
             }
         }
     }
 
-    async stopAdaptersOnSamePort() {
+    async stopAdaptersOnSamePort(): Promise<void> {
         // TODO: Maybe this should be in some sort of utility so other adapters can 'grab' a port in use?
         // Stop conflicting adapters using our challenge server port only if we are going to need it and haven't already checked.
         if (this.config.http01Active && !this.donePortCheck) {
@@ -237,32 +287,32 @@ class Acme extends utils.Adapter {
                 instance =>
                     // (this.log.debug(`id: ${instance._id}, enabled: ${instance.common.enabled}, host: ${instance.common.host}, port: ${instance.native.port}, bind: ${instance.native.bind}, `)) &&
                     instance &&
-                    // Instance isn't us
+                    // Instance isn't ours
                     instance._id !== us &&
                     // Instance is enabled
                     instance.common.enabled &&
-                    // Instance is on same host as us
+                    // Instance is on the same host as us
                     instance.common.host === host &&
                     instance.native &&
                     // Instance has a bind address
                     typeof instance.native.bind === 'string' &&
                     // Instance is on our bind address, or...
                     (instance.native.bind === bind ||
-                        // We are using v4 address and instance is on all v4 interfaces, or...
+                        // We are using v4 address, and the instance is on all v4 interfaces, or...
                         (bind.includes('.') && instance.native.bind === '0.0.0.0') ||
-                        // Instance is on v4 address and we will listen on all, or...
+                        // Instance is on v4 address, and we will listen on all, or...
                         (instance.native.bind.includes('.') && bind === '0.0.0.0') ||
-                        // We are using v6 address and instance is on all v4 interfaces, or...
+                        // We are using v6 address, and the instance is on all v4 interfaces, or...
                         (bind.includes(':') && instance.native.bind === '::') ||
-                        // Instance is on v6 address and we will listen on all, or...
+                        // Instance is on v6 address, and we will listen on all, or...
                         (instance.native.bind.includes(':') && bind === '::') ||
                         // TODO: These last two seem odd and maybe needs further investigation, but...
                         // Instance is on all v6 and we want all v4, or...
                         (instance.native.bind === '::' && bind === '0.0.0.0') ||
-                        // Instance is on all v4 and we want all v6, or...
+                        // Instance is on all v4, and we want all v6, or...
                         (instance.native.bind === '0.0.0.0' && bind === '::')) &&
-                    // Port numbers are sometimes string and sometimes integer so don't use '==='!
-                    // Instance wants same port as us, or...
+                    // Port numbers are sometimes string and sometimes integer, so don't use '==='!
+                    // Instance wants the same port as us, or...
                     (instance.native.port == port ||
                         // Instance is using LE still and it wants same port as us
                         (instance.native.secure &&
@@ -289,7 +339,7 @@ class Acme extends utils.Adapter {
         }
     }
 
-    async restoreAdaptersOnSamePort() {
+    async restoreAdaptersOnSamePort(): Promise<void> {
         if (!this.stoppedAdapters) {
             this.log.debug('No previously shutdown adapters to restart');
         } else {
@@ -308,7 +358,7 @@ class Acme extends utils.Adapter {
     }
 
     // TODO: this belongs in some util class or whatever
-    _arraysMatch(arr1, arr2) {
+    _arraysMatch(arr1: unknown, arr2: unknown): boolean {
         if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
             // How can they be matching arrays if not even arrays?
             return false;
@@ -327,7 +377,7 @@ class Acme extends utils.Adapter {
         return arr1.every(key => arr2.includes(key));
     }
 
-    async generateCollection(collection) {
+    async generateCollection(collection: { id: string; commonName: string; altNames: string }): Promise<void> {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
 
         // Create domains now as will be used to test any existing collection.
@@ -338,16 +388,19 @@ class Acme extends utils.Adapter {
         if (collection.altNames) {
             domains.push(
                 ...collection.altNames
-                    .replaceAll(' ', '')
+                    .replace(/\s/g, '')
                     .split(',')
                     .filter(n => n),
             );
         }
         this.log.debug(`domains: ${JSON.stringify(domains)}`);
 
-        // Get existing collection & see if it needs renewing
+        // Get an existing collection & see if it needs renewing
         let create = false;
-        const existingCollection = await this.certManager?.getCollection(collection.id);
+        const existingCollection = (await this.certManager?.getCollection(collection.id)) as
+            | CertificateCollection
+            | null
+            | undefined;
         if (!existingCollection) {
             this.log.info(`Collection ${collection.id} does not exist - will create`);
             create = true;
@@ -356,7 +409,7 @@ class Acme extends utils.Adapter {
 
             try {
                 // Decode certificate to check not due for renewal and parts match what is configured.
-                const crt = x509.parseCert(existingCollection.cert);
+                const crt = x509.parseCert(existingCollection.cert.toString());
                 this.log.debug(`Existing cert: ${JSON.stringify(crt)}`);
 
                 if (Date.now() > Date.parse(crt.notAfter) - renewWindow) {
@@ -398,39 +451,44 @@ class Acme extends utils.Adapter {
                 bytes: csrDer,
             });
 
-            let pems;
+            if (!this.acme || !this.account.full || !this.account.key) {
+                this.log.error('ACME client not initialized');
+                return;
+            }
+            let pems: { cert: string; chain: string } | undefined;
             try {
                 pems = await this.acme.certificates.create({
-                    account: this.account.account,
+                    account: this.account.full,
                     accountKey: this.account.key,
                     csr,
                     domains,
                     challenges: this.challenges,
                 });
             } catch (err) {
-                this.log.error(`Certificate request for ${collection.id} (${domains}) failed: ${err}`);
+                this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${err}`);
             }
 
             this.log.debug('Done');
 
             if (pems) {
-                let collectionToSet = {
+                let collectionToSet: CertificateCollection | null = {
                     from: this.namespace,
                     key: serverPem,
                     cert: pems.cert,
                     chain: [pems.cert, pems.chain],
                     domains,
                     staging: this.config.useStaging,
+                    tsExpires: 0,
                 };
 
                 // Decode certificate to get expiry.
                 // Kind of handy that this happens to verify certificate looks good too.
                 try {
-                    const crt = x509.parseCert(collectionToSet.cert);
+                    const crt = x509.parseCert(collectionToSet.cert.toString());
                     this.log.debug(`New certs notBefore ${crt.notBefore} notAfter ${crt.notAfter}`);
                     collectionToSet.tsExpires = Date.parse(crt.notAfter);
                 } catch {
-                    this.log.error(`Certificate returned for ${collectionToSet.id} looks invalid - not saving`);
+                    this.log.error(`Certificate returned for ${collection.id} looks invalid - not saving`);
                     collectionToSet = null;
                 }
 
@@ -447,11 +505,8 @@ class Acme extends utils.Adapter {
 
 if (require.main !== module) {
     // Export the constructor in compact mode
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    module.exports = options => new Acme(options);
+    module.exports = (options: Partial<AdapterOptions> | undefined) => new AcmeAdapter(options);
 } else {
     // otherwise start the instance directly
-    new Acme();
+    (() => new AcmeAdapter())();
 }

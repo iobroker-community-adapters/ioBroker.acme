@@ -33,8 +33,6 @@ export default [
             'jsdoc/require-param-description': 'off',
             'jsdoc/no-defaults': 'off',
             'jsdoc/no-types': 'off',
-
-            '@typescript-eslint/no-require-imports': 'off',
         },
     },
 ];

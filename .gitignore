@@ -11,6 +11,7 @@ nbproject
 iobroker.*.tgz
 
 Thumbs.db
+nul
 
 # i18n intermediate files
 src-admin/build

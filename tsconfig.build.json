@@ -5,7 +5,10 @@
         "checkJs": false,
         "noEmit": false,
         "declaration": false,
-        "types": ["@iobroker/types"]
+        "types": ["@iobroker/types"],
+        "lib": ["es2021"],
+        "outDir": "./build",
+        "rootDir": "./src"
     },
     "include": ["src/**/*.ts", "src/**/*.d.ts"],
 }
