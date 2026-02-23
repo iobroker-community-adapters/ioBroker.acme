@@ -97,6 +97,10 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires admin >= 7.7.22 now
+
 ### 2.0.0 (2026-02-12)
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
