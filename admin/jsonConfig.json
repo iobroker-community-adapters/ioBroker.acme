@@ -139,6 +139,10 @@
             {
               "label": "Vultr",
               "value": "acme-dns-01-vultr"
+            },
+            {
+              "label": "Netcup",
+              "value": "acme-dns-01-netcup"
             }
           ],
           "xs": 12,
@@ -163,6 +167,17 @@
           "xl": 12,
           "hidden": "data.dns01Module != 'acme-dns-01-route53'"
         },
+        "dns01OcustomerNumber": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Customer Number",
+          "xs": 12,
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "xl": 4,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-netcup'"
+        },
         "dns01OapiUser": {
           "newLine": true,
           "type": "text",
@@ -183,7 +198,7 @@
           "md": 12,
           "lg": 6,
           "xl": 4,
-          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap','acme-dns-01-netcup'].includes(data.dns01Module)"
         },
         "dns01OclientIp": {
           "newLine": true,
@@ -262,6 +277,17 @@
           "lg": 4,
           "xl": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-namecheap'"
+        },
+        "dns01OapiPassword": {
+          "newLine": true,
+          "type": "password",
+          "label": "DNS-01 API Password",
+          "xs": 12,
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "xl": 4,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-netcup'"
         }
       }
     },

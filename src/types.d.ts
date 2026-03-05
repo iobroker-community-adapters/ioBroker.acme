@@ -63,7 +63,8 @@ export interface AcmeAdapterConfig {
         | 'acme-dns-01-namecheap'
         | 'acme-dns-01-namedotcom'
         | 'acme-dns-01-route53'
-        | 'acme-dns-01-vultr';
+        | 'acme-dns-01-vultr'
+        | 'acme-dns-01-netcup';
     dns01OapiUser: string;
     dns01OapiKey: string;
     dns01OclientIp: string;
@@ -73,6 +74,8 @@ export interface AcmeAdapterConfig {
     dns01Ousername: string;
     dns01OverifyPropagation: boolean;
     dns01PpropagationDelay: number;
+    dns01OcustomerNumber: string;
+    dns01OapiPassword: string;
     collections: [
         {
             id: string;
