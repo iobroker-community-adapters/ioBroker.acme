@@ -97,8 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 2.1.0 (2026-03-05)
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (lubepi) Added support for Netcup DNS-01 challenge 
 - (@GermanBluefox) Optimisations on log output and error handling
@@ -120,12 +119,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### 1.0.3 (2024-11-27)
 
 - (@GermanBluefox) Migrated GUI for admin 7 (one more time)
-
-### 1.0.1 (2024-07-06)
-
-- (mcm1957) Adapter requires node.js >= 18 and js-controller >= 5 now
-- (mcm1957) Dependencies have been updated
-- (bluefox) Prepared for admin v7
 
 ## License
 

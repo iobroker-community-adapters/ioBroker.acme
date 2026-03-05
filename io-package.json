@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "news": {
+      "2.1.0": {
+        "en": "Adapter requires admin >= 7.7.22 now\nAdded support for Netcup DNS-01 challenge \nOptimisations on log output and error handling",
+        "de": "Adapter benötigt admin >= 7.7.22 jetzt\nUnterstützung für Netcup DNS-01 Herausforderung hinzugefügt\nOptimierungen bei Log-Output und Fehlerbehandlung",
+        "ru": "Адаптер требует администратора >= 7.7.22\nПоддержка Netcup DNS-01 Challenge\nОптимизация выхода журнала и обработка ошибок",
+        "pt": "Adaptador requer admin >= 7.7.22 agora\nAdicionado suporte para desafio Netcup DNS-01\nOtimizações na saída do log e no tratamento de erros",
+        "nl": "Adapter vereist admin < 7.7.22 nu\nToegevoegd ondersteuning voor Netcup DNS-01 uitdaging\nOptimalisaties bij loguitvoer en foutafhandeling",
+        "fr": "Adaptateur nécessite admin >= 7.7.22 maintenant\nAjout du support pour le défi Netcup DNS-01\nOptimisations de la sortie du journal et du traitement des erreurs",
+        "it": "Adattatore richiede admin >= 7.7.22 ora\nAggiunto supporto per Netcup DNS-01 sfida\nOttimizzazione dell'output di log e della gestione degli errori",
+        "es": "El adaptador requiere admin= 7.7.22 ahora\nApoyo adicional para el desafío Netcup DNS-01\nOptimizaciones en la salida del registro y manejo de errores",
+        "pl": "Adapter wymaga admin > = 7.7.22\nDodano wsparcie dla Netcup DNS- 01 wyzwanie\nOptymalizacja wyników dziennika i obsługi błędów",
+        "uk": "Адаптер вимагає адмін >= 7.7.22 тепер\nДодано підтримку Netcup DNS-01 виклик\nОптимісії з виходу та обробки помилок",
+        "zh-cn": "适任者需要管理员 \\ 7.7.22 现在\n增加支持Netcup DNS-01挑战\n优化日志输出和错误处理"
+      },
       "2.0.0": {
         "en": "Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now\nDependencies have been updated\nAdater was migrated to TypeScript and vite",
         "de": "Adapter benötigt node.js >= 20, js-controller >= 6.0.11 und admin >= 7.6.17 jetzt\nAbhängigkeiten wurden aktualisiert\nAdater wurde zu TypeScript und Vite migriert",
@@ -80,19 +93,6 @@
         "pl": "Doniesienia o problemach doniesionych przez kontrolera adaptera zostały ustalone.\nWersja 0.1.1 została wydana ponownie z powodu błędu.",
         "uk": "Виправлено випуски, які повідомляються перевірником адаптера.\nВипущено повторно через помилку під час розгортання.",
         "zh-cn": "适应检查员所报告的问题已经确定。.\n由于部署期间出现错误,释放了1,0.1号。."
-      },
-      "0.1.1": {
-        "en": "Various improvements in start/stop of other adapters using HTTP challenge server port fixing restart loop (#43).\nFixed ACME notify messages (#64).",
-        "de": "Verschiedene Verbesserungen beim Start/Stopp anderer Adapter unter Verwendung von HTTP Challenge Server-Port-Fixing-Restartschleife (#43.).\nFeste ACME-Nachrichten (#64.).",
-        "ru": "Различные улучшения в запуске / остановке других адаптеров с помощью HTTP-задач серверного порта фиксации перезагрузки (#43.).\nИсправлена информация о ACME (#64.).",
-        "pt": "Várias melhorias no início / parada de outros adaptadores usando HTTP desafio servidor de fixação de rede de reinício (#43.).\nCorrigido mensagens de notificação ACME (#64.).",
-        "nl": "Verschillende verbetering in begin/stop van andere adapters met HTP uitdagingsservice aan het repareren.\nGefixeerde ACME berichten (64).",
-        "fr": "Diverses améliorations dans le démarrage/arrêt d'autres adaptateurs à l'aide d'une boucle de redémarrage HTTP (#43.).\nACME fixe avise les messages (#64.).",
-        "it": "Vari miglioramenti nell'avvio/arresto di altri adattatori utilizzando HTTP sfida server porta fissaggio loop di riavvio (#43.).\nFisso ACME notifica messaggi (#64.).",
-        "es": "Diversas mejoras en el inicio/stop de otros adaptadores utilizando el puerto de servidor de desafío HTTP fijando el bucle de reinicio (#43.).\nACME fijo notificando mensajes (#64.).",
-        "pl": "Różne ulepszenia na start/stopie innych adapterów za pomocą serwera HTTP naprawiających pętlę startową (#43).\nFixed ACME notify (#64) (ang.).",
-        "uk": "Різні поліпшення в старті / стопі інших адаптерів за допомогою сервера HTTP виклику, що фіксує перезавантаження петлі (#43.).\nВиправлено повідомлення ACME (#64.).",
-        "zh-cn": "其他适应人员在开工/装修休息室(第43号)时的开工/装修各种改进。.\n固定的中小企业通知(第64号)."
       }
     },
     "titleLang": {
