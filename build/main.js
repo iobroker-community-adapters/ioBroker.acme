@@ -54,12 +54,27 @@ const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
 class AcmeAdapter extends utils.Adapter {
+    account;
+    challenges;
+    toShutdown;
+    donePortCheck;
+    certManager;
+    acme = null;
+    stoppedAdapters;
+    /**
+     * Safely extract an error message from an unknown error value.
+     */
+    static getErrorMessage(err) {
+        if (err instanceof Error) {
+            return err.message;
+        }
+        return String(err);
+    }
     constructor(options = {}) {
         super({
             ...options,
             name: 'acme',
         });
-        this.acme = null;
         this.account = {
             full: null,
             key: null,
@@ -68,15 +83,44 @@ class AcmeAdapter extends utils.Adapter {
         this.toShutdown = [];
         this.donePortCheck = false;
         this.on('ready', this.onReady.bind(this));
+        this.on('unload', this.onUnload.bind(this));
+    }
+    /**
+     * Is called when adapter shuts down - callback has to be called under any circumstances!
+     */
+    onUnload(callback) {
+        try {
+            this.log.debug('Cleaning up resources...');
+            for (const challenge of this.toShutdown) {
+                challenge.shutdown();
+            }
+        }
+        catch {
+            // ignore
+        }
+        finally {
+            callback();
+        }
     }
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        this.log.debug(`config: ${JSON.stringify(this.config)}`);
+        // Redact sensitive fields before logging
+        const safeConfig = { ...this.config };
+        const sensitiveKeys = ['dns01OapiKey', 'dns01OapiPassword', 'dns01Okey', 'dns01Osecret', 'dns01Otoken'];
+        for (const key of sensitiveKeys) {
+            if (safeConfig[key]) {
+                safeConfig[key] = '***REDACTED***';
+            }
+        }
+        this.log.debug(`config: ${JSON.stringify(safeConfig)}`);
         this.certManager = new webserver_1.CertificateManager({ adapter: this });
         if (!this.config?.collections?.length) {
             this.terminate('No collections configured - nothing to order');
+        }
+        else if (!this.config.maintainerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.config.maintainerEmail)) {
+            this.terminate('Invalid or missing maintainer email address');
         }
         else {
             // Setup challenges
@@ -94,7 +138,7 @@ class AcmeAdapter extends utils.Adapter {
                     }
                 }
                 catch (err) {
-                    this.log.error(`Failed in ACME init/generation: ${err}`);
+                    this.log.error(`Failed in ACME init/generation: ${AcmeAdapter.getErrorMessage(err)}`);
                 }
             }
         }
@@ -115,7 +159,7 @@ class AcmeAdapter extends utils.Adapter {
             }
         }
         catch (err) {
-            this.log.error(`Failed in existing collection check/purge: ${err}`);
+            this.log.error(`Failed in existing collection check/purge: ${AcmeAdapter.getErrorMessage(err)}`);
         }
         this.log.debug('Shutdown...');
         for (const challenge of this.toShutdown) {
@@ -125,7 +169,7 @@ class AcmeAdapter extends utils.Adapter {
             await this.restoreAdaptersOnSamePort();
         }
         catch (err) {
-            this.log.error(`Failed to restore adapters on same port: ${err}`);
+            this.log.error(`Failed to restore adapters on same port: ${AcmeAdapter.getErrorMessage(err)}`);
         }
         this.terminate('Processing complete');
     }
@@ -172,7 +216,15 @@ class AcmeAdapter extends utils.Adapter {
                     delete dns01Props.propagationDelay;
                     break;
             }
-            this.log.debug(`dns-01 options: ${JSON.stringify(dns01Options)}`);
+            // Log dns-01 options with sensitive values redacted
+            const safeOpts = { ...dns01Options };
+            const sensitiveOptKeys = ['apiKey', 'apiPassword', 'key', 'secret', 'token'];
+            for (const k of sensitiveOptKeys) {
+                if (safeOpts[k]) {
+                    safeOpts[k] = '***REDACTED***';
+                }
+            }
+            this.log.debug(`dns-01 options: ${JSON.stringify(safeOpts)}`);
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
             try {
@@ -186,7 +238,7 @@ class AcmeAdapter extends utils.Adapter {
                 }
             }
             catch (err) {
-                this.log.error(`Failed to load dns-01 challenge module: ${err}`);
+                this.log.error(`Failed to load dns-01 challenge module '${this.config.dns01Module}': ${AcmeAdapter.getErrorMessage(err)}`);
             }
             if (thisChallenge) {
                 // Add extra properties
@@ -357,8 +409,11 @@ class AcmeAdapter extends utils.Adapter {
             this.donePortCheck = false;
         }
     }
-    // TODO: this belongs in some util class or whatever
-    _arraysMatch(arr1, arr2) {
+    /**
+     * Compare two arrays for matching content regardless of order.
+     * Correctly handles duplicates by sorting both arrays before comparison.
+     */
+    arraysMatch(arr1, arr2) {
         if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
             // How can they be matching arrays if not even arrays?
             return false;
@@ -371,7 +426,9 @@ class AcmeAdapter extends utils.Adapter {
             // Cannot be the same if the length doesn't match.
             return false;
         }
-        return arr1.every(key => arr2.includes(key));
+        const sorted1 = [...arr1].sort();
+        const sorted2 = [...arr2].sort();
+        return sorted1.every((val, idx) => val === sorted2[idx]);
     }
     async generateCollection(collection) {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
@@ -408,7 +465,7 @@ class AcmeAdapter extends utils.Adapter {
                     this.log.info(`Collection ${collection.id} common name does not match - will renew`);
                     create = true;
                 }
-                else if (!this._arraysMatch(domains, crt.altNames)) {
+                else if (!this.arraysMatch(domains, crt.altNames)) {
                     this.log.info(`Collection ${collection.id} alt names do not match - will renew`);
                     create = true;
                 }
@@ -421,7 +478,7 @@ class AcmeAdapter extends utils.Adapter {
                 }
             }
             catch (err) {
-                this.log.error(`Collection ${collection.id} exists but looks invalid (${err}) - will renew`);
+                this.log.error(`Collection ${collection.id} exists but looks invalid (${AcmeAdapter.getErrorMessage(err)}) - will renew`);
                 create = true;
             }
         }
@@ -455,7 +512,7 @@ class AcmeAdapter extends utils.Adapter {
                 });
             }
             catch (err) {
-                this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${err}`);
+                this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${AcmeAdapter.getErrorMessage(err)}`);
             }
             this.log.debug('Done');
             if (pems) {

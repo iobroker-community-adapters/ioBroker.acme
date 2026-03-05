@@ -53,7 +53,7 @@
           "newLine": true,
           "type": "port",
           "min": 1,
-          "max": 65565,
+          "max": 65535,
           "label": "HTTP-01 challenge listen port",
           "help": "Connections from the Internet to port 80 of FQDN must arrive here.<br/>Setup your firewall/port forwarding appropriately.",
           "xs": 12,
@@ -191,7 +191,7 @@
         },
         "dns01OapiKey": {
           "newLine": true,
-          "type": "text",
+          "type": "password",
           "label": "DNS-01 API key",
           "xs": 12,
           "sm": 12,
@@ -213,7 +213,7 @@
         },
         "dns01Okey": {
           "newLine": true,
-          "type": "text",
+          "type": "password",
           "label": "DNS-01 Key",
           "xs": 12,
           "sm": 12,
@@ -224,7 +224,7 @@
         },
         "dns01Osecret": {
           "newLine": true,
-          "type": "text",
+          "type": "password",
           "label": "DNS-01 Secret",
           "xs": 12,
           "sm": 12,
@@ -235,7 +235,7 @@
         },
         "dns01Otoken": {
           "newLine": true,
-          "type": "text",
+          "type": "password",
           "label": "DNS-01 Token",
           "xs": 12,
           "sm": 12,
