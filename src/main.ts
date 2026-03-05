@@ -179,6 +179,15 @@ class AcmeAdapter extends utils.Adapter {
                 case 'acme-dns-01-namecheap':
                     dns01Options.baseUrl = 'https://api.namecheap.com/xml.response';
                     break;
+                case 'acme-dns-01-netcup':
+                    // Netcup's set() polls until the TXT record is visible on
+                    // authoritative, public, and system resolvers — the NPM
+                    // package handles propagation internally and sets its own
+                    // propagationDelay to 0; don't let the generic default
+                    // from io-package.json override it.
+                    dns01Options.verifyPropagation = true;
+                    delete dns01Props.propagationDelay;
+                    break;
             }
 
             this.log.debug(`dns-01 options: ${JSON.stringify(dns01Options)}`);
@@ -202,6 +211,17 @@ class AcmeAdapter extends utils.Adapter {
                 // TODO: only add where needed?
                 for (const [key, value] of Object.entries(dns01Props)) {
                     (thisChallenge as any)[key] = value;
+                }
+                // The Netcup set() method polls until the TXT record is confirmed
+                // on public DNS (1.1.1.1/8.8.8.8), so no additional propagation
+                // delay is needed. Forcing 0 prevents acme.js from waiting an
+                // extra propagationDelay ms before its Pre-Flight DNS check,
+                // which could race against DNS cache expiry on 1.1.1.1.
+                if (this.config.dns01Module === 'acme-dns-01-netcup') {
+                    (thisChallenge as any).propagationDelay = 0;
+                    this.log.debug(
+                        'dns-01: propagationDelay set to 0 for Netcup (set() handles propagation internally)',
+                    );
                 }
                 this.challenges['dns-01'] = thisChallenge;
             }
@@ -227,7 +247,24 @@ class AcmeAdapter extends utils.Adapter {
                 notify: this.acmeNotify.bind(this),
                 debug: true,
             });
+            // init() must run FIRST so that _canCheck is populated (dns-01, http-01).
+            // Only AFTER that we set skipChallengeTest, which skips the actual
+            // DNS verification but still allows the dry-run to recognise dns-01.
             await this.acme!.init(directoryUrl);
+
+            // If any challenge plugin signals that it handles DNS verification
+            // internally (e.g. by polling authoritative + public resolvers in
+            // set()), skip the ACME library's own pre-flight DNS check which
+            // uses the OS system resolver and may fail due to negative caching.
+            for (const challenge of Object.values(this.challenges)) {
+                if ((challenge as any).skipChallengeTest) {
+                    (this.acme as any).skipChallengeTest = true;
+                    this.log.debug(
+                        'ACME skipChallengeTest=true (challenge plugin handles DNS verification internally)',
+                    );
+                    break;
+                }
+            }
 
             // Try and load a saved object
             const accountObject = await this.getObjectAsync(accountObjectId);
