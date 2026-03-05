@@ -1,20 +1,20 @@
 {
   "common": {
     "name": "acme",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "news": {
-      "2.1.0": {
-        "en": "Adapter requires admin >= 7.7.22 now\nAdded support for Netcup DNS-01 challenge \nOptimisations on log output and error handling",
-        "de": "Adapter benötigt admin >= 7.7.22 jetzt\nUnterstützung für Netcup DNS-01 Herausforderung hinzugefügt\nOptimierungen bei Log-Output und Fehlerbehandlung",
-        "ru": "Адаптер требует администратора >= 7.7.22\nПоддержка Netcup DNS-01 Challenge\nОптимизация выхода журнала и обработка ошибок",
-        "pt": "Adaptador requer admin >= 7.7.22 agora\nAdicionado suporte para desafio Netcup DNS-01\nOtimizações na saída do log e no tratamento de erros",
-        "nl": "Adapter vereist admin < 7.7.22 nu\nToegevoegd ondersteuning voor Netcup DNS-01 uitdaging\nOptimalisaties bij loguitvoer en foutafhandeling",
-        "fr": "Adaptateur nécessite admin >= 7.7.22 maintenant\nAjout du support pour le défi Netcup DNS-01\nOptimisations de la sortie du journal et du traitement des erreurs",
-        "it": "Adattatore richiede admin >= 7.7.22 ora\nAggiunto supporto per Netcup DNS-01 sfida\nOttimizzazione dell'output di log e della gestione degli errori",
-        "es": "El adaptador requiere admin= 7.7.22 ahora\nApoyo adicional para el desafío Netcup DNS-01\nOptimizaciones en la salida del registro y manejo de errores",
-        "pl": "Adapter wymaga admin > = 7.7.22\nDodano wsparcie dla Netcup DNS- 01 wyzwanie\nOptymalizacja wyników dziennika i obsługi błędów",
-        "uk": "Адаптер вимагає адмін >= 7.7.22 тепер\nДодано підтримку Netcup DNS-01 виклик\nОптимісії з виходу та обробки помилок",
-        "zh-cn": "适任者需要管理员 \\ 7.7.22 现在\n增加支持Netcup DNS-01挑战\n优化日志输出和错误处理"
+      "3.0.0": {
+        "en": "BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. \nAdapter requires admin >= 7.7.22 now\nAdded support for Netcup DNS-01 challenge \nOptimisations on log output and error handling",
+        "de": "BREAKING: DNS-01-Anmeldeinformationen werden jetzt verschlüsselt. Vielleicht müssen Sie sie nach dem Upgrade des Adapters erneut eingeben.\nAdapter benötigt admin >= 7.7.22 jetzt\nUnterstützung für Netcup DNS-01 Herausforderung hinzugefügt\nOptimierungen bei Log-Output und Fehlerbehandlung",
+        "ru": "Учетные данные DNS-01 теперь зашифрованы. Возможно, вам придется вернуться к ним один раз после обновления адаптера.\nАдаптер требует администратора >= 7.7.22\nПоддержка Netcup DNS-01 Challenge\nОптимизация выхода журнала и обработка ошибок",
+        "pt": "As credenciais DNS-01 estão criptografadas agora. Você pode ter que reentrá-los uma vez depois de atualizar o adaptador.\nAdaptador requer admin >= 7.7.22 agora\nAdicionado suporte para desafio Netcup DNS-01\nOtimizações na saída do log e no tratamento de erros",
+        "nl": "DNS-01 referenties zijn nu versleuteld. Misschien moet je ze een keer opnieuw invoeren na het upgraden van de adapter.\nAdapter vereist admin < 7.7.22 nu\nToegevoegd ondersteuning voor Netcup DNS-01 uitdaging\nOptimalisaties bij loguitvoer en foutafhandeling",
+        "fr": "Les identifiants DNS-01 sont cryptés maintenant. Vous devrez peut-être les réintégrer une fois après avoir amélioré l'adaptateur.\nAdaptateur nécessite admin >= 7.7.22 maintenant\nAjout du support pour le défi Netcup DNS-01\nOptimisations de la sortie du journal et du traitement des erreurs",
+        "it": "BREAKING: Le credenziali DNS-01 sono criptate ora. Potrebbe essere necessario reinserirli una volta dopo l'aggiornamento dell'adattatore.\nAdattatore richiede admin >= 7.7.22 ora\nAggiunto supporto per Netcup DNS-01 sfida\nOttimizzazione dell'output di log e della gestione degli errori",
+        "es": "Las credenciales DNS-01 están cifradas ahora. Podrías tener que volver a entrar una vez después de actualizar el aadapter.\nEl adaptador requiere admin= 7.7.22 ahora\nApoyo adicional para el desafío Netcup DNS-01\nOptimizaciones en la salida del registro y manejo de errores",
+        "pl": "Kwalifikacje DNS01 są zaszyfrowane. Może trzeba będzie ponownie wprowadzić je raz po aktualizacji adaptera.\nAdapter wymaga admin > = 7.7.22\nDodano wsparcie dla Netcup DNS- 01 wyzwanie\nOptymalizacja wyników dziennika i obsługi błędów",
+        "uk": "BREAKING: облікові дані DNS-01 зашифровані зараз. Ви можете відреагувати їх після оновлення адаптора.\nАдаптер вимагає адмін >= 7.7.22 тепер\nДодано підтримку Netcup DNS-01 виклик\nОптимісії з виходу та обробки помилок",
+        "zh-cn": "DNS-01 证书加密了 在升级适应器后,你可能必须重新进入它们.\n适任者需要管理员 \\ 7.7.22 现在\n增加支持Netcup DNS-01挑战\n优化日志输出和错误处理"
       },
       "2.0.0": {
         "en": "Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now\nDependencies have been updated\nAdater was migrated to TypeScript and vite",
@@ -80,19 +80,6 @@
         "pl": "Adapter wymaga node.js > = 18 i kontroler js- > = 5 teraz\nZaktualizowano zależności\nPrzygotowany do admin v7",
         "uk": "Адаптер вимагає node.js >= 18 і js-controller >= 5 тепер\nЗалежність було оновлено\nПриготований до адмін v7",
         "zh-cn": "适配器需要节点.js QQ18和js控制器 QQ 现在5号\n依赖关系已更新\n为管理员 v7 编写"
-      },
-      "0.1.2": {
-        "en": "Issues reported by adapter checker have been fixed.\nRelease 0.1.1 has been released again due to error during deploy.",
-        "de": "Die vom Adapter-Checker gemeldeten Probleme wurden behoben.\nDas Release 0.1.1 wurde wegen eines Fehlers beim Deploy wieder nochmals freigegeben.",
-        "ru": "Были исправлены проблемы, которые сообщили адаптер проверки.\nРелиз 0.1.1 был выпущен снова из-за ошибки во время развертывания.",
-        "pt": "Questões relatadas pelo verificador do adaptador foram corrigidas.\nA versão 0.1.1 foi liberada novamente devido ao erro durante a implementação.",
-        "nl": "Issues gemeld door adapter checker zijn gerepareerd.\nLaat 0.1.1 weer vrij door fouten tijdens de inzet.",
-        "fr": "Les problèmes signalés par l'adaptateur ont été corrigés.\nLa version 0.1.1 a été relâchée en raison d'une erreur lors du déploiement.",
-        "it": "I problemi riportati dall'adattatore checker sono stati fissati.\nRilasciare 0.1.1 è stato rilasciato di nuovo a causa di errore durante la distribuzione.",
-        "es": "Se han solucionado las cuestiones comunicadas por el control del adaptador.\nEl lanzamiento 0.1.1 ha sido lanzado de nuevo debido al error durante el despliegue.",
-        "pl": "Doniesienia o problemach doniesionych przez kontrolera adaptera zostały ustalone.\nWersja 0.1.1 została wydana ponownie z powodu błędu.",
-        "uk": "Виправлено випуски, які повідомляються перевірником адаптера.\nВипущено повторно через помилку під час розгортання.",
-        "zh-cn": "适应检查员所报告的问题已经确定。.\n由于部署期间出现错误,释放了1,0.1号。."
       }
     },
     "titleLang": {
