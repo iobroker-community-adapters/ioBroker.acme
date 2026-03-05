@@ -97,7 +97,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### 2.1.0 (2026-03-05)
+
+### **WORK IN PROGRESS**
+- (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (lubepi) Added support for Netcup DNS-01 challenge 
 - (@GermanBluefox) Optimisations on log output and error handling
