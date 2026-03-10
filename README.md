@@ -97,7 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.0.1 (2026-03-10)
 - (@GermanBluefox) Correcting configuration dialog
 
 ### 3.0.0 (2026-03-05)
@@ -119,10 +119,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### 1.0.5 (2024-12-08)
 
 - (@GermanBluefox) Corrected error with admin 7.4.3
-
-### 1.0.3 (2024-11-27)
-
-- (@GermanBluefox) Migrated GUI for admin 7 (one more time)
 
 ## License
 

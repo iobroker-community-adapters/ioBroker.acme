@@ -1,4 +1,8 @@
 # Older changes
+## 1.0.3 (2024-11-27)
+
+- (@GermanBluefox) Migrated GUI for admin 7 (one more time)
+
 ## 1.0.1 (2024-07-06)
 
 - (mcm1957) Adapter requires node.js >= 18 and js-controller >= 5 now
