@@ -1,1 +1,0 @@
-import{C as e}from"./ConfigCustomAcmeSet__loadShare__prop_mf_2_types__loadShare__.mjs-DBgD3DWL.js";import{g as o}from"./ConfigCustomAcmeSet__loadShare__react__loadShare__.mjs_commonjs-proxy-A95u4yVX.js";const a=o(e);export{a as r};

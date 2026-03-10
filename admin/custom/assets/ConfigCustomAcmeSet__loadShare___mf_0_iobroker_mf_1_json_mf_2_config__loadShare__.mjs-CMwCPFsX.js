@@ -1,0 +1,1 @@
+import{i as s}from"./runtimeInit-DPFUX83k.js";const t=s.then(e=>e.loadShare("@iobroker/json-config",{customShareInfo:{shareConfig:{singleton:!0,strictVersion:!1,requiredVersion:"*"}}})),o=await t.then(e=>typeof e=="function"?e():e),r=o;o.__esModule&&o.default;export{r as _};
