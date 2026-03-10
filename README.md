@@ -97,6 +97,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Correcting configuration dialog
+
 ### 3.0.0 (2026-03-05)
 - (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
 - (copilot) Adapter requires admin >= 7.7.22 now
