@@ -337,6 +337,7 @@
           "i18n": true,
           "url": "custom/customComponents.js",
           "name": "ConfigCustomAcmeSet/Components/AcmeComponent",
+          "bundlerType": "module",
           "xs": 12,
           "sm": 12,
           "md": 8,

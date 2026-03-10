@@ -1,0 +1,1 @@
+const i="__mf_init____mf__virtual/ConfigCustomAcmeSet__mf_v__runtimeInit__mf_v__.js__";if(!globalThis[i]){let _,t;const e=new Promise((o,s)=>{_=o,t=s});globalThis[i]={initPromise:e,initResolve:_,initReject:t}}const{initPromise:n,initResolve:l,initReject:m}=globalThis[i];export{l as a,n as i};

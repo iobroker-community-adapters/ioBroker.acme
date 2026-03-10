@@ -97,7 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### 3.0.1 (2026-03-10)
+### **WORK IN PROGRESS**
 - (@GermanBluefox) Correcting configuration dialog
 
 ### 3.0.0 (2026-03-05)

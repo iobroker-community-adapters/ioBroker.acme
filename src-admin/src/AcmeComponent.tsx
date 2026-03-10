@@ -74,7 +74,10 @@ export default class AcmeComponent extends ConfigGeneric<ConfigGenericProps, Acm
         }
 
         return (
-            <div style={{ width: '100%' }}>
+            <div
+                style={{ width: '100%' }}
+                id="acme-custom-component"
+            >
                 <h4>{I18n.t('custom_acme_title')}</h4>
                 <TableContainer
                     component={Paper}
