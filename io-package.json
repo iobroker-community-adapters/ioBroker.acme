@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "news": {
+      "3.0.2": {
+        "en": "Correcting configuration dialog\nAdded tests for GUI component",
+        "de": "Konfigurationsdialog korrigieren\nZusätzliche Tests für GUI-Komponente",
+        "ru": "Коррекция диалога конфигурации\nДобавлены тесты на компонент GUI",
+        "pt": "Corrigindo a janela de configuração\nAdicionados testes para o componente GUI",
+        "nl": "Configuratiedialoog corrigeren\nToegevoegde tests voor GUI-component",
+        "fr": "Correction de la boîte de dialogue de configuration\nAjout de tests pour le composant GUI",
+        "it": "Correggere la finestra di dialogo di configurazione\nTest aggiunti per componente GUI",
+        "es": "Diálogo de configuración de corrección\nPruebas adicionales para el componente GUI",
+        "pl": "Poprawianie okna konfiguracji\nDodano testy dla komponentu GUI",
+        "uk": "Виправлення конфігурації діалог\nДодано тести для компонента GUI",
+        "zh-cn": "校正配置对话框\n为 GUI 组件添加测试"
+      },
       "3.0.0": {
         "en": "BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. \nAdapter requires admin >= 7.7.22 now\nAdded support for Netcup DNS-01 challenge \nOptimisations on log output and error handling",
         "de": "BREAKING: DNS-01-Anmeldeinformationen werden jetzt verschlüsselt. Vielleicht müssen Sie sie nach dem Upgrade des Adapters erneut eingeben.\nAdapter benötigt admin >= 7.7.22 jetzt\nUnterstützung für Netcup DNS-01 Herausforderung hinzugefügt\nOptimierungen bei Log-Output und Fehlerbehandlung",
