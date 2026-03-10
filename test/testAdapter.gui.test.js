@@ -1,9 +1,9 @@
-import engineHelper = require('@iobroker/legacy-testing/engineHelper');
-import guiHelper = require('@iobroker/legacy-testing/guiHelper');
-import packageJson = require('../package.json');
+const engineHelper = require('@iobroker/legacy-testing/engineHelper');
+const guiHelper = require('@iobroker/legacy-testing/guiHelper');
+const packageJson = require('../package.json');
 
 const adapterName = packageJson.name.replace('iobroker.', '');
-let gPage: any;
+let gPage;
 const rootDir = `${__dirname}/../`;
 
 describe('test-admin-gui', () => {
@@ -18,7 +18,7 @@ describe('test-admin-gui', () => {
 
     it('Check admin server', async function () {
         this.timeout(15_000);
-        return new Promise<void>(resolve =>
+        return new Promise(resolve =>
             setTimeout(async () => {
                 await gPage.waitForSelector('#acme-custom-component', { timeout: 15_000 });
                 resolve();
