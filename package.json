@@ -54,7 +54,7 @@
     "colorette": "^2.0.20",
     "puppeteer": "^24.40.0",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.2"
   },
   "main": "build/main.js",
   "files": [
