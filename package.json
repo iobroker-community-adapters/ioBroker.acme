@@ -52,7 +52,7 @@
     "@types/node": "^25.3.3",
     "@types/x509.js": "^1.0.3",
     "colorette": "^2.0.20",
-    "puppeteer": "^24.39.1",
+    "puppeteer": "^24.40.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
   },
