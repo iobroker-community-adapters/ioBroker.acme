@@ -318,10 +318,17 @@ class AcmeAdapter extends utils.Adapter {
             if (accountObject) {
                 this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
 
-                if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
+                // Check if the saved account matches our current config
+                const native = accountObject.native as any;
+
+                if (native?.maintainerEmail !== this.config.maintainerEmail) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
+                } else if (native?.useStaging !== this.config.useStaging) {
+                    this.log.info(
+                        `Saved account was created for ${native?.useStaging ? 'staging' : 'production'} LE, but current config uses ${this.config.useStaging ? 'staging' : 'production'} — will recreate.`,
+                    );
                 } else {
-                    this.account = accountObject.native as AcmeAccount;
+                    this.account = native as AcmeAccount;
                 }
             }
 
@@ -344,7 +351,11 @@ class AcmeAdapter extends utils.Adapter {
                 this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
 
                 await this.extendObjectAsync(accountObjectId, {
-                    native: this.account,
+                    native: {
+                        ...this.account,
+                        maintainerEmail: this.config.maintainerEmail,
+                        useStaging: this.config.useStaging,
+                    },
                 });
             }
         }
