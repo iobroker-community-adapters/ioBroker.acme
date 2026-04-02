@@ -48,6 +48,7 @@ const keypairs_1 = __importDefault(require("@root/keypairs"));
 const csr_1 = __importDefault(require("@root/csr"));
 const pem_1 = __importDefault(require("@root/pem"));
 const x509_js_1 = __importDefault(require("x509.js"));
+const ACMEUtils = __importStar(require("@root/acme/utils.js"));
 const package_json_1 = __importDefault(require("../package.json"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
 const accountObjectId = 'account';
@@ -276,20 +277,44 @@ class AcmeAdapter extends utils.Adapter {
                 notify: this.acmeNotify.bind(this),
                 debug: true,
             });
-            // Patch ACME.js to handle orders that are already 'valid'.
+            // Patch ACME.js to handle orders that are already 'valid' or 'processing'.
             // This happens on LE Staging when reusing an account for the same domains.
             const acmeMod = acme_1.default;
             if (acmeMod && typeof acmeMod._finalizeOrder === 'function') {
                 const originalFinalize = acmeMod._finalizeOrder;
-                const adapter = this;
-                acmeMod._finalizeOrder = function (...args) {
+                acmeMod._finalizeOrder = async (...args) => {
                     const [me, opts, kid, order] = args;
                     if (order && order.status === 'valid') {
-                        adapter.log.info(`Order for ${opts.domains.join(', ')} is already valid on ACME server. Skipping finalization and redeeming certificate...`);
+                        this.log.info(`Order for ${opts.domains.join(', ')} is already valid on ACME server. Skipping finalization and redeeming certificate...`);
                         order._certificateUrl = order.certificate;
                         return acmeMod._redeemCert(me, opts, kid, order);
                     }
-                    return originalFinalize.apply(this, args);
+                    if (order && order.status === 'processing') {
+                        this.log.info(`Order for ${opts.domains.join(', ')} is currently processing on ACME server. Waiting for certificate issuance...`);
+                        let currentOrder = order;
+                        let attempts = 0;
+                        while (currentOrder.status === 'processing' && attempts < 24) {
+                            // wait up to 2 mins
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                            attempts++;
+                            this.log.debug(`Polling order status (attempt ${attempts})...`);
+                            const resp = await ACMEUtils._jwsRequest(me, {
+                                accountKey: opts.accountKey,
+                                url: currentOrder._orderUrl || order._orderUrl,
+                                protected: { kid: kid },
+                                payload: Buffer.from(''),
+                            });
+                            currentOrder = resp.body;
+                            currentOrder._orderUrl = order._orderUrl;
+                        }
+                        if (currentOrder.status === 'valid') {
+                            this.log.info(`Order is now valid. Redeeming certificate...`);
+                            currentOrder._certificateUrl = currentOrder.certificate;
+                            return acmeMod._redeemCert(me, opts, kid, currentOrder);
+                        }
+                        throw new Error(`Order ended up in unexpected status during polling: ${currentOrder.status}`);
+                    }
+                    return originalFinalize.apply(acmeMod, args);
                 };
             }
             // init() must run FIRST so that _canCheck is populated (dns-01, http-01).

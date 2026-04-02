@@ -11,6 +11,7 @@ import Keypairs from '@root/keypairs';
 import CSR from '@root/csr';
 import PEM from '@root/pem';
 import x509 from 'x509.js';
+import * as ACMEUtils from '@root/acme/utils.js';
 
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
@@ -295,22 +296,49 @@ class AcmeAdapter extends utils.Adapter {
                 debug: true,
             });
 
-            // Patch ACME.js to handle orders that are already 'valid'.
+            // Patch ACME.js to handle orders that are already 'valid' or 'processing'.
             // This happens on LE Staging when reusing an account for the same domains.
             const acmeMod = ACME as any;
             if (acmeMod && typeof acmeMod._finalizeOrder === 'function') {
                 const originalFinalize = acmeMod._finalizeOrder;
-                const adapter = this;
-                acmeMod._finalizeOrder = function (...args: any[]): any {
+                acmeMod._finalizeOrder = async (...args: any[]): Promise<any> => {
                     const [me, opts, kid, order] = args;
                     if (order && order.status === 'valid') {
-                        adapter.log.info(
+                        this.log.info(
                             `Order for ${opts.domains.join(', ')} is already valid on ACME server. Skipping finalization and redeeming certificate...`,
                         );
                         order._certificateUrl = order.certificate;
                         return acmeMod._redeemCert(me, opts, kid, order);
                     }
-                    return originalFinalize.apply(this, args);
+                    if (order && order.status === 'processing') {
+                        this.log.info(
+                            `Order for ${opts.domains.join(', ')} is currently processing on ACME server. Waiting for certificate issuance...`,
+                        );
+                        let currentOrder = order;
+                        let attempts = 0;
+                        while (currentOrder.status === 'processing' && attempts < 24) {
+                            // wait up to 2 mins
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                            attempts++;
+                            this.log.debug(`Polling order status (attempt ${attempts})...`);
+                            const resp = await ACMEUtils._jwsRequest(me, {
+                                accountKey: opts.accountKey,
+                                url: currentOrder._orderUrl || order._orderUrl,
+                                protected: { kid: kid },
+                                payload: Buffer.from(''),
+                            });
+                            currentOrder = resp.body;
+                            currentOrder._orderUrl = order._orderUrl;
+                        }
+
+                        if (currentOrder.status === 'valid') {
+                            this.log.info(`Order is now valid. Redeeming certificate...`);
+                            currentOrder._certificateUrl = currentOrder.certificate;
+                            return acmeMod._redeemCert(me, opts, kid, currentOrder);
+                        }
+                        throw new Error(`Order ended up in unexpected status during polling: ${currentOrder.status}`);
+                    }
+                    return originalFinalize.apply(acmeMod, args);
                 };
             }
 
