@@ -501,40 +501,57 @@ class AcmeAdapter extends utils.Adapter {
                     commonName: collection.commonName.split(',')[0].trim(),
                     altNames: domains,
                 });
-                cert = (await this.acmeClient.auto({
-                    csr,
-                    email: this.config.maintainerEmail,
-                    termsOfServiceAgreed: true,
-                    challengeCreateFn: async (authz, challenge, keyAuthorization) => {
-                        this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
-                        const handler = this.challenges[challenge.type];
-                        if (!handler) {
-                            throw new Error(`No handler for challenge type ${challenge.type}`);
-                        }
-                        const challengeData = {
-                            identifier: authz.identifier,
-                            token: challenge.token,
-                            keyAuthorization,
-                        };
-                        if (challenge.type === 'dns-01') {
-                            challengeData.dnsAuthorization = node_crypto_1.default
-                                .createHash('sha256')
-                                .update(keyAuthorization)
-                                .digest('base64url');
-                        }
-                        await handler.set(challengeData);
-                    },
-                    challengeRemoveFn: async (authz, challenge) => {
-                        this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
-                        const handler = this.challenges[challenge.type];
-                        if (handler) {
-                            await handler.remove({
+                // Create the order first to check its status.
+                // This prevents 403 errors if the order is already 'valid' on the ACME server.
+                this.log.debug(`Placing order for ${domains.join(', ')}...`);
+                let order = await this.acmeClient.createOrder({
+                    identifiers: domains.map(d => ({ type: 'dns', value: d })),
+                });
+                if (order.status === 'processing') {
+                    this.log.info(`Order for ${domains.join(', ')} is currently processing. Waiting...`);
+                    order = await this.acmeClient.waitForValidStatus(order);
+                }
+                if (order.status === 'valid') {
+                    this.log.info(`Order for ${domains.join(', ')} is already valid. Skipping challenges and redeeming certificate...`);
+                    cert = (await this.acmeClient.getCertificate(order)).toString();
+                }
+                else {
+                    // Use auto() to handle the pending challenge/finalization flow.
+                    cert = (await this.acmeClient.auto({
+                        csr,
+                        email: this.config.maintainerEmail,
+                        termsOfServiceAgreed: true,
+                        challengeCreateFn: async (authz, challenge, keyAuthorization) => {
+                            this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
+                            const handler = this.challenges[challenge.type];
+                            if (!handler) {
+                                throw new Error(`No handler for challenge type ${challenge.type}`);
+                            }
+                            const challengeData = {
                                 identifier: authz.identifier,
                                 token: challenge.token,
-                            });
-                        }
-                    },
-                })).toString();
+                                keyAuthorization,
+                            };
+                            if (challenge.type === 'dns-01') {
+                                challengeData.dnsAuthorization = node_crypto_1.default
+                                    .createHash('sha256')
+                                    .update(keyAuthorization)
+                                    .digest('base64url');
+                            }
+                            await handler.set(challengeData);
+                        },
+                        challengeRemoveFn: async (authz, challenge) => {
+                            this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
+                            const handler = this.challenges[challenge.type];
+                            if (handler) {
+                                await handler.remove({
+                                    identifier: authz.identifier,
+                                    token: challenge.token,
+                                });
+                            }
+                        },
+                    })).toString();
+                }
                 const serverKeyPem = serverKey.toString();
                 // Split bundle: first is leaf, everything is chain
                 const certs = cert.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g) || [cert];
