@@ -43,13 +43,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // you need to create an adapter
 const utils = __importStar(require("@iobroker/adapter-core"));
 const webserver_1 = require("@iobroker/webserver");
-const acme_1 = __importDefault(require("acme"));
-const keypairs_1 = __importDefault(require("@root/keypairs"));
-const csr_1 = __importDefault(require("@root/csr"));
-const pem_1 = __importDefault(require("@root/pem"));
+const acme = __importStar(require("acme-client"));
+const node_crypto_1 = __importDefault(require("node:crypto"));
 const x509_js_1 = __importDefault(require("x509.js"));
-const ACMEUtils = __importStar(require("@root/acme/utils.js"));
-const package_json_1 = __importDefault(require("../package.json"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
 const accountObjectId = 'account';
 // Renew 7 days before expiry
@@ -60,7 +56,7 @@ class AcmeAdapter extends utils.Adapter {
     toShutdown;
     donePortCheck;
     certManager;
-    acme = null;
+    acmeClient = null;
     stoppedAdapters;
     /**
      * Safely extract an error message from an unknown error value.
@@ -116,6 +112,7 @@ class AcmeAdapter extends utils.Adapter {
             }
         }
         this.log.debug(`config: ${JSON.stringify(safeConfig)}`);
+        acme.setLogger((message) => this.log.debug(`acme-client: ${message}`));
         this.certManager = new webserver_1.CertificateManager({ adapter: this });
         if (!this.config?.collections?.length) {
             this.terminate('No collections configured - nothing to order');
@@ -260,78 +257,13 @@ class AcmeAdapter extends utils.Adapter {
             }
         }
     }
-    acmeNotify(ev, msg) {
-        const logLevel = ev === 'error' ? this.log.error : ev === 'warning' ? this.log.warn : this.log.debug;
-        logLevel(`ACMENotify - ${ev}: ${JSON.stringify(msg)}`);
-    }
     async initAcme() {
-        if (!this.acme) {
+        if (!this.acmeClient) {
             // Doesn't exist yet, actually do init
             const directoryUrl = this.config.useStaging
-                ? 'https://acme-staging-v02.api.letsencrypt.org/directory'
-                : 'https://acme-v02.api.letsencrypt.org/directory';
+                ? acme.directory.letsencrypt.staging
+                : acme.directory.letsencrypt.production;
             this.log.debug(`Using URL: ${directoryUrl}`);
-            this.acme = acme_1.default.create({
-                maintainerEmail: this.config.maintainerEmail,
-                packageAgent: `${package_json_1.default.name}/${package_json_1.default.version}`,
-                notify: this.acmeNotify.bind(this),
-                debug: true,
-            });
-            // Patch ACME.js to handle orders that are already 'valid' or 'processing'.
-            // This happens on LE Staging when reusing an account for the same domains.
-            const acmeMod = acme_1.default;
-            if (acmeMod && typeof acmeMod._finalizeOrder === 'function') {
-                const originalFinalize = acmeMod._finalizeOrder;
-                acmeMod._finalizeOrder = async (...args) => {
-                    const [me, opts, kid, order] = args;
-                    if (order && order.status === 'valid') {
-                        this.log.info(`Order for ${opts.domains.join(', ')} is already valid on ACME server. Skipping finalization and redeeming certificate...`);
-                        order._certificateUrl = order.certificate;
-                        return acmeMod._redeemCert(me, opts, kid, order);
-                    }
-                    if (order && order.status === 'processing') {
-                        this.log.info(`Order for ${opts.domains.join(', ')} is currently processing on ACME server. Waiting for certificate issuance...`);
-                        let currentOrder = order;
-                        let attempts = 0;
-                        while (currentOrder.status === 'processing' && attempts < 24) {
-                            // wait up to 2 mins
-                            await new Promise(resolve => setTimeout(resolve, 5000));
-                            attempts++;
-                            this.log.debug(`Polling order status (attempt ${attempts})...`);
-                            const resp = await ACMEUtils._jwsRequest(me, {
-                                accountKey: opts.accountKey,
-                                url: currentOrder._orderUrl || order._orderUrl,
-                                protected: { kid: kid },
-                                payload: Buffer.from(''),
-                            });
-                            currentOrder = resp.body;
-                            currentOrder._orderUrl = order._orderUrl;
-                        }
-                        if (currentOrder.status === 'valid') {
-                            this.log.info(`Order is now valid. Redeeming certificate...`);
-                            currentOrder._certificateUrl = currentOrder.certificate;
-                            return acmeMod._redeemCert(me, opts, kid, currentOrder);
-                        }
-                        throw new Error(`Order ended up in unexpected status during polling: ${currentOrder.status}`);
-                    }
-                    return originalFinalize.apply(acmeMod, args);
-                };
-            }
-            // init() must run FIRST so that _canCheck is populated (dns-01, http-01).
-            // Only AFTER that we set skipChallengeTest, which skips the actual
-            // DNS verification but still allows the dry-run to recognise dns-01.
-            await this.acme.init(directoryUrl);
-            // If any challenge plugin signals that it handles DNS verification
-            // internally (e.g. by polling authoritative + public resolvers in
-            // set()), skip the ACME library's own pre-flight DNS check which
-            // uses the OS system resolver and may fail due to negative caching.
-            for (const challenge of Object.values(this.challenges)) {
-                if (challenge.skipChallengeTest) {
-                    this.acme.skipChallengeTest = true;
-                    this.log.debug('ACME skipChallengeTest=true (challenge plugin handles DNS verification internally)');
-                    break;
-                }
-            }
             // Try and load a saved object
             const accountObject = await this.getObjectAsync(accountObjectId);
             if (accountObject) {
@@ -348,19 +280,42 @@ class AcmeAdapter extends utils.Adapter {
                     this.account = native;
                 }
             }
+            let accountKeyPem;
+            if (this.account.key) {
+                this.log.debug('Converting existing account key to PEM...');
+                try {
+                    // acme-client expects PEM, convert from JWK if needed
+                    accountKeyPem = node_crypto_1.default
+                        .createPrivateKey({
+                        key: this.account.key,
+                        format: 'jwk',
+                    })
+                        .export({
+                        type: 'pkcs8',
+                        format: 'pem',
+                    });
+                }
+                catch (err) {
+                    this.log.error(`Failed to convert account key: ${AcmeAdapter.getErrorMessage(err)}`);
+                    this.account = { full: null, key: null };
+                }
+            }
+            if (!accountKeyPem) {
+                this.log.info('Generating new account key...');
+                accountKeyPem = await acme.crypto.createPrivateKey();
+                // Store as JWK for compatibility with previous versions if they were to roll back,
+                // although we are moving forward to acme-client.
+                this.account.key = node_crypto_1.default.createPrivateKey(accountKeyPem).export({ format: 'jwk' });
+            }
+            this.acmeClient = new acme.Client({
+                directoryUrl,
+                accountKey: accountKeyPem,
+            });
             if (!this.account.full) {
                 this.log.info('Registering new ACME account...');
-                // Register a new account
-                const accountKeypair = await keypairs_1.default.generate({
-                    kty: 'EC',
-                    format: 'jwk',
-                });
-                this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
-                this.account.key = accountKeypair.private;
-                this.account.full = await this.acme.accounts.create({
-                    subscriberEmail: this.config.maintainerEmail,
-                    agreeToTerms: true,
-                    accountKey: this.account.key,
+                this.account.full = await this.acmeClient.createAccount({
+                    termsOfServiceAgreed: true,
+                    contact: [`mailto:${this.config.maintainerEmail}`],
                 });
                 this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
                 await this.extendObjectAsync(accountObjectId, {
@@ -535,64 +490,83 @@ class AcmeAdapter extends utils.Adapter {
         if (create) {
             // stopAdaptersOnSamePort can be called many times as has its own checks to prevent unnecessary action.
             await this.stopAdaptersOnSamePort();
-            const serverKeypair = await keypairs_1.default.generate({ kty: 'RSA', format: 'jwk' });
-            const serverPem = await keypairs_1.default.export({ jwk: serverKeypair.private });
-            const serverKey = await keypairs_1.default.import({ pem: serverPem });
-            const csrDer = await csr_1.default.csr({
-                jwk: serverKey,
-                domains,
-                encoding: 'der',
-            });
-            const csr = pem_1.default.packBlock({
-                type: 'CERTIFICATE REQUEST',
-                bytes: csrDer,
-            });
-            if (!this.acme || !this.account.full || !this.account.key) {
+            if (!this.acmeClient || !this.account.full || !this.account.key) {
                 this.log.error('ACME client not initialized');
                 return;
             }
-            let pems;
+            let cert;
             try {
-                pems = await this.acme.certificates.create({
-                    account: this.account.full,
-                    accountKey: this.account.key,
-                    csr,
-                    domains,
-                    challenges: this.challenges,
+                // Generate CSR
+                const [serverKey, csr] = await acme.crypto.createCsr({
+                    commonName: collection.commonName.split(',')[0].trim(),
+                    altNames: domains,
                 });
-            }
-            catch (err) {
-                this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${AcmeAdapter.getErrorMessage(err)}`);
-            }
-            this.log.debug('Done');
-            if (pems) {
-                let collectionToSet = {
+                cert = (await this.acmeClient.auto({
+                    csr,
+                    email: this.config.maintainerEmail,
+                    termsOfServiceAgreed: true,
+                    challengeCreateFn: async (authz, challenge, keyAuthorization) => {
+                        this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
+                        const handler = this.challenges[challenge.type];
+                        if (!handler) {
+                            throw new Error(`No handler for challenge type ${challenge.type}`);
+                        }
+                        const challengeData = {
+                            identifier: authz.identifier,
+                            token: challenge.token,
+                            keyAuthorization,
+                        };
+                        if (challenge.type === 'dns-01') {
+                            challengeData.dnsAuthorization = node_crypto_1.default
+                                .createHash('sha256')
+                                .update(keyAuthorization)
+                                .digest('base64url');
+                        }
+                        await handler.set(challengeData);
+                    },
+                    challengeRemoveFn: async (authz, challenge) => {
+                        this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
+                        const handler = this.challenges[challenge.type];
+                        if (handler) {
+                            await handler.remove({
+                                identifier: authz.identifier,
+                                token: challenge.token,
+                            });
+                        }
+                    },
+                })).toString();
+                const serverKeyPem = serverKey.toString();
+                // Split bundle: first is leaf, everything is chain
+                const certs = cert.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g) || [cert];
+                const leafCert = certs[0];
+                const collectionToSet = {
                     from: this.namespace,
-                    key: serverPem,
-                    cert: pems.cert,
-                    chain: [pems.cert, pems.chain],
+                    key: serverKeyPem,
+                    cert: leafCert,
+                    chain: certs,
                     domains,
                     staging: this.config.useStaging,
                     tsExpires: 0,
                 };
                 // Decode certificate to get expiry.
-                // Kind of handy that this happens to verify certificate looks good too.
                 try {
-                    const crt = x509_js_1.default.parseCert(collectionToSet.cert.toString());
+                    const crt = x509_js_1.default.parseCert(leafCert);
                     this.log.debug(`New certs notBefore ${crt.notBefore} notAfter ${crt.notAfter}`);
                     collectionToSet.tsExpires = Date.parse(crt.notAfter);
                 }
                 catch {
                     this.log.error(`Certificate returned for ${collection.id} looks invalid - not saving`);
-                    collectionToSet = null;
+                    return;
                 }
-                if (collectionToSet) {
-                    this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
-                    // Save it
-                    await this.certManager?.setCollection(collection.id, collectionToSet);
-                    this.log.info(`Collection ${collection.id} order success`);
-                }
+                this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
+                // Save it
+                await this.certManager?.setCollection(collection.id, collectionToSet);
+                this.log.info(`Collection ${collection.id} order success`);
             }
+            catch (err) {
+                this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${AcmeAdapter.getErrorMessage(err)}`);
+            }
+            this.log.debug('Done');
         }
     }
 }
