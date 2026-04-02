@@ -294,6 +294,26 @@ class AcmeAdapter extends utils.Adapter {
                 notify: this.acmeNotify.bind(this),
                 debug: true,
             });
+
+            // Patch ACME.js to handle orders that are already 'valid'.
+            // This happens on LE Staging when reusing an account for the same domains.
+            const acmeMod = ACME as any;
+            if (acmeMod && typeof acmeMod._finalizeOrder === 'function') {
+                const originalFinalize = acmeMod._finalizeOrder;
+                const adapter = this;
+                acmeMod._finalizeOrder = function (...args: any[]): any {
+                    const [me, opts, kid, order] = args;
+                    if (order && order.status === 'valid') {
+                        adapter.log.info(
+                            `Order for ${opts.domains.join(', ')} is already valid on ACME server. Skipping finalization and redeeming certificate...`,
+                        );
+                        order._certificateUrl = order.certificate;
+                        return acmeMod._redeemCert(me, opts, kid, order);
+                    }
+                    return originalFinalize.apply(this, args);
+                };
+            }
+
             // init() must run FIRST so that _canCheck is populated (dns-01, http-01).
             // Only AFTER that we set skipChallengeTest, which skips the actual
             // DNS verification but still allows the dry-run to recognise dns-01.
