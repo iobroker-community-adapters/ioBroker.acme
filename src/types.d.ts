@@ -1,39 +1,3 @@
-// Module declarations for packages without type definitions
-declare module 'acme' {
-    const ACME: {
-        create(options: {
-            maintainerEmail: string;
-            packageAgent: string;
-            notify: (ev: string, msg: unknown) => void;
-            debug?: boolean;
-        }): any;
-    };
-    export = ACME;
-}
-
-declare module '@root/keypairs' {
-    const Keypairs: {
-        generate(options: { kty: string; format: string }): Promise<any>;
-        export(options: { jwk: any }): Promise<string>;
-        import(options: { pem: string }): Promise<any>;
-    };
-    export = Keypairs;
-}
-
-declare module '@root/csr' {
-    const CSR: {
-        csr(options: { jwk: any; domains: string[]; encoding: string }): Promise<any>;
-    };
-    export = CSR;
-}
-
-declare module '@root/pem' {
-    const PEM: {
-        packBlock(options: { type: string; bytes: any }): string;
-    };
-    export = PEM;
-}
-
 declare module 'x509.js' {
     const x509: {
         parseCert(cert: string): {
@@ -76,6 +40,7 @@ export interface AcmeAdapterConfig {
     dns01PpropagationDelay: number;
     dns01OcustomerNumber: string;
     dns01OapiPassword: string;
+    dns01Alias: string;
     collections: Array<{
         id: string;
         commonName: string;

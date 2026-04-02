@@ -181,6 +181,7 @@
     "dns01PpropagationDelay": 120000,
     "dns01OcustomerNumber": "",
     "dns01OapiPassword": "",
+    "dns01Alias": "",
     "collections": [
       {
         "id": "exampleDomain",

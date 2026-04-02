@@ -546,11 +546,20 @@ class AcmeAdapter extends utils.Adapter {
                     cert = (await this.acmeClient.getCertificate(order)).toString();
                 } else {
                     // Use auto() to handle the pending challenge/finalization flow.
+                    const challengePriority: string[] = [];
+                    if (this.config.http01Active) {
+                        challengePriority.push('http-01');
+                    }
+                    if (this.config.dns01Active) {
+                        challengePriority.push('dns-01');
+                    }
+
                     cert = (
                         await this.acmeClient.auto({
                             csr,
                             email: this.config.maintainerEmail,
                             termsOfServiceAgreed: true,
+                            challengePriority,
                             challengeCreateFn: async (authz, challenge, keyAuthorization) => {
                                 this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
                                 const handler = this.challenges[challenge.type];
@@ -559,12 +568,19 @@ class AcmeAdapter extends utils.Adapter {
                                 }
 
                                 const challengeData: any = {
-                                    identifier: authz.identifier,
+                                    identifier: { ...authz.identifier },
                                     token: challenge.token,
                                     keyAuthorization,
                                 };
 
                                 if (challenge.type === 'dns-01') {
+                                    if (this.config.dns01Alias) {
+                                        this.log.info(
+                                            `Using DNS Alias: _acme-challenge.${this.config.dns01Alias} instead of ${authz.identifier.value}`,
+                                        );
+                                        challengeData.identifier.value = this.config.dns01Alias;
+                                    }
+
                                     challengeData.dnsAuthorization = crypto
                                         .createHash('sha256')
                                         .update(keyAuthorization)
@@ -577,10 +593,14 @@ class AcmeAdapter extends utils.Adapter {
                                 this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
                                 const handler = this.challenges[challenge.type];
                                 if (handler) {
-                                    await handler.remove({
-                                        identifier: authz.identifier,
+                                    const removeData: any = {
+                                        identifier: { ...authz.identifier },
                                         token: challenge.token,
-                                    });
+                                    };
+                                    if (challenge.type === 'dns-01' && this.config.dns01Alias) {
+                                        removeData.identifier.value = this.config.dns01Alias;
+                                    }
+                                    await handler.remove(removeData);
                                 }
                             },
                         })

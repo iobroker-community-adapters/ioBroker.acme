@@ -288,6 +288,18 @@
           "lg": 4,
           "xl": 4,
           "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-netcup'"
+        },
+        "dns01Alias": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Alias",
+          "help": "Optional: If set, use this domain for DNS-01 challenges (CNAME alias).",
+          "xs": 12,
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "xl": 4,
+          "hidden": "!data.dns01Active"
         }
       }
     },
