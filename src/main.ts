@@ -22,7 +22,6 @@ const renewWindow = 60 * 60 * 24 * 7 * 1000;
 interface AcmeAccount {
     full: Record<string, any> | null;
     key: Record<string, any> | null;
-    account?: string; // URL from older acme.js versions
 }
 
 interface ChallengeHandler {
@@ -312,26 +311,24 @@ class AcmeAdapter extends utils.Adapter {
                 this.account.key = crypto.createPrivateKey(accountKeyPem).export({ format: 'jwk' }) as any;
             }
 
-            // Identify the account URL (either from new 'full' object or legacy 'account' field)
-            const accountUrl = this.account.full?.url || this.account.account;
-
             this.acmeClient = new acme.Client({
                 directoryUrl,
                 accountKey: accountKeyPem,
-                accountUrl,
+                accountUrl: this.account.full?.url,
             });
 
             // Always call createAccount. It's idempotent and ensures our client has the URL set.
-            // If the account already exists, it will just return the existing data.
-            this.log.info('Ensuring ACME account is registered...');
+            // If the account already exists (e.g. legacy acme.js), it will just return the existing data.
+            this.log.info('Synchronizing ACME account...');
+            const accountUrlBefore = this.account.full?.url;
             this.account.full = await this.acmeClient.createAccount({
                 termsOfServiceAgreed: true,
                 contact: [`mailto:${this.config.maintainerEmail}`],
             });
-            this.log.debug(`Account linked: ${JSON.stringify(this.account.full)}`);
+            this.log.debug(`Account synchronized: ${this.account.full.url}`);
 
-            if (accountUrl !== this.account.full.url) {
-                this.log.info('Account URL updated or first-time registration complete. Saving...');
+            if (accountUrlBefore !== this.account.full.url) {
+                this.log.info('Account state updated or first-time registration complete. Saving...');
                 await this.extendObjectAsync(accountObjectId, {
                     native: {
                         ...this.account,
