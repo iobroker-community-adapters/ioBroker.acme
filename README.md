@@ -56,7 +56,7 @@ Example scenarios:
 
     Solution:
 
-    - Configure ACME adapter to liston on port 80.
+    - Configure ACME adapter to listen on port 80.
     - Configure the DNS name of the desired certificate common name to resolve to the public address of the IoB host.
 
 3. Scenario 1 & 2 are impossible because another service is running on port 80 of the publicly reachable IP address.
@@ -89,7 +89,7 @@ Various DNS-01 challenge plugins are implemented for popular domain hosting plat
 
 #### References
 
-See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
+See [acme-client](https://www.npmjs.com/package/acme-client) for implementation details of ACME account/order handling.
 
 <!--
     Placeholder for the next version (at the beginning of the line):
@@ -102,7 +102,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 - (@GermanBluefox) Added tests for GUI component
 
 ### 3.0.0 (2026-03-05)
-- (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
+- (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the adapter.
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (lubepi) Added support for Netcup DNS-01 challenge 
 - (@GermanBluefox) Optimisations on log output and error handling
@@ -110,7 +110,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### 2.0.0 (2026-02-12)
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
-- (@GermanBluefox) Adater was migrated to TypeScript and vite
+- (@GermanBluefox) Adapter was migrated to TypeScript and vite
 
 ### 1.0.6 (2024-12-27)
 

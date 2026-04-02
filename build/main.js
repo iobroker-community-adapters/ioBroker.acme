@@ -86,18 +86,21 @@ class AcmeAdapter extends utils.Adapter {
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      */
     onUnload(callback) {
-        try {
-            this.log.debug('Cleaning up resources...');
-            for (const challenge of this.toShutdown) {
-                challenge.shutdown();
+        void (async () => {
+            try {
+                this.log.debug('Cleaning up resources...');
+                for (const challenge of this.toShutdown) {
+                    challenge.shutdown();
+                }
+                await this.restoreAdaptersOnSamePort();
             }
-        }
-        catch {
-            // ignore
-        }
-        finally {
-            callback();
-        }
+            catch (err) {
+                this.log.warn(`Error during unload cleanup: ${AcmeAdapter.getErrorMessage(err)}`);
+            }
+            finally {
+                callback();
+            }
+        })();
     }
     /**
      * Is called when databases are connected and adapter received configuration.
@@ -144,9 +147,12 @@ class AcmeAdapter extends utils.Adapter {
         try {
             const collections = await this.certManager.getAllCollections();
             if (collections) {
+                const configuredCollectionIds = new Set(this.config.collections.map(c => c.id));
                 this.log.debug(`existingCollectionIds: ${JSON.stringify(Object.keys(collections))}`);
                 for (const [collectionId, collection] of Object.entries(collections)) {
-                    if (collection.from === this.namespace && collection.tsExpires < Date.now()) {
+                    if (collection.from === this.namespace &&
+                        !configuredCollectionIds.has(collectionId) &&
+                        collection.tsExpires < Date.now()) {
                         this.log.info(`Removing expired and de-configured collection ${collectionId}`);
                         await this.certManager.delCollection(collectionId);
                     }
@@ -264,10 +270,11 @@ class AcmeAdapter extends utils.Adapter {
                 ? acme.directory.letsencrypt.staging
                 : acme.directory.letsencrypt.production;
             this.log.debug(`Using URL: ${directoryUrl}`);
+            let accountNeedsSave = false;
             // Try and load a saved object
             const accountObject = await this.getObjectAsync(accountObjectId);
             if (accountObject) {
-                this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
+                this.log.debug('Loaded existing ACME account object');
                 // Check if the saved account matches our current config
                 const native = accountObject.native;
                 if (native?.maintainerEmail !== this.config.maintainerEmail) {
@@ -281,10 +288,19 @@ class AcmeAdapter extends utils.Adapter {
                 }
             }
             let accountKeyPem;
-            if (this.account.key) {
-                this.log.debug('Converting existing account key to PEM...');
+            if (this.account.keyEnc) {
+                this.log.debug('Decrypting persisted ACME account key...');
                 try {
-                    // acme-client expects PEM, convert from JWK if needed
+                    accountKeyPem = this.decrypt(this.account.keyEnc);
+                }
+                catch (err) {
+                    this.log.error(`Failed to decrypt account key: ${AcmeAdapter.getErrorMessage(err)}`);
+                    this.account = { full: null, key: null, keyEnc: null };
+                }
+            }
+            else if (this.account.key) {
+                this.log.debug('Converting legacy account key to PEM...');
+                try {
                     accountKeyPem = node_crypto_1.default
                         .createPrivateKey({
                         key: this.account.key,
@@ -294,18 +310,17 @@ class AcmeAdapter extends utils.Adapter {
                         type: 'pkcs8',
                         format: 'pem',
                     });
+                    accountNeedsSave = true;
                 }
                 catch (err) {
-                    this.log.error(`Failed to convert account key: ${AcmeAdapter.getErrorMessage(err)}`);
+                    this.log.error(`Failed to convert legacy account key: ${AcmeAdapter.getErrorMessage(err)}`);
                     this.account = { full: null, key: null };
                 }
             }
             if (!accountKeyPem) {
                 this.log.info('Generating new account key...');
                 accountKeyPem = await acme.crypto.createPrivateKey();
-                // Store as JWK for compatibility with previous versions if they were to roll back,
-                // although we are moving forward to acme-client.
-                this.account.key = node_crypto_1.default.createPrivateKey(accountKeyPem).export({ format: 'jwk' });
+                accountNeedsSave = true;
             }
             this.acmeClient = new acme.Client({
                 directoryUrl,
@@ -322,10 +337,15 @@ class AcmeAdapter extends utils.Adapter {
             });
             this.log.debug(`Account synchronized: ${this.account.full.url}`);
             if (accountUrlBefore !== this.account.full.url) {
+                accountNeedsSave = true;
+            }
+            if (accountNeedsSave) {
                 this.log.info('Account state updated or first-time registration complete. Saving...');
                 await this.extendObjectAsync(accountObjectId, {
                     native: {
-                        ...this.account,
+                        full: this.account.full,
+                        key: null,
+                        keyEnc: this.encrypt(accountKeyPem.toString()),
                         maintainerEmail: this.config.maintainerEmail,
                         useStaging: this.config.useStaging,
                     },
@@ -495,7 +515,7 @@ class AcmeAdapter extends utils.Adapter {
         if (create) {
             // stopAdaptersOnSamePort can be called many times as has its own checks to prevent unnecessary action.
             await this.stopAdaptersOnSamePort();
-            if (!this.acmeClient || !this.account.full || !this.account.key) {
+            if (!this.acmeClient || !this.account.full) {
                 this.log.error('ACME client not initialized');
                 return;
             }
@@ -605,7 +625,7 @@ class AcmeAdapter extends utils.Adapter {
                     this.log.error(`Certificate returned for ${collection.id} looks invalid - not saving`);
                     return;
                 }
-                this.log.debug(`${collection.id} is ${JSON.stringify(collectionToSet)}`);
+                this.log.debug(`Prepared certificate collection ${collection.id} (domains: ${domains.length}, chainParts: ${certs.length})`);
                 // Save it
                 await this.certManager?.setCollection(collection.id, collectionToSet);
                 this.log.info(`Collection ${collection.id} order success`);

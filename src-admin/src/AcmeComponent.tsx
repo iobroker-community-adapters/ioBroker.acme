@@ -9,13 +9,6 @@ import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 const styles: { [name: string]: React.CSSProperties } = {
-    table: {
-        minWidth: 400,
-    },
-    header: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
     ok: {
         color: '#0ba20b',
     },
@@ -100,9 +93,6 @@ export default class AcmeComponent extends ConfigGeneric<ConfigGenericProps, Acm
                         <TableBody>
                             {this.state.collections &&
                                 Object.keys(this.state.collections).map(id => {
-                                    if (!this.state.collections) {
-                                        return null;
-                                    }
                                     const collection = this.state.collections[id];
                                     let status;
                                     if (new Date(collection.tsExpires).getTime() > Date.now() && !collection.staging) {
