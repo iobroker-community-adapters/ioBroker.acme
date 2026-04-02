@@ -307,17 +307,23 @@ class AcmeAdapter extends utils.Adapter {
                 // although we are moving forward to acme-client.
                 this.account.key = node_crypto_1.default.createPrivateKey(accountKeyPem).export({ format: 'jwk' });
             }
+            // Identify the account URL (either from new 'full' object or legacy 'account' field)
+            const accountUrl = this.account.full?.url || this.account.account;
             this.acmeClient = new acme.Client({
                 directoryUrl,
                 accountKey: accountKeyPem,
+                accountUrl,
             });
-            if (!this.account.full) {
-                this.log.info('Registering new ACME account...');
-                this.account.full = await this.acmeClient.createAccount({
-                    termsOfServiceAgreed: true,
-                    contact: [`mailto:${this.config.maintainerEmail}`],
-                });
-                this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
+            // Always call createAccount. It's idempotent and ensures our client has the URL set.
+            // If the account already exists, it will just return the existing data.
+            this.log.info('Ensuring ACME account is registered...');
+            this.account.full = await this.acmeClient.createAccount({
+                termsOfServiceAgreed: true,
+                contact: [`mailto:${this.config.maintainerEmail}`],
+            });
+            this.log.debug(`Account linked: ${JSON.stringify(this.account.full)}`);
+            if (accountUrl !== this.account.full.url) {
+                this.log.info('Account URL updated or first-time registration complete. Saving...');
                 await this.extendObjectAsync(accountObjectId, {
                     native: {
                         ...this.account,
