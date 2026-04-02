@@ -571,6 +571,11 @@ class AcmeAdapter extends utils.Adapter {
                                     identifier: { ...authz.identifier },
                                     token: challenge.token,
                                     keyAuthorization,
+                                    // Maintain compatibility with older challenge handlers that expect a nested challenge object
+                                    challenge: {
+                                        token: challenge.token,
+                                        keyAuthorization,
+                                    },
                                 };
 
                                 if (challenge.type === 'dns-01') {
@@ -589,13 +594,17 @@ class AcmeAdapter extends utils.Adapter {
 
                                 await handler.set(challengeData);
                             },
-                            challengeRemoveFn: async (authz, challenge) => {
+                            challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
                                 this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
                                 const handler = this.challenges[challenge.type];
                                 if (handler) {
                                     const removeData: any = {
                                         identifier: { ...authz.identifier },
                                         token: challenge.token,
+                                        challenge: {
+                                            token: challenge.token,
+                                            keyAuthorization,
+                                        },
                                     };
                                     if (challenge.type === 'dns-01' && this.config.dns01Alias) {
                                         removeData.identifier.value = this.config.dns01Alias;

@@ -155,18 +155,6 @@
           "validatorErrorText": "DNS-01 module is mandatory",
           "validatorNoSaveOnError": true
         },
-        "_todo": {
-          "newLine": true,
-          "type": "header",
-          "size": 1,
-          "text": "Todo!",
-          "xs": 12,
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "xl": 12,
-          "hidden": "data.dns01Module != 'acme-dns-01-route53'"
-        },
         "dns01OcustomerNumber": {
           "newLine": true,
           "type": "text",
