@@ -121,6 +121,37 @@ Available module choices in the adapter UI:
 - Vultr
 - Route53 (AWS)
 
+##### DNS-01 provider smoke check (current dependencies)
+
+Smoke test date: 2026-04-03
+
+Test scope:
+
+- Module can be loaded
+- `create()` works with adapter-like config
+- `init({ request })` works where available
+- `set/remove` were called with dummy credentials and synthetic challenge data
+
+Interpretation:
+
+- `Auth/API error` is expected with dummy credentials and means the provider path is functionally reached.
+- This is not a live end-to-end verification against real DNS zones.
+
+| Provider package | Load + create | init | set/remove with dummy credentials | Result |
+| --- | --- | --- | --- | --- |
+| acme-dns-01-cloudflare | OK | OK | Bad Request | Reachable (auth/API path active) |
+| acme-dns-01-digitalocean | OK | OK | Error response (token/baseUrl/domains) | Reachable (auth/API path active) |
+| acme-dns-01-dnsimple | OK | OK | Error response (token/baseUrl/domains) | Reachable (auth/API path active) |
+| acme-dns-01-duckdns | OK | OK | Record not set/removed | Reachable (provider-level validation hit) |
+| acme-dns-01-gandi | OK | OK | set: response parse error, remove: OK | Partially reachable; keep under observation |
+| acme-dns-01-godaddy | OK | OK | UNABLE_TO_AUTHENTICATE | Reachable (auth/API path active) |
+| acme-dns-01-namecheap | OK | OK | API Error | Reachable (auth/API path active) |
+| acme-dns-01-namedotcom | OK | OK | Permission Denied | Reachable (auth/API path active) |
+| acme-dns-01-netcup | OK | OK | Netcup API rate-limit error (4013) | Reachable (API path active) |
+| acme-dns-01-vultr | OK | n/a | Record not set/removed | Reachable (provider-level validation hit) |
+
+For real production validation, test with valid credentials and a disposable domain/zone per provider.
+
 Note about Route53 (AWS):
 
 - The upstream package `acme-dns-01-route53` is incomplete.
