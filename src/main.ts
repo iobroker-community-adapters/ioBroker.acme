@@ -8,12 +8,14 @@ import * as utils from '@iobroker/adapter-core';
 import { CertificateManager, type CertificateCollection } from '@iobroker/webserver';
 import * as acme from 'acme-client';
 import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 import x509 from 'x509.js';
 
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
-import { computeDnsAuthorization, normalizeDnsAlias } from './lib/dns-01-utils';
+import { buildDnsChallengeData, normalizeDnsAlias } from './lib/dns-01-utils';
+import { create as createRoute53Challenge } from './lib/dns-01-route53';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -43,6 +45,7 @@ class AcmeAdapter extends utils.Adapter {
     private certManager: CertificateManager | undefined;
     private acmeClient: acme.Client | null = null;
     private stoppedAdapters: string[] | null | undefined;
+    private readonly dnsChallengeCache: Record<string, any>;
 
     /**
      * Safely extract an error message from an unknown error value.
@@ -67,6 +70,7 @@ class AcmeAdapter extends utils.Adapter {
         this.challenges = {};
         this.toShutdown = [];
         this.donePortCheck = false;
+        this.dnsChallengeCache = {};
 
         this.on('ready', this.onReady.bind(this));
         this.on('unload', this.onUnload.bind(this));
@@ -81,6 +85,9 @@ class AcmeAdapter extends utils.Adapter {
                 this.log.debug('Cleaning up resources...');
                 for (const challenge of this.toShutdown) {
                     challenge.shutdown();
+                }
+                for (const key of Object.keys(this.dnsChallengeCache)) {
+                    delete this.dnsChallengeCache[key];
                 }
                 await this.restoreAdaptersOnSamePort();
             } catch (err) {
@@ -231,12 +238,17 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge: ChallengeHandler | undefined;
             try {
-                // Dynamic import - module name comes from config
-                const dns01Module = await import(this.config.dns01Module);
-                if (dns01Module.default) {
-                    thisChallenge = dns01Module.default.create(dns01Options);
+                // Route53 package on npm is incomplete, use internal provider implementation instead.
+                if (this.config.dns01Module === 'acme-dns-01-route53') {
+                    thisChallenge = createRoute53Challenge(dns01Options) as any;
                 } else {
-                    thisChallenge = dns01Module.create(dns01Options);
+                    // Dynamic import - module name comes from config
+                    const dns01Module = await import(this.config.dns01Module);
+                    if (dns01Module.default) {
+                        thisChallenge = dns01Module.default.create(dns01Options);
+                    } else {
+                        thisChallenge = dns01Module.create(dns01Options);
+                    }
                 }
             } catch (err) {
                 this.log.error(
@@ -261,6 +273,21 @@ class AcmeAdapter extends utils.Adapter {
                         'dns-01: propagationDelay set to 0 for Netcup (set() handles propagation internally)',
                     );
                 }
+
+                // Some acme-dns-01-* modules expect init({ request }) to inject HTTP helper.
+                if (typeof thisChallenge.init === 'function') {
+                    try {
+                        // eslint-disable-next-line @typescript-eslint/no-require-imports
+                        const rootRequest = require('@root/request');
+                        const request = promisify(rootRequest);
+                        await thisChallenge.init({ request });
+                    } catch (err) {
+                        this.log.warn(
+                            `dns-01 module '${this.config.dns01Module}' init() failed, trying without init: ${AcmeAdapter.getErrorMessage(err)}`,
+                        );
+                    }
+                }
+
                 this.challenges['dns-01'] = thisChallenge;
             }
         }
@@ -479,6 +506,52 @@ class AcmeAdapter extends utils.Adapter {
         return sorted1.every((val, idx) => val === sorted2[idx]);
     }
 
+    private getDnsChallengeCacheKey(authz: any, challenge: any): string {
+        return `${authz?.identifier?.value || ''}|${challenge?.token || ''}`;
+    }
+
+    private async getDnsZones(handler: any, dnsHost: string): Promise<string[]> {
+        if (!handler || typeof handler.zones !== 'function') {
+            return [];
+        }
+
+        try {
+            const zones = await handler.zones({ dnsHosts: [dnsHost] });
+            if (!Array.isArray(zones)) {
+                return [];
+            }
+            return zones.filter(zone => typeof zone === 'string');
+        } catch (err) {
+            this.log.debug(`dns-01 zones() lookup failed: ${AcmeAdapter.getErrorMessage(err)}`);
+            return [];
+        }
+    }
+
+    private async buildDnsChallengePayload(
+        handler: any,
+        authz: any,
+        challenge: any,
+        keyAuthorization: string,
+    ): Promise<any> {
+        const normalizedDnsAlias = normalizeDnsAlias(this.config.dns01Alias);
+        const identifierValue = normalizedDnsAlias || authz.identifier.value;
+        const dnsHost = `_acme-challenge.${identifierValue}`;
+
+        if (normalizedDnsAlias) {
+            this.log.info(`Using DNS Alias: ${dnsHost} instead of _acme-challenge.${authz.identifier.value}`);
+        }
+
+        const zones = await this.getDnsZones(handler, dnsHost);
+        return buildDnsChallengeData({
+            identifierValue,
+            identifierType: authz.identifier.type,
+            wildcard: authz.wildcard,
+            token: challenge.token,
+            keyAuthorization,
+            zones,
+        });
+    }
+
     async generateCollection(collection: { id: string; commonName: string; altNames: string }): Promise<void> {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
 
@@ -594,55 +667,57 @@ class AcmeAdapter extends utils.Adapter {
                                     throw new Error(`No handler for challenge type ${challenge.type}`);
                                 }
 
-                                const challengeData: any = {
-                                    identifier: { ...authz.identifier },
-                                    token: challenge.token,
-                                    keyAuthorization,
-                                    // Maintain compatibility with older challenge handlers that expect a nested challenge object
-                                    challenge: {
+                                if (challenge.type === 'dns-01') {
+                                    const challengeData = await this.buildDnsChallengePayload(
+                                        handler,
+                                        authz,
+                                        challenge,
+                                        keyAuthorization,
+                                    );
+                                    this.dnsChallengeCache[this.getDnsChallengeCacheKey(authz, challenge)] =
+                                        challengeData;
+                                    await handler.set(challengeData);
+                                } else {
+                                    const challengeData: any = {
+                                        identifier: { ...authz.identifier },
                                         token: challenge.token,
                                         keyAuthorization,
-                                    },
-                                };
-
-                                if (challenge.type === 'dns-01') {
-                                    const normalizedDnsAlias = normalizeDnsAlias(this.config.dns01Alias);
-                                    if (normalizedDnsAlias) {
-                                        this.log.info(
-                                            `Using DNS Alias: _acme-challenge.${normalizedDnsAlias} instead of ${authz.identifier.value}`,
-                                        );
-                                        challengeData.identifier.value = normalizedDnsAlias;
-                                    }
-
-                                    const dnsAuthorization = computeDnsAuthorization(keyAuthorization);
-                                    challengeData.dnsAuthorization = dnsAuthorization;
-                                    challengeData.challenge.dnsAuthorization = dnsAuthorization;
+                                        challenge: {
+                                            token: challenge.token,
+                                            keyAuthorization,
+                                        },
+                                    };
+                                    await handler.set(challengeData);
                                 }
-
-                                await handler.set(challengeData);
                             },
                             challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
                                 this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
                                 const handler = this.challenges[challenge.type];
                                 if (handler) {
-                                    const dnsAuthorization = computeDnsAuthorization(keyAuthorization);
-                                    const removeData: any = {
-                                        identifier: { ...authz.identifier },
-                                        token: challenge.token,
-                                        dnsAuthorization,
-                                        challenge: {
-                                            token: challenge.token,
-                                            keyAuthorization,
-                                            dnsAuthorization,
-                                        },
-                                    };
                                     if (challenge.type === 'dns-01') {
-                                        const normalizedDnsAlias = normalizeDnsAlias(this.config.dns01Alias);
-                                        if (normalizedDnsAlias) {
-                                            removeData.identifier.value = normalizedDnsAlias;
-                                        }
+                                        const cacheKey = this.getDnsChallengeCacheKey(authz, challenge);
+                                        const cached = this.dnsChallengeCache[cacheKey];
+                                        const removeData =
+                                            cached ||
+                                            (await this.buildDnsChallengePayload(
+                                                handler,
+                                                authz,
+                                                challenge,
+                                                keyAuthorization,
+                                            ));
+                                        await handler.remove(removeData);
+                                        delete this.dnsChallengeCache[cacheKey];
+                                    } else {
+                                        const removeData: any = {
+                                            identifier: { ...authz.identifier },
+                                            token: challenge.token,
+                                            challenge: {
+                                                token: challenge.token,
+                                                keyAuthorization,
+                                            },
+                                        };
+                                        await handler.remove(removeData);
                                     }
-                                    await handler.remove(removeData);
                                 }
                             },
                         })

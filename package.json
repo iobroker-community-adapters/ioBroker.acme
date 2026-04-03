@@ -22,6 +22,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@aws-sdk/client-route-53": "^3.1023.0",
     "@iobroker/adapter-core": "^3.3.2",
     "@iobroker/webserver": "^1.3.3",
     "acme-client": "^5.4.0",
@@ -34,7 +35,6 @@
     "acme-dns-01-namecheap": "^3.0.1",
     "acme-dns-01-namedotcom": "^3.0.1",
     "acme-dns-01-netcup": "^1.1.6",
-    "acme-dns-01-route53": "^0.0.1",
     "acme-dns-01-vultr": "^3.0.2",
     "x509.js": "^1.0.0"
   },

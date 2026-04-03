@@ -1,7 +1,7 @@
 const path = require('path');
 const crypto = require('node:crypto');
 const { tests } = require('@iobroker/testing');
-const { computeDnsAuthorization, normalizeDnsAlias } = require('../build/lib/dns-01-utils');
+const { buildDnsChallengeData, computeDnsAuthorization, normalizeDnsAlias } = require('../build/lib/dns-01-utils');
 
 // Run integration tests - See https://github.com/ioBroker/testing for a detailed explanation and further options
 tests.integration(path.join(__dirname, '..'), {
@@ -29,6 +29,30 @@ tests.integration(path.join(__dirname, '..'), {
                 const actual = computeDnsAuthorization(keyAuthorization);
                 if (actual !== expected) {
                     throw new Error('DNS authorization hash does not match expected value');
+                }
+            });
+
+            it('builds provider-compatible dns challenge payload', () => {
+                const payload = buildDnsChallengeData({
+                    identifierValue: 'sub.example.com',
+                    identifierType: 'dns',
+                    wildcard: false,
+                    token: 'tok',
+                    keyAuthorization: 'token.thumbprint',
+                    zones: ['example.com'],
+                });
+
+                if (payload.dnsHost !== '_acme-challenge.sub.example.com') {
+                    throw new Error('dnsHost mismatch');
+                }
+                if (payload.dnsZone !== 'example.com') {
+                    throw new Error('dnsZone mismatch');
+                }
+                if (payload.dnsPrefix !== '_acme-challenge.sub') {
+                    throw new Error('dnsPrefix mismatch');
+                }
+                if (!payload.challenge || payload.challenge.dnsAuthorization !== payload.dnsAuthorization) {
+                    throw new Error('challenge dnsAuthorization missing or inconsistent');
                 }
             });
         });

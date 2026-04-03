@@ -19,7 +19,19 @@ This adapter generates certificates using ACME challenges.
 
 The adapter starts periodically (default at midnight) and after configuration updates to generate any required certificates (new or soon to expire).
 
+### Scope
+
+This adapter currently targets the following scope:
+
+- Certificate Authority: **Let's Encrypt only**
+- ACME environment selection: **Staging** and **Production**
+- Key handling: automatic (no manual key type selection required)
+
+This scope is intentional to keep the adapter setup simple and robust.
+
 Currently, orders are processed with the Let's Encrypt certificate authority and thus are free of charge.
+
+The adapter attempts renewal starting **7 days before certificate expiry**.
 
 Certificate details are stored in a 'certificate collection' object which includes other relevant details such as expiry date, domains to be secured and private key.
 These objects are referenced by their collection ID.
@@ -27,6 +39,14 @@ These objects are referenced by their collection ID.
 Adapters which need certificates to secure their communications (e.g. [web adapter](https://www.npmjs.com/package/iobroker.web)) are able to load and utilise certificate collections.
 
 Storage and use are handled by an interface contained with the [core ioBroker controller](https://www.npmjs.com/package/iobroker.js-controller).
+
+### Quick setup checklist
+
+1. Set a valid maintainer email.
+2. Choose **Staging** first to validate challenge configuration.
+3. Configure either HTTP-01 or DNS-01 (or both).
+4. Configure at least one certificate collection.
+5. Switch to **Production** only after successful staging runs.
 
 ### ACME Challenges
 
@@ -87,6 +107,30 @@ Example scenarios:
 
 Various DNS-01 challenge plugins are implemented for popular domain hosting platforms.
 
+Available module choices in the adapter UI:
+
+- Cloudflare
+- DigitalOcean
+- DNSimple
+- DuckDNS
+- Gandi
+- GoDaddy
+- Namecheap
+- Name.com
+- Netcup
+- Vultr
+- Route53 (AWS)
+
+Note about Route53 (AWS):
+
+- The upstream package `acme-dns-01-route53` is incomplete.
+- For `acme-dns-01-route53` selection, this adapter uses an internal Route53 implementation.
+- Credentials mapping in adapter config:
+    - `DNS-01 Key` -> AWS Access Key ID
+    - `DNS-01 Secret` -> AWS Secret Access Key
+    - `DNS-01 Token` -> AWS Session Token (optional)
+- Alternatively, standard AWS environment credentials can be used.
+
 ##### DNS-01 Alias (CNAME)
 
 If your certificate domains are hosted in a different DNS setup than your ACME TXT records, you can use **DNS-01 Alias**.
@@ -111,6 +155,21 @@ Input format for **DNS-01 Alias** in adapter settings:
 
 - Enter only the domain part, for example `acme.example.net`
 - Do **not** include `_acme-challenge.` (it is added automatically)
+
+##### Additional DNS providers
+
+If your DNS provider is not directly supported, there are practical alternatives:
+
+1. **CNAME delegation to a supported provider**
+    - Keep your primary domain where it is.
+    - Delegate `_acme-challenge` via CNAME to a zone at a supported DNS provider.
+    - Use **DNS-01 Alias** in this adapter.
+
+2. **Manual DNS challenge workflow**
+    - Use an external/manual dns-01 handler (for example `acme-dns-01-cli`) where operationally acceptable.
+
+3. **Custom dns-01 provider module**
+    - The adapter challenge flow can be extended with additional provider modules implementing `init/zones/set/get/remove`.
 
 #### References
 
