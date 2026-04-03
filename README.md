@@ -136,6 +136,7 @@ Interpretation:
 
 - `Auth/API error` is expected with dummy credentials and means the provider path is functionally reached.
 - This is not a live end-to-end verification against real DNS zones.
+- This matrix intentionally covers `acme-dns-01-*` packages from `dependencies` only.
 
 | Provider package | Load + create | init | set/remove with dummy credentials | Result |
 | --- | --- | --- | --- | --- |
@@ -150,7 +151,62 @@ Interpretation:
 | acme-dns-01-netcup | OK | OK | Netcup API rate-limit error (4013) | Reachable (API path active) |
 | acme-dns-01-vultr | OK | n/a | Record not set/removed | Reachable (provider-level validation hit) |
 
+Internal provider checks (outside `acme-dns-01-*` package matrix):
+
+| Provider implementation | Load + create | init | set/remove with dummy credentials | Result |
+| --- | --- | --- | --- | --- |
+| internal dns-01-route53 | OK | OK | AWS token invalid (expected with dummy credentials) | Reachable (AWS API path active) |
+
 For real production validation, test with valid credentials and a disposable domain/zone per provider.
+
+##### Optional live provider tests (with real credentials)
+
+The repository now includes an optional test entrypoint for real provider credentials:
+
+- Script: `npm run test:providers:live`
+- Test file: `test/provider.live.js`
+- Activation: set environment variable `ACME_DNS_LIVE_CONFIG`
+
+`ACME_DNS_LIVE_CONFIG` points to a JSON file keyed by provider package name.
+
+Example:
+
+```json
+{
+    "acme-dns-01-cloudflare": {
+        "config": {
+            "token": "<cloudflare-api-token>"
+        },
+        "challenge": {
+            "dnsZone": "example.com",
+            "dnsPrefix": "_acme-challenge.live-test",
+            "dnsAuthorization": "test-value"
+        }
+    },
+    "acme-dns-01-godaddy": {
+        "config": {
+            "key": "<godaddy-key>",
+            "secret": "<godaddy-secret>"
+        },
+        "challenge": {
+            "dnsZone": "example.com",
+            "dnsPrefix": "_acme-challenge.live-test",
+            "dnsAuthorization": "test-value"
+        }
+    }
+}
+```
+
+Run example:
+
+```bash
+ACME_DNS_LIVE_CONFIG=./test/live-provider-config.example.json npm run test:providers:live
+```
+
+Recommendation:
+
+- Use a disposable zone/subdomain and low-privilege API credentials.
+- Keep this test optional and out of mandatory CI jobs.
 
 Note about Route53 (AWS):
 
