@@ -112,6 +112,7 @@ Available module choices in the adapter UI:
 - Cloudflare
 - DigitalOcean
 - DNSimple
+- deSEC
 - DuckDNS
 - Gandi
 - GoDaddy
@@ -119,6 +120,7 @@ Available module choices in the adapter UI:
 - Name.com
 - Netcup
 - Vultr
+- acme-dns (CNAME delegation)
 - Route53 (AWS)
 
 ##### DNS-01 provider smoke check (current dependencies)
@@ -143,6 +145,7 @@ Interpretation:
 | acme-dns-01-cloudflare | OK | OK | Bad Request | Reachable (auth/API path active) |
 | acme-dns-01-digitalocean | OK | OK | Error response (token/baseUrl/domains) | Reachable (auth/API path active) |
 | acme-dns-01-dnsimple | OK | OK | Error response (token/baseUrl/domains) | Reachable (auth/API path active) |
+| acme-dns-01-desec | OK | OK | Error response (token/baseUrl/domains) | Reachable (auth/API path active) |
 | acme-dns-01-duckdns | OK | OK | Record not set/removed | Reachable (provider-level validation hit) |
 | acme-dns-01-gandi | OK | OK | set: response parse error, remove: OK | Partially reachable; keep under observation |
 | acme-dns-01-godaddy | OK | OK | UNABLE_TO_AUTHENTICATE | Reachable (auth/API path active) |
@@ -156,6 +159,7 @@ Internal provider checks (outside `acme-dns-01-*` package matrix):
 | Provider implementation | Load + create | init | set/remove with dummy credentials | Result |
 | --- | --- | --- | --- | --- |
 | internal dns-01-route53 | OK | OK | AWS token invalid (expected with dummy credentials) | Reachable (AWS API path active) |
+| internal dns-01-acmedns | OK | OK | acme-dns update fails with dummy credentials (expected) | Reachable (acme-dns API path active) |
 
 For real production validation, test with valid credentials and a disposable domain/zone per provider.
 
@@ -217,6 +221,16 @@ Note about Route53 (AWS):
     - `DNS-01 Secret` -> AWS Secret Access Key
     - `DNS-01 Token` -> AWS Session Token (optional)
 - Alternatively, standard AWS environment credentials can be used.
+
+Note about acme-dns (CNAME delegation):
+
+- This adapter includes an internal `acme-dns` challenge implementation (`acme-dns-01-acmedns`).
+- Field mapping in adapter config:
+    - `DNS-01 Username` -> `X-Api-User`
+    - `DNS-01 Secret` -> `X-Api-Key`
+    - `DNS-01 Token` -> acme-dns `subdomain`
+    - `DNS-01 Base URL` -> optional API endpoint base (default: `https://auth.acme-dns.io`)
+- Typical setup is CNAME delegation from your domain's `_acme-challenge` record to the acme-dns managed hostname.
 
 ##### DNS-01 Alias (CNAME)
 

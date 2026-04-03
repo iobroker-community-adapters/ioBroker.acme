@@ -113,6 +113,10 @@
               "value": "acme-dns-01-dnsimple"
             },
             {
+              "label": "deSEC",
+              "value": "acme-dns-01-desec"
+            },
+            {
               "label": "DuckDNS",
               "value": "acme-dns-01-duckdns"
             },
@@ -137,6 +141,10 @@
               "value": "acme-dns-01-route53"
             },
             {
+              "label": "acme-dns (CNAME delegation)",
+              "value": "acme-dns-01-acmedns"
+            },
+            {
               "label": "Vultr",
               "value": "acme-dns-01-vultr"
             },
@@ -154,6 +162,19 @@
           "validator": "!data.dns01Active || data.dns01Module",
           "validatorErrorText": "DNS-01 module is mandatory",
           "validatorNoSaveOnError": true
+        },
+        "dns01ObaseUrl": {
+          "newLine": true,
+          "type": "text",
+          "label": "DNS-01 Base URL",
+          "help": "Optional API base URL for custom acme-dns instances. Leave empty to use https://auth.acme-dns.io",
+          "noTranslation": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 6,
+          "xl": 4,
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-acmedns'"
         },
         "dns01OcustomerNumber": {
           "newLine": true,
@@ -219,7 +240,7 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-godaddy','acme-dns-01-route53'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || !['acme-dns-01-godaddy','acme-dns-01-route53','acme-dns-01-acmedns'].includes(data.dns01Module)"
         },
         "dns01Otoken": {
           "newLine": true,
@@ -230,7 +251,7 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom','acme-dns-01-vultr','acme-dns-01-route53'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-desec','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom','acme-dns-01-vultr','acme-dns-01-route53','acme-dns-01-acmedns'].includes(data.dns01Module)"
         },
         "dns01Ousername": {
           "newLine": true,
@@ -241,7 +262,7 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom', 'acme-dns-01-acmedns'].includes(data.dns01Module)"
         },
         "dns01OverifyPropagation": {
           "newLine": true,

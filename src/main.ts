@@ -13,6 +13,7 @@ import x509 from 'x509.js';
 
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
+import { create as createAcmeDnsChallenge } from './lib/dns-01-acmedns';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
 import { buildDnsChallengeData, normalizeDnsAlias } from './lib/dns-01-utils';
 import { create as createRoute53Challenge } from './lib/dns-01-route53';
@@ -241,6 +242,8 @@ class AcmeAdapter extends utils.Adapter {
                 // Route53 package on npm is incomplete, use internal provider implementation instead.
                 if (this.config.dns01Module === 'acme-dns-01-route53') {
                     thisChallenge = createRoute53Challenge(dns01Options) as any;
+                } else if (this.config.dns01Module === 'acme-dns-01-acmedns') {
+                    thisChallenge = createAcmeDnsChallenge(dns01Options) as any;
                 } else {
                     // Dynamic import - module name comes from config
                     const dns01Module = await import(this.config.dns01Module);
