@@ -87,6 +87,31 @@ Example scenarios:
 
 Various DNS-01 challenge plugins are implemented for popular domain hosting platforms.
 
+##### DNS-01 Alias (CNAME)
+
+If your certificate domains are hosted in a different DNS setup than your ACME TXT records, you can use **DNS-01 Alias**.
+
+When set, the adapter writes DNS-01 TXT challenges below:
+
+- `_acme-challenge.<dns01Alias>`
+
+instead of:
+
+- `_acme-challenge.<requested-domain>`
+
+This is useful for delegated challenge zones via CNAME.
+
+Example:
+
+- Requested domain: `sub.example.com`
+- ACME TXT alias zone: `acme.example.net`
+- CNAME at source zone: `_acme-challenge.sub.example.com CNAME _acme-challenge.acme.example.net`
+
+Input format for **DNS-01 Alias** in adapter settings:
+
+- Enter only the domain part, for example `acme.example.net`
+- Do **not** include `_acme-challenge.` (it is added automatically)
+
 #### References
 
 See [acme-client](https://www.npmjs.com/package/acme-client) for implementation details of ACME account/order handling.

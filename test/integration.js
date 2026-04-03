@@ -1,10 +1,38 @@
 const path = require('path');
+const crypto = require('node:crypto');
 const { tests } = require('@iobroker/testing');
+const { computeDnsAuthorization, normalizeDnsAlias } = require('../build/lib/dns-01-utils');
 
 // Run integration tests - See https://github.com/ioBroker/testing for a detailed explanation and further options
 tests.integration(path.join(__dirname, '..'), {
     allowedExitCodes: [11],
     defineAdditionalTests({ suite }) {
+        suite('DNS alias utils', () => {
+            it('normalizes dns01Alias values', () => {
+                if (normalizeDnsAlias('') !== '') {
+                    throw new Error('Expected empty alias to stay empty');
+                }
+                if (normalizeDnsAlias('  acme.example.net  ') !== 'acme.example.net') {
+                    throw new Error('Expected trimmed alias domain');
+                }
+                if (normalizeDnsAlias('_acme-challenge.acme.example.net') !== 'acme.example.net') {
+                    throw new Error('Expected alias prefix to be removed');
+                }
+                if (normalizeDnsAlias('acme.example.net.') !== 'acme.example.net') {
+                    throw new Error('Expected trailing dot to be removed');
+                }
+            });
+
+            it('computes dnsAuthorization according to RFC dns-01 hash format', () => {
+                const keyAuthorization = 'token.thumbprint';
+                const expected = crypto.createHash('sha256').update(keyAuthorization).digest('base64url');
+                const actual = computeDnsAuthorization(keyAuthorization);
+                if (actual !== expected) {
+                    throw new Error('DNS authorization hash does not match expected value');
+                }
+            });
+        });
+
         suite('Collection purge behavior', getHarness => {
             let harness;
 

@@ -281,7 +281,7 @@
           "newLine": true,
           "type": "text",
           "label": "DNS-01 Alias",
-          "help": "Optional: If set, use this domain for DNS-01 challenges (CNAME alias).",
+          "help": "Optional: If set, use this domain for DNS-01 challenges (CNAME alias). Enter only the domain, without _acme-challenge.",
           "xs": 12,
           "sm": 12,
           "md": 6,

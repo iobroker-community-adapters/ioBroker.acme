@@ -13,6 +13,7 @@ import x509 from 'x509.js';
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
+import { computeDnsAuthorization, normalizeDnsAlias } from './lib/dns-01-utils';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -605,17 +606,17 @@ class AcmeAdapter extends utils.Adapter {
                                 };
 
                                 if (challenge.type === 'dns-01') {
-                                    if (this.config.dns01Alias) {
+                                    const normalizedDnsAlias = normalizeDnsAlias(this.config.dns01Alias);
+                                    if (normalizedDnsAlias) {
                                         this.log.info(
-                                            `Using DNS Alias: _acme-challenge.${this.config.dns01Alias} instead of ${authz.identifier.value}`,
+                                            `Using DNS Alias: _acme-challenge.${normalizedDnsAlias} instead of ${authz.identifier.value}`,
                                         );
-                                        challengeData.identifier.value = this.config.dns01Alias;
+                                        challengeData.identifier.value = normalizedDnsAlias;
                                     }
 
-                                    challengeData.dnsAuthorization = crypto
-                                        .createHash('sha256')
-                                        .update(keyAuthorization)
-                                        .digest('base64url');
+                                    const dnsAuthorization = computeDnsAuthorization(keyAuthorization);
+                                    challengeData.dnsAuthorization = dnsAuthorization;
+                                    challengeData.challenge.dnsAuthorization = dnsAuthorization;
                                 }
 
                                 await handler.set(challengeData);
@@ -624,16 +625,22 @@ class AcmeAdapter extends utils.Adapter {
                                 this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
                                 const handler = this.challenges[challenge.type];
                                 if (handler) {
+                                    const dnsAuthorization = computeDnsAuthorization(keyAuthorization);
                                     const removeData: any = {
                                         identifier: { ...authz.identifier },
                                         token: challenge.token,
+                                        dnsAuthorization,
                                         challenge: {
                                             token: challenge.token,
                                             keyAuthorization,
+                                            dnsAuthorization,
                                         },
                                     };
-                                    if (challenge.type === 'dns-01' && this.config.dns01Alias) {
-                                        removeData.identifier.value = this.config.dns01Alias;
+                                    if (challenge.type === 'dns-01') {
+                                        const normalizedDnsAlias = normalizeDnsAlias(this.config.dns01Alias);
+                                        if (normalizedDnsAlias) {
+                                            removeData.identifier.value = normalizedDnsAlias;
+                                        }
                                     }
                                     await handler.remove(removeData);
                                 }

@@ -47,6 +47,7 @@ const acme = __importStar(require("acme-client"));
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const x509_js_1 = __importDefault(require("x509.js"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
+const dns_01_utils_1 = require("./lib/dns-01-utils");
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
@@ -571,14 +572,14 @@ class AcmeAdapter extends utils.Adapter {
                                 },
                             };
                             if (challenge.type === 'dns-01') {
-                                if (this.config.dns01Alias) {
-                                    this.log.info(`Using DNS Alias: _acme-challenge.${this.config.dns01Alias} instead of ${authz.identifier.value}`);
-                                    challengeData.identifier.value = this.config.dns01Alias;
+                                const normalizedDnsAlias = (0, dns_01_utils_1.normalizeDnsAlias)(this.config.dns01Alias);
+                                if (normalizedDnsAlias) {
+                                    this.log.info(`Using DNS Alias: _acme-challenge.${normalizedDnsAlias} instead of ${authz.identifier.value}`);
+                                    challengeData.identifier.value = normalizedDnsAlias;
                                 }
-                                challengeData.dnsAuthorization = node_crypto_1.default
-                                    .createHash('sha256')
-                                    .update(keyAuthorization)
-                                    .digest('base64url');
+                                const dnsAuthorization = (0, dns_01_utils_1.computeDnsAuthorization)(keyAuthorization);
+                                challengeData.dnsAuthorization = dnsAuthorization;
+                                challengeData.challenge.dnsAuthorization = dnsAuthorization;
                             }
                             await handler.set(challengeData);
                         },
@@ -586,16 +587,22 @@ class AcmeAdapter extends utils.Adapter {
                             this.log.debug(`Removing challenge ${challenge.type} for ${authz.identifier.value}`);
                             const handler = this.challenges[challenge.type];
                             if (handler) {
+                                const dnsAuthorization = (0, dns_01_utils_1.computeDnsAuthorization)(keyAuthorization);
                                 const removeData = {
                                     identifier: { ...authz.identifier },
                                     token: challenge.token,
+                                    dnsAuthorization,
                                     challenge: {
                                         token: challenge.token,
                                         keyAuthorization,
+                                        dnsAuthorization,
                                     },
                                 };
-                                if (challenge.type === 'dns-01' && this.config.dns01Alias) {
-                                    removeData.identifier.value = this.config.dns01Alias;
+                                if (challenge.type === 'dns-01') {
+                                    const normalizedDnsAlias = (0, dns_01_utils_1.normalizeDnsAlias)(this.config.dns01Alias);
+                                    if (normalizedDnsAlias) {
+                                        removeData.identifier.value = normalizedDnsAlias;
+                                    }
                                 }
                                 await handler.remove(removeData);
                             }
