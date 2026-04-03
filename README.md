@@ -120,8 +120,6 @@ Available module choices in the adapter UI:
 - Name.com
 - Netcup
 - Vultr
-- acme-dns (CNAME delegation)
-- Route53 (AWS)
 
 ##### DNS-01 provider smoke check (current dependencies)
 
@@ -138,7 +136,7 @@ Interpretation:
 
 - `Auth/API error` is expected with dummy credentials and means the provider path is functionally reached.
 - This is not a live end-to-end verification against real DNS zones.
-- This matrix intentionally covers `acme-dns-01-*` packages from `dependencies` only.
+- This matrix covers only directly integrated `acme-dns-01-*` npm packages.
 
 | Provider package | Load + create | init | set/remove with dummy credentials | Result |
 | --- | --- | --- | --- | --- |
@@ -153,13 +151,6 @@ Interpretation:
 | acme-dns-01-namedotcom | OK | OK | Permission Denied | Reachable (auth/API path active) |
 | acme-dns-01-netcup | OK | OK | Netcup API rate-limit error (4013) | Reachable (API path active) |
 | acme-dns-01-vultr | OK | n/a | Record not set/removed | Reachable (provider-level validation hit) |
-
-Internal provider checks (outside `acme-dns-01-*` package matrix):
-
-| Provider implementation | Load + create | init | set/remove with dummy credentials | Result |
-| --- | --- | --- | --- | --- |
-| internal dns-01-route53 | OK | OK | AWS token invalid (expected with dummy credentials) | Reachable (AWS API path active) |
-| internal dns-01-acmedns | OK | OK | acme-dns update fails with dummy credentials (expected) | Reachable (acme-dns API path active) |
 
 For real production validation, test with valid credentials and a disposable domain/zone per provider.
 
@@ -212,25 +203,19 @@ Recommendation:
 - Use a disposable zone/subdomain and low-privilege API credentials.
 - Keep this test optional and out of mandatory CI jobs.
 
-Note about Route53 (AWS):
+##### acme-dns How-to (external workflow)
 
-- The upstream package `acme-dns-01-route53` is incomplete.
-- For `acme-dns-01-route53` selection, this adapter uses an internal Route53 implementation.
-- Credentials mapping in adapter config:
-    - `DNS-01 Key` -> AWS Access Key ID
-    - `DNS-01 Secret` -> AWS Secret Access Key
-    - `DNS-01 Token` -> AWS Session Token (optional)
-- Alternatively, standard AWS environment credentials can be used.
+This adapter currently integrates only directly available `acme-dns-01-*` npm providers.
+There is no maintained, directly pluggable `acme-dns-01-*` npm module for `acme-dns` at this time.
 
-Note about acme-dns (CNAME delegation):
+If you want to use `acme-dns` anyway, use this external workflow:
 
-- This adapter includes an internal `acme-dns` challenge implementation (`acme-dns-01-acmedns`).
-- Field mapping in adapter config:
-    - `DNS-01 Username` -> `X-Api-User`
-    - `DNS-01 Secret` -> `X-Api-Key`
-    - `DNS-01 Token` -> acme-dns `subdomain`
-    - `DNS-01 Base URL` -> optional API endpoint base (default: `https://auth.acme-dns.io`)
-- Typical setup is CNAME delegation from your domain's `_acme-challenge` record to the acme-dns managed hostname.
+1. Deploy or use an `acme-dns` service and register your domain there.
+2. Create the required CNAME delegation in your authoritative DNS zone (from `_acme-challenge.<your-domain>` to the `acme-dns` target hostname).
+3. Use an external ACME client/automation that supports `acme-dns` updates (for example certbot/acme.sh with appropriate plugins) to maintain TXT records.
+4. Import or sync resulting certificates into your ioBroker setup.
+
+This keeps adapter internals package-based while still enabling `acme-dns` in production environments.
 
 ##### DNS-01 Alias (CNAME)
 

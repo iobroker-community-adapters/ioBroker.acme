@@ -47,10 +47,8 @@ const acme = __importStar(require("acme-client"));
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const node_util_1 = require("node:util");
 const x509_js_1 = __importDefault(require("x509.js"));
-const dns_01_acmedns_1 = require("./lib/dns-01-acmedns");
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
 const dns_01_utils_1 = require("./lib/dns-01-utils");
-const dns_01_route53_1 = require("./lib/dns-01-route53");
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
@@ -241,22 +239,13 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
             try {
-                // Route53 package on npm is incomplete, use internal provider implementation instead.
-                if (this.config.dns01Module === 'acme-dns-01-route53') {
-                    thisChallenge = (0, dns_01_route53_1.create)(dns01Options);
-                }
-                else if (this.config.dns01Module === 'acme-dns-01-acmedns') {
-                    thisChallenge = (0, dns_01_acmedns_1.create)(dns01Options);
+                // Dynamic import - module name comes from config
+                const dns01Module = await import(this.config.dns01Module);
+                if (dns01Module.default) {
+                    thisChallenge = dns01Module.default.create(dns01Options);
                 }
                 else {
-                    // Dynamic import - module name comes from config
-                    const dns01Module = await import(this.config.dns01Module);
-                    if (dns01Module.default) {
-                        thisChallenge = dns01Module.default.create(dns01Options);
-                    }
-                    else {
-                        thisChallenge = dns01Module.create(dns01Options);
-                    }
+                    thisChallenge = dns01Module.create(dns01Options);
                 }
             }
             catch (err) {
