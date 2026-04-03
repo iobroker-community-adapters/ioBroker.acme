@@ -172,6 +172,7 @@
     "dns01Module": "",
     "dns01OapiUser": "",
     "dns01OapiKey": "",
+    "dns01ObaseUrl": "",
     "dns01OclientIp": "",
     "dns01Okey": "",
     "dns01Osecret": "",

@@ -13,6 +13,7 @@ import x509 from 'x509.js';
 
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
+import { create as createAcmeDnsChallenge } from './lib/dns-01-acmedns';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
 import { buildDnsChallengeData, normalizeDnsAlias } from './lib/dns-01-utils';
 import type { AcmeAdapterConfig } from './types';
@@ -237,12 +238,16 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge: ChallengeHandler | undefined;
             try {
-                // Dynamic import - module name comes from config
-                const dns01Module = await import(this.config.dns01Module);
-                if (dns01Module.default) {
-                    thisChallenge = dns01Module.default.create(dns01Options);
+                if (this.config.dns01Module === 'acme-dns-01-acmedns') {
+                    thisChallenge = createAcmeDnsChallenge(dns01Options) as any;
                 } else {
-                    thisChallenge = dns01Module.create(dns01Options);
+                    // Dynamic import - module name comes from config
+                    const dns01Module = await import(this.config.dns01Module);
+                    if (dns01Module.default) {
+                        thisChallenge = dns01Module.default.create(dns01Options);
+                    } else {
+                        thisChallenge = dns01Module.create(dns01Options);
+                    }
                 }
             } catch (err) {
                 this.log.error(

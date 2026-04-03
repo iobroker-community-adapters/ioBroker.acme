@@ -27,10 +27,12 @@ export interface AcmeAdapterConfig {
         | 'acme-dns-01-gandi'
         | 'acme-dns-01-namecheap'
         | 'acme-dns-01-namedotcom'
+        | 'acme-dns-01-acmedns'
         | 'acme-dns-01-vultr'
         | 'acme-dns-01-netcup';
     dns01OapiUser: string;
     dns01OapiKey: string;
+    dns01ObaseUrl: string;
     dns01OclientIp: string;
     dns01Okey: string;
     dns01Osecret: string;

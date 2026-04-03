@@ -120,6 +120,7 @@ Available module choices in the adapter UI:
 - Name.com
 - Netcup
 - Vultr
+- acme-dns (CNAME delegation)
 
 ##### DNS-01 provider smoke check (current dependencies)
 
@@ -153,6 +154,24 @@ Interpretation:
 | acme-dns-01-vultr | OK | n/a | Record not set/removed | Reachable (provider-level validation hit) |
 
 For real production validation, test with valid credentials and a disposable domain/zone per provider.
+
+##### Alias vs acme-dns
+
+`DNS-01 Alias` and `acme-dns` are related, but not the same:
+
+- **DNS-01 Alias** (adapter setting):
+    - Changes where challenge records are written.
+    - The adapter writes TXT records under `_acme-challenge.<alias-domain>` instead of `_acme-challenge.<requested-domain>`.
+    - Useful if your authoritative domain is different from your challenge zone.
+- **acme-dns** (challenge backend):
+    - Is a dedicated DNS challenge API service.
+    - The adapter updates TXT values via acme-dns API (`/update`) using scoped credentials.
+    - Typically combined with CNAME delegation from your public zone to acme-dns managed records.
+
+In short:
+
+- Alias controls the target name.
+- acme-dns controls how TXT records are updated.
 
 ##### Optional live provider tests (with real credentials)
 
@@ -203,19 +222,26 @@ Recommendation:
 - Use a disposable zone/subdomain and low-privilege API credentials.
 - Keep this test optional and out of mandatory CI jobs.
 
-##### acme-dns How-to (external workflow)
+##### acme-dns How-to (integrated in adapter)
 
-This adapter currently integrates only directly available `acme-dns-01-*` npm providers.
-There is no maintained, directly pluggable `acme-dns-01-*` npm module for `acme-dns` at this time.
+The adapter supports `acme-dns` directly via the DNS-01 module selection.
 
-If you want to use `acme-dns` anyway, use this external workflow:
+Configure in Admin:
 
-1. Deploy or use an `acme-dns` service and register your domain there.
-2. Create the required CNAME delegation in your authoritative DNS zone (from `_acme-challenge.<your-domain>` to the `acme-dns` target hostname).
-3. Use an external ACME client/automation that supports `acme-dns` updates (for example certbot/acme.sh with appropriate plugins) to maintain TXT records.
-4. Import or sync resulting certificates into your ioBroker setup.
+1. Enable `Use DNS-01 challenges`.
+2. Select `acme-dns (CNAME delegation)` as DNS-01 module.
+3. Fill credentials:
+    - `DNS-01 Username` -> acme-dns `X-Api-User`
+    - `DNS-01 Secret` -> acme-dns `X-Api-Key`
+    - `DNS-01 Token` -> acme-dns `subdomain`
+4. Optional: set `DNS-01 Base URL` for self-hosted acme-dns instances.
+    - If empty, default endpoint `https://auth.acme-dns.io` is used.
+5. Configure CNAME delegation in your authoritative DNS:
+    - `_acme-challenge.<your-domain>` CNAME to your acme-dns target hostname.
 
-This keeps adapter internals package-based while still enabling `acme-dns` in production environments.
+Result:
+
+- Certificate orders/renewals stay fully inside this adapter workflow via Admin configuration.
 
 ##### DNS-01 Alias (CNAME)
 
