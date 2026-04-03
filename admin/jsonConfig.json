@@ -225,7 +225,7 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-godaddy','acme-dns-01-acmedns'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
         },
         "dns01Osecret": {
           "newLine": true,
@@ -236,7 +236,10 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-godaddy'"
+          "hidden": "!data.dns01Active || !['acme-dns-01-godaddy','acme-dns-01-acmedns'].includes(data.dns01Module)",
+          "validator": "!data.dns01Active || data.dns01Module != 'acme-dns-01-acmedns' || data.dns01Osecret",
+          "validatorErrorText": "DNS-01 Secret is mandatory for acme-dns",
+          "validatorNoSaveOnError": true
         },
         "dns01Otoken": {
           "newLine": true,
@@ -247,7 +250,10 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-desec','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom','acme-dns-01-vultr','acme-dns-01-acmedns'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-desec','acme-dns-01-duckdns','acme-dns-01-gandi','acme-dns-01-namedotcom','acme-dns-01-vultr','acme-dns-01-acmedns'].includes(data.dns01Module)",
+          "validator": "!data.dns01Active || data.dns01Module != 'acme-dns-01-acmedns' || data.dns01Otoken",
+          "validatorErrorText": "DNS-01 Token is mandatory for acme-dns",
+          "validatorNoSaveOnError": true
         },
         "dns01Ousername": {
           "newLine": true,
@@ -258,7 +264,10 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom', 'acme-dns-01-acmedns'].includes(data.dns01Module)"
+          "hidden": "!data.dns01Active || !['acme-dns-01-namecheap', 'acme-dns-01-namedotcom', 'acme-dns-01-acmedns'].includes(data.dns01Module)",
+          "validator": "!data.dns01Active || data.dns01Module != 'acme-dns-01-acmedns' || data.dns01Ousername",
+          "validatorErrorText": "DNS-01 Username is mandatory for acme-dns",
+          "validatorNoSaveOnError": true
         },
         "dns01OverifyPropagation": {
           "newLine": true,

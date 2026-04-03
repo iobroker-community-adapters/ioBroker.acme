@@ -237,6 +237,22 @@ class AcmeAdapter extends utils.Adapter {
                 }
             }
             this.log.debug(`dns-01 options: ${JSON.stringify(safeOpts)}`);
+            if (this.config.dns01Module === 'acme-dns-01-acmedns') {
+                const missing = [];
+                if (!`${dns01Options.username || ''}`.trim()) {
+                    missing.push('DNS-01 Username (X-Api-User)');
+                }
+                if (!`${dns01Options.secret || ''}`.trim()) {
+                    missing.push('DNS-01 Secret (X-Api-Key)');
+                }
+                if (!`${dns01Options.token || ''}`.trim()) {
+                    missing.push('DNS-01 Token (acme-dns subdomain)');
+                }
+                if (missing.length) {
+                    this.log.error(`acme-dns configuration incomplete. Missing: ${missing.join(', ')}`);
+                    return;
+                }
+            }
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
             try {

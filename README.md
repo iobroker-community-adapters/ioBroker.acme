@@ -270,18 +270,33 @@ Input format for **DNS-01 Alias** in adapter settings:
 
 ##### Additional DNS providers
 
-If your DNS provider is not directly supported, there are practical alternatives:
+If your DNS provider is not directly supported by this adapter, you still have strong options.
 
-1. **CNAME delegation to a supported provider**
-    - Keep your primary domain where it is.
-    - Delegate `_acme-challenge` via CNAME to a zone at a supported DNS provider.
-    - Use **DNS-01 Alias** in this adapter.
+##### Free alternatives to DuckDNS
 
-2. **Manual DNS challenge workflow**
-    - Use an external/manual dns-01 handler (for example `acme-dns-01-cli`) where operationally acceptable.
+Yes, there are free alternatives that can be more capable than DuckDNS, especially for multi-domain/wildcard scenarios.
 
-3. **Custom dns-01 provider module**
-    - The adapter challenge flow can be extended with additional provider modules implementing `init/zones/set/get/remove`.
+1. **deSEC (`acme-dns-01-desec`) — recommended free alternative**
+    - Free (donation-based) DNS provider with API support.
+    - Supports multiple TXT records reliably, which helps for parallel ACME challenges.
+    - Good fit if you want a direct provider integration in this adapter.
+
+2. **acme-dns (`acme-dns-01-acmedns`) — generic challenge backend**
+    - Specialized service for ACME DNS challenges.
+    - Works well with CNAME delegation and keeps scoped challenge credentials separate from your primary DNS account.
+    - Integrated in this adapter via Admin configuration.
+
+3. **Cloudflare (`acme-dns-01-cloudflare`) — free plan, very robust DNS API**
+    - Free DNS plan with mature API and high reliability.
+    - Requires that your domain DNS is managed by Cloudflare.
+
+##### Practical recommendation
+
+If you need a free replacement for DuckDNS and want direct adapter integration, start with **deSEC**.
+
+If your existing DNS hoster has no suitable API integration, use **acme-dns + CNAME delegation**.
+
+If you can move DNS hosting, **Cloudflare** is usually the most robust long-term option.
 
 #### References
 
