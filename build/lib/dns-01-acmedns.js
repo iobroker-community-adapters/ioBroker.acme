@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerAcmeDnsAccount = registerAcmeDnsAccount;
 exports.create = create;
 function ensureString(value, name) {
     if (typeof value !== 'string' || !value.trim()) {
@@ -14,6 +15,33 @@ function getDnsAuthorization(data) {
     }
     return value;
 }
+function normalizeBaseUrl(baseUrl) {
+    return (baseUrl || 'https://auth.acme-dns.io').replace(/\/+$/, '');
+}
+async function registerAcmeDnsAccount(baseUrl) {
+    const registerUrl = `${normalizeBaseUrl(baseUrl)}/register`;
+    const response = await fetch(registerUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`acme-dns register failed (${response.status}): ${body.slice(0, 300)}`);
+    }
+    const payload = await response.json();
+    const username = ensureString(payload?.username, 'register response username');
+    const secret = ensureString(payload?.password, 'register response password');
+    const token = ensureString(payload?.subdomain, 'register response subdomain');
+    return {
+        username,
+        secret,
+        token,
+        fullDomain: typeof payload?.fulldomain === 'string' ? payload.fulldomain : undefined,
+    };
+}
 class AcmeDnsChallenge {
     propagationDelay;
     apiUser;
@@ -24,7 +52,7 @@ class AcmeDnsChallenge {
         this.apiUser = ensureString(config.username, 'username');
         this.apiKey = ensureString(config.secret, 'secret');
         this.subdomain = ensureString(config.token, 'token (subdomain)');
-        const baseUrl = (config.baseUrl || 'https://auth.acme-dns.io').replace(/\/+$/, '');
+        const baseUrl = normalizeBaseUrl(config.baseUrl);
         this.updateUrl = `${baseUrl}/update`;
         this.propagationDelay = config.propagationDelay || 30_000;
     }

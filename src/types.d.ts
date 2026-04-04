@@ -14,6 +14,7 @@ export interface AcmeAdapterConfig {
     maintainerEmail: string;
     useStaging: boolean;
     http01Active: boolean;
+    http01StopConflictingAdapters: boolean;
     port: number;
     bind: string;
     dns01Active: boolean;
@@ -43,6 +44,14 @@ export interface AcmeAdapterConfig {
     dns01OcustomerNumber: string;
     dns01OapiPassword: string;
     dns01Alias: string;
+    dns01CollectionOverrides: Array<{
+        collectionId: string;
+        username: string;
+        secret: string;
+        token: string;
+        baseUrl: string;
+        fullDomain?: string;
+    }>;
     collections: Array<{
         id: string;
         commonName: string;

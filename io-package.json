@@ -166,6 +166,7 @@
     "maintainerEmail": "",
     "useStaging": true,
     "http01Active": false,
+    "http01StopConflictingAdapters": false,
     "port": 0,
     "bind": "",
     "dns01Active": false,
@@ -183,6 +184,7 @@
     "dns01OcustomerNumber": "",
     "dns01OapiPassword": "",
     "dns01Alias": "",
+    "dns01CollectionOverrides": [],
     "collections": [
       {
         "id": "exampleDomain",
@@ -196,14 +198,16 @@
     "dns01OapiPassword",
     "dns01Okey",
     "dns01Osecret",
-    "dns01Otoken"
+    "dns01Otoken",
+    "dns01CollectionOverrides"
   ],
   "protectedNative": [
     "dns01OapiKey",
     "dns01OapiPassword",
     "dns01Okey",
     "dns01Osecret",
-    "dns01Otoken"
+    "dns01Otoken",
+    "dns01CollectionOverrides"
   ],
   "objects": [],
   "instanceObjects": [

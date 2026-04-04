@@ -1,7 +1,4 @@
 "use strict";
-/*
- * Created with @iobroker/create-adapter v2.3.0
- */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -39,12 +36,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
+/*
+ * Created with @iobroker/create-adapter v2.3.0
+ */
 const utils = __importStar(require("@iobroker/adapter-core"));
 const webserver_1 = require("@iobroker/webserver");
 const acme = __importStar(require("acme-client"));
 const node_crypto_1 = __importDefault(require("node:crypto"));
+const node_dns_1 = require("node:dns");
 const node_util_1 = require("node:util");
 const x509_js_1 = __importDefault(require("x509.js"));
 const dns_01_acmedns_1 = require("./lib/dns-01-acmedns");
@@ -62,6 +61,8 @@ class AcmeAdapter extends utils.Adapter {
     acmeClient = null;
     stoppedAdapters;
     dnsChallengeCache;
+    acmeDnsCnameCheckedHosts;
+    acmeDnsAutoRegisterBlocked;
     /**
      * Safely extract an error message from an unknown error value.
      */
@@ -84,6 +85,8 @@ class AcmeAdapter extends utils.Adapter {
         this.toShutdown = [];
         this.donePortCheck = false;
         this.dnsChallengeCache = {};
+        this.acmeDnsCnameCheckedHosts = new Set();
+        this.acmeDnsAutoRegisterBlocked = false;
         this.on('ready', this.onReady.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
@@ -100,6 +103,7 @@ class AcmeAdapter extends utils.Adapter {
                 for (const key of Object.keys(this.dnsChallengeCache)) {
                     delete this.dnsChallengeCache[key];
                 }
+                this.acmeDnsCnameCheckedHosts.clear();
                 await this.restoreAdaptersOnSamePort();
             }
             catch (err) {
@@ -121,6 +125,14 @@ class AcmeAdapter extends utils.Adapter {
             if (safeConfig[key]) {
                 safeConfig[key] = '***REDACTED***';
             }
+        }
+        const collectionOverrides = safeConfig.dns01CollectionOverrides;
+        if (Array.isArray(collectionOverrides)) {
+            safeConfig.dns01CollectionOverrides = collectionOverrides.map((entry) => ({
+                ...entry,
+                secret: entry?.secret ? '***REDACTED***' : entry?.secret,
+                token: entry?.token ? '***REDACTED***' : entry?.token,
+            }));
         }
         this.log.debug(`config: ${JSON.stringify(safeConfig)}`);
         acme.setLogger((message) => this.log.debug(`acme-client: ${message}`));
@@ -237,21 +249,17 @@ class AcmeAdapter extends utils.Adapter {
                 }
             }
             this.log.debug(`dns-01 options: ${JSON.stringify(safeOpts)}`);
-            if (this.config.dns01Module === 'acme-dns-01-acmedns') {
-                const missing = [];
-                if (!`${dns01Options.username || ''}`.trim()) {
-                    missing.push('DNS-01 Username (X-Api-User)');
-                }
-                if (!`${dns01Options.secret || ''}`.trim()) {
-                    missing.push('DNS-01 Secret (X-Api-Key)');
-                }
-                if (!`${dns01Options.token || ''}`.trim()) {
-                    missing.push('DNS-01 Token (acme-dns subdomain)');
-                }
-                if (missing.length) {
-                    this.log.error(`acme-dns configuration incomplete. Missing: ${missing.join(', ')}`);
-                    return;
-                }
+            if (this.config.dns01Module === 'acme-dns-01-acmedns' &&
+                !this.hasAcmeDnsCredentials({
+                    username: dns01Options.username,
+                    secret: dns01Options.secret,
+                    token: dns01Options.token,
+                })) {
+                this.log.info('acme-dns global credentials are empty; adapter will use per-collection overrides and/or automatic account registration');
+                // Keep a valid handler object for dns-01; real credentials will be set per collection during order processing.
+                dns01Options.username = dns01Options.username || '__auto-register__';
+                dns01Options.secret = dns01Options.secret || '__auto-register__';
+                dns01Options.token = dns01Options.token || '__auto-register__';
             }
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
@@ -398,6 +406,11 @@ class AcmeAdapter extends utils.Adapter {
         // TODO: Maybe this should be in some sort of utility so other adapters can 'grab' a port in use?
         // Stop conflicting adapters using our challenge server port only if we are going to need it and haven't already checked.
         if (this.config.http01Active && !this.donePortCheck) {
+            if (this.config.http01StopConflictingAdapters !== true) {
+                this.log.info('Automatic stopping of conflicting adapters on HTTP-01 port is disabled unless explicitly enabled. Existing services will remain running.');
+                this.donePortCheck = true;
+                return;
+            }
             // TODO: is there a better way than hardcoding this 'system.adapter.' part?
             const us = `system.adapter.${this.namespace}`;
             const host = this.host;
@@ -537,6 +550,191 @@ class AcmeAdapter extends utils.Adapter {
             zones,
         });
     }
+    hasAcmeDnsCredentials(input) {
+        const username = typeof input.username === 'string' ? input.username.trim() : '';
+        const secret = typeof input.secret === 'string' ? input.secret.trim() : '';
+        const token = typeof input.token === 'string' ? input.token.trim() : '';
+        return Boolean(username && secret && token);
+    }
+    async saveCollectionAcmeDnsOverride(override) {
+        const instanceObjectId = `system.adapter.${this.namespace}`;
+        const instanceObj = await this.getForeignObjectAsync(instanceObjectId);
+        if (!instanceObj?.native) {
+            throw new Error(`Unable to update adapter config object: ${instanceObjectId}`);
+        }
+        const existing = Array.isArray(instanceObj.native.dns01CollectionOverrides)
+            ? [...instanceObj.native.dns01CollectionOverrides]
+            : [];
+        const idx = existing.findIndex((entry) => entry?.collectionId === override.collectionId);
+        if (idx >= 0) {
+            existing[idx] = override;
+        }
+        else {
+            existing.push(override);
+        }
+        instanceObj.native.dns01CollectionOverrides = existing;
+        await this.setForeignObjectAsync(instanceObjectId, instanceObj);
+        this.config.dns01CollectionOverrides = existing;
+    }
+    async autoCreateCollectionAcmeDnsOverride(collectionId) {
+        if (this.acmeDnsAutoRegisterBlocked) {
+            this.log.warn(`Collection ${collectionId}: automatic acme-dns registration is temporarily disabled for this run due to previous registration failure`);
+            return null;
+        }
+        const baseUrl = `${this.config.dns01ObaseUrl || ''}`.trim();
+        try {
+            const registration = await (0, dns_01_acmedns_1.registerAcmeDnsAccount)(baseUrl || undefined);
+            const override = {
+                collectionId,
+                username: registration.username,
+                secret: registration.secret,
+                token: registration.token,
+                baseUrl,
+                fullDomain: registration.fullDomain,
+            };
+            await this.saveCollectionAcmeDnsOverride(override);
+            this.log.info(`Collection ${collectionId}: acme-dns account created automatically`);
+            if (registration.fullDomain) {
+                this.log.info(`Collection ${collectionId}: configure CNAME target to ${registration.fullDomain} for DNS-01 delegation`);
+            }
+            return override;
+        }
+        catch (err) {
+            this.acmeDnsAutoRegisterBlocked = true;
+            this.log.error(`Collection ${collectionId}: failed to auto-create acme-dns account (${AcmeAdapter.getErrorMessage(err)})`);
+            return null;
+        }
+    }
+    getCollectionAcmeDnsOverride(collectionId) {
+        const overrides = this.config.dns01CollectionOverrides;
+        if (!Array.isArray(overrides) || !overrides.length) {
+            return null;
+        }
+        const override = overrides.find(entry => entry?.collectionId === collectionId);
+        if (!override) {
+            return null;
+        }
+        return {
+            collectionId,
+            username: `${override.username || ''}`.trim(),
+            secret: `${override.secret || ''}`.trim(),
+            token: `${override.token || ''}`.trim(),
+            baseUrl: `${override.baseUrl || ''}`.trim(),
+            fullDomain: typeof override.fullDomain === 'string' && override.fullDomain.trim()
+                ? override.fullDomain.trim()
+                : undefined,
+        };
+    }
+    normalizeDnsName(name) {
+        return name.trim().replace(/\.+$/, '').toLowerCase();
+    }
+    async warnIfAcmeDnsDelegationLooksWrong(collectionId, authz, override) {
+        const normalizedDnsAlias = (0, dns_01_utils_1.normalizeDnsAlias)(this.config.dns01Alias);
+        const identifierValue = normalizedDnsAlias || authz?.identifier?.value;
+        if (!identifierValue || typeof identifierValue !== 'string') {
+            return;
+        }
+        const dnsHost = `_acme-challenge.${identifierValue}`;
+        if (this.acmeDnsCnameCheckedHosts.has(dnsHost)) {
+            return;
+        }
+        this.acmeDnsCnameCheckedHosts.add(dnsHost);
+        let cnameTargets = [];
+        try {
+            cnameTargets = await node_dns_1.promises.resolveCname(dnsHost);
+        }
+        catch (err) {
+            const code = typeof err?.code === 'string' ? err.code : '';
+            if (['ENODATA', 'ENOTFOUND', 'ESERVFAIL', 'ETIMEOUT', 'EAI_AGAIN'].includes(code)) {
+                this.log.warn(`Collection ${collectionId}: no DNS CNAME delegation detected for ${dnsHost}. Configure _acme-challenge CNAME before requesting certificates.`);
+                return;
+            }
+            this.log.debug(`Collection ${collectionId}: CNAME precheck for ${dnsHost} failed (${AcmeAdapter.getErrorMessage(err)})`);
+            return;
+        }
+        if (!cnameTargets.length) {
+            this.log.warn(`Collection ${collectionId}: no DNS CNAME delegation detected for ${dnsHost}. Configure _acme-challenge CNAME before requesting certificates.`);
+            return;
+        }
+        if (override?.fullDomain) {
+            const expected = this.normalizeDnsName(override.fullDomain);
+            const normalized = cnameTargets.map(target => this.normalizeDnsName(target));
+            if (!normalized.includes(expected)) {
+                this.log.warn(`Collection ${collectionId}: CNAME for ${dnsHost} points to ${cnameTargets.join(', ')}, expected ${override.fullDomain}. Verify delegation target from acme-dns registration.`);
+            }
+        }
+    }
+    async activateCollectionDnsOverride(collectionId) {
+        if (!this.config.dns01Active || this.config.dns01Module !== 'acme-dns-01-acmedns') {
+            return () => undefined;
+        }
+        const globalCredentialsReady = this.hasAcmeDnsCredentials({
+            username: this.config.dns01Ousername,
+            secret: this.config.dns01Osecret,
+            token: this.config.dns01Otoken,
+        });
+        let override = this.getCollectionAcmeDnsOverride(collectionId);
+        if (!override && !globalCredentialsReady) {
+            this.log.info(`Collection ${collectionId}: no acme-dns credentials configured, trying automatic account registration`);
+            override = await this.autoCreateCollectionAcmeDnsOverride(collectionId);
+        }
+        if (!override) {
+            return () => undefined;
+        }
+        const missing = [];
+        if (!override.username) {
+            missing.push('username');
+        }
+        if (!override.secret) {
+            missing.push('secret');
+        }
+        if (!override.token) {
+            missing.push('token');
+        }
+        if (missing.length) {
+            this.log.error(`Collection ${collectionId}: acme-dns override is incomplete (missing ${missing.join(', ')})`);
+            return () => undefined;
+        }
+        const dns01Options = {};
+        for (const [key, value] of Object.entries(this.config)) {
+            if (key.startsWith('dns01O')) {
+                dns01Options[key.slice(6)] = value;
+            }
+        }
+        dns01Options.username = override.username;
+        dns01Options.secret = override.secret;
+        dns01Options.token = override.token;
+        if (override.baseUrl) {
+            dns01Options.baseUrl = override.baseUrl;
+        }
+        const previousHandler = this.challenges['dns-01'];
+        if (!previousHandler) {
+            return () => undefined;
+        }
+        const overrideHandler = (0, dns_01_acmedns_1.create)(dns01Options);
+        if (typeof overrideHandler.init === 'function') {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
+                const rootRequest = require('@root/request');
+                const request = (0, node_util_1.promisify)(rootRequest);
+                await overrideHandler.init({ request });
+            }
+            catch (err) {
+                this.log.warn(`Collection ${collectionId}: acme-dns override init() failed, continuing anyway: ${AcmeAdapter.getErrorMessage(err)}`);
+            }
+        }
+        this.challenges['dns-01'] = overrideHandler;
+        this.log.info(`Collection ${collectionId}: using dedicated acme-dns override credentials`);
+        return () => {
+            this.challenges['dns-01'] = previousHandler;
+            try {
+                overrideHandler.shutdown();
+            }
+            catch (err) {
+                this.log.debug(`Collection ${collectionId}: acme-dns override shutdown failed: ${AcmeAdapter.getErrorMessage(err)}`);
+            }
+        };
+    }
     async generateCollection(collection) {
         this.log.debug(`Collection: ${JSON.stringify(collection)}`);
         // Create domains now as will be used to test any existing collection.
@@ -596,6 +794,7 @@ class AcmeAdapter extends utils.Adapter {
                 this.log.error('ACME client not initialized');
                 return;
             }
+            const restoreDnsOverride = await this.activateCollectionDnsOverride(collection.id);
             let cert;
             try {
                 // Generate CSR
@@ -638,6 +837,10 @@ class AcmeAdapter extends utils.Adapter {
                                 throw new Error(`No handler for challenge type ${challenge.type}`);
                             }
                             if (challenge.type === 'dns-01') {
+                                if (this.config.dns01Module === 'acme-dns-01-acmedns') {
+                                    const override = this.getCollectionAcmeDnsOverride(collection.id);
+                                    await this.warnIfAcmeDnsDelegationLooksWrong(collection.id, authz, override);
+                                }
                                 const challengeData = await this.buildDnsChallengePayload(handler, authz, challenge, keyAuthorization);
                                 this.dnsChallengeCache[this.getDnsChallengeCacheKey(authz, challenge)] =
                                     challengeData;
@@ -713,6 +916,9 @@ class AcmeAdapter extends utils.Adapter {
             }
             catch (err) {
                 this.log.error(`Certificate request for ${collection.id} (${domains?.join(', ')}) failed: ${AcmeAdapter.getErrorMessage(err)}`);
+            }
+            finally {
+                restoreDnsOverride();
             }
             this.log.debug('Done');
         }

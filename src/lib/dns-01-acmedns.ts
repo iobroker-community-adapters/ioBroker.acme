@@ -6,6 +6,13 @@ interface AcmeDnsConfig {
     propagationDelay?: number;
 }
 
+interface AcmeDnsRegistrationResult {
+    username: string;
+    secret: string;
+    token: string;
+    fullDomain?: string;
+}
+
 interface AcmeDnsChallengeData {
     challenge?: {
         dnsAuthorization?: string;
@@ -28,6 +35,38 @@ function getDnsAuthorization(data: AcmeDnsChallengeData): string {
     return value;
 }
 
+function normalizeBaseUrl(baseUrl?: string): string {
+    return (baseUrl || 'https://auth.acme-dns.io').replace(/\/+$/, '');
+}
+
+export async function registerAcmeDnsAccount(baseUrl?: string): Promise<AcmeDnsRegistrationResult> {
+    const registerUrl = `${normalizeBaseUrl(baseUrl)}/register`;
+    const response = await fetch(registerUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`acme-dns register failed (${response.status}): ${body.slice(0, 300)}`);
+    }
+
+    const payload: any = await response.json();
+    const username = ensureString(payload?.username, 'register response username');
+    const secret = ensureString(payload?.password, 'register response password');
+    const token = ensureString(payload?.subdomain, 'register response subdomain');
+
+    return {
+        username,
+        secret,
+        token,
+        fullDomain: typeof payload?.fulldomain === 'string' ? payload.fulldomain : undefined,
+    };
+}
+
 class AcmeDnsChallenge {
     public propagationDelay: number;
     private readonly apiUser: string;
@@ -40,7 +79,7 @@ class AcmeDnsChallenge {
         this.apiKey = ensureString(config.secret, 'secret');
         this.subdomain = ensureString(config.token, 'token (subdomain)');
 
-        const baseUrl = (config.baseUrl || 'https://auth.acme-dns.io').replace(/\/+$/, '');
+        const baseUrl = normalizeBaseUrl(config.baseUrl);
         this.updateUrl = `${baseUrl}/update`;
         this.propagationDelay = config.propagationDelay || 30_000;
     }
