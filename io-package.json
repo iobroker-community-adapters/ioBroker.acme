@@ -180,7 +180,7 @@
     "dns01Otoken": "",
     "dns01Ousername": "",
     "dns01OverifyPropagation": false,
-    "dns01PpropagationDelay": 120000,
+    "dns01PpropagationDelay": 300000,
     "dns01OcustomerNumber": "",
     "dns01OapiPassword": "",
     "dns01Alias": "",

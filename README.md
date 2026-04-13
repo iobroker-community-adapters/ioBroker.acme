@@ -151,6 +151,7 @@ Available module choices in the adapter UI:
  - Always requires a `CNAME` record at your primary DNS provider.
  - Point `_acme-challenge.<your-domain>` to your deSEC/DuckDNS alias.
  - In the adapter's **DNS-01 Alias** field, enter only the domain (e.g. `xyz.dedyn.io`). **Do not** include `_acme-challenge.`.
+ - Most DNS providers automatically append your domain to the record name. Therefore, usually only `_acme-challenge` (for the main domain) or `_acme-challenge.subdomain` needs to be entered in the "Name" or "Host" field. However, some providers expect the full FQDN (Fully Qualified Domain Name), in which case you must enter the complete record name (e.g. `_acme-challenge.example.com`).
 
 #### Step-by-step guides for alternatives
 
@@ -160,7 +161,7 @@ Use this if your domain is at a provider like Strato, Hetzner, or Route 53, and 
 1. Create a free account at [deSEC](https://desec.io/) and register a new domain (e.g. `my-alias.dedyn.io`).
 2. Generate an API token at deSEC.
 3. In your **primary DNS provider**, add a `CNAME` record:
-    - **Name:** `_acme-challenge.your-domain.de`
+    - **Name:** `_acme-challenge` (or `_acme-challenge.subdomain` for subdomains)
     - **Target:** `_acme-challenge.my-alias.dedyn.io`
 4. In the configuration, select DNS-01 module `deSEC`, set the token, and set **DNS-01 Alias** to `my-alias.dedyn.io`.
 
@@ -172,7 +173,7 @@ Use this if you want isolated or self-hosted DNS-01 handling.
     - Manual mode: Create a free acme-dns account and set the credentials in the configuration.
     - Automatic mode: leave global credentials empty. The adapter registers acme-dns accounts per collection and stores credentials in `acme-dns collection overrides`.
 2. In your **primary DNS provider**, add a `CNAME` record:
-    - **Name:** `_acme-challenge.your-domain.de`
+    - **Name:** `_acme-challenge` (or `_acme-challenge.subdomain` for subdomains)
     - **Target:** the acme-dns target hostname returned by the account
 3. Optional: set `DNS-01 Base URL` for self-hosted acme-dns. If empty, `https://auth.acme-dns.io` is used.
 
