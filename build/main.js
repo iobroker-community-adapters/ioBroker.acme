@@ -825,10 +825,17 @@ class AcmeAdapter extends utils.Adapter {
                     if (this.config.dns01Active) {
                         challengePriority.push('dns-01');
                     }
+                    // Work around acme-client DNS preflight issues for CNAME alias flows.
+                    // Keep this scoped to DNS-only mode so HTTP-01 verification is unaffected.
+                    const skipChallengeVerification = !!this.config.dns01Alias && this.config.dns01Active && !this.config.http01Active;
+                    if (skipChallengeVerification) {
+                        this.log.info('DNS-01 alias configured in DNS-only mode: skipping local ACME challenge pre-verification and relying on CA validation.');
+                    }
                     cert = (await this.acmeClient.auto({
                         csr,
                         email: this.config.maintainerEmail,
                         termsOfServiceAgreed: true,
+                        skipChallengeVerification,
                         challengePriority,
                         challengeCreateFn: async (authz, challenge, keyAuthorization) => {
                             this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
