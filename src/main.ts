@@ -706,6 +706,64 @@ class AcmeAdapter extends utils.Adapter {
         return name.trim().replace(/\.+$/, '').toLowerCase();
     }
 
+    private async resolveTxtViaResolver(resolver: dnsPromises.Resolver, recordName: string): Promise<string[]> {
+        try {
+            const cnameRecords = await resolver.resolveCname(recordName);
+            if (cnameRecords.length > 0) {
+                return this.resolveTxtViaResolver(resolver, cnameRecords[0]);
+            }
+        } catch (err) {
+            this.log.debug(`DNS CNAME lookup failed for ${recordName}: ${AcmeAdapter.getErrorMessage(err)}`);
+        }
+
+        try {
+            const txtRecords = await resolver.resolveTxt(recordName);
+            return txtRecords.flat().filter(entry => typeof entry === 'string');
+        } catch (err) {
+            this.log.debug(`DNS TXT lookup failed for ${recordName}: ${AcmeAdapter.getErrorMessage(err)}`);
+            return [];
+        }
+    }
+
+    private async waitForDnsPropagation(recordName: string, expectedValue: string): Promise<void> {
+        const waitForMs = 5000;
+        const maxAttempts = 36;
+        const resolvers: Array<{ name: string; resolver: dnsPromises.Resolver }> = [
+            { name: 'system resolver', resolver: new dnsPromises.Resolver() },
+            { name: '1.1.1.1', resolver: new dnsPromises.Resolver() },
+            { name: '8.8.8.8', resolver: new dnsPromises.Resolver() },
+        ];
+
+        resolvers[1].resolver.setServers(['1.1.1.1']);
+        resolvers[2].resolver.setServers(['8.8.8.8']);
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+            const checks = await Promise.all(
+                resolvers.map(async ({ name, resolver }) => {
+                    const values = await this.resolveTxtViaResolver(resolver, recordName);
+                    return {
+                        name,
+                        ok: values.includes(expectedValue),
+                    };
+                }),
+            );
+
+            if (checks.every(check => check.ok)) {
+                this.log.info(`DNS propagation verified for ${recordName} on system and public resolvers.`);
+                return;
+            }
+
+            const pending = checks.filter(check => !check.ok).map(check => check.name);
+            this.log.debug(
+                `DNS propagation not yet complete for ${recordName}. Pending: ${pending.join(', ')}. Retrying in ${waitForMs}ms. (Attempt ${attempt} / ${maxAttempts})`,
+            );
+
+            await new Promise(resolve => setTimeout(resolve, waitForMs));
+        }
+
+        throw new Error(`Timed out waiting for DNS propagation of ${recordName}`);
+    }
+
     private async warnIfAcmeDnsDelegationLooksWrong(
         collectionId: string,
         authz: any,
@@ -951,22 +1009,12 @@ class AcmeAdapter extends utils.Adapter {
                         challengePriority.push('dns-01');
                     }
 
-                    // Work around acme-client DNS preflight issues for CNAME alias flows.
-                    // Keep this scoped to DNS-only mode so HTTP-01 verification is unaffected.
-                    const skipChallengeVerification =
+                    const aliasDnsOnlyFlow =
                         !!this.config.dns01Alias && this.config.dns01Active && !this.config.http01Active;
-                    const aliasPropagationDelayMs = skipChallengeVerification
-                        ? Math.max(0, Number(this.config.dns01PpropagationDelay) || 0)
-                        : 0;
-                    if (skipChallengeVerification) {
+                    if (aliasDnsOnlyFlow) {
                         this.log.info(
-                            'DNS-01 alias configured in DNS-only mode: skipping local ACME challenge pre-verification and relying on CA validation.',
+                            'DNS-01 alias configured in DNS-only mode: waiting for DNS propagation before continuing the ACME flow.',
                         );
-                        if (aliasPropagationDelayMs > 0) {
-                            this.log.info(
-                                `DNS-01 alias configured: applying propagation delay of ${aliasPropagationDelayMs}ms before notifying the CA.`,
-                            );
-                        }
                     }
 
                     cert = (
@@ -974,7 +1022,6 @@ class AcmeAdapter extends utils.Adapter {
                             csr,
                             email: this.config.maintainerEmail,
                             termsOfServiceAgreed: true,
-                            skipChallengeVerification,
                             challengePriority,
                             challengeCreateFn: async (authz, challenge, keyAuthorization) => {
                                 this.log.debug(`Satisfying challenge ${challenge.type} for ${authz.identifier.value}`);
@@ -998,15 +1045,18 @@ class AcmeAdapter extends utils.Adapter {
                                         challengeData;
                                     await handler.set(challengeData);
 
-                                    if (skipChallengeVerification && aliasPropagationDelayMs > 0) {
+                                    if (aliasDnsOnlyFlow) {
                                         const challengeDnsHost =
                                             challengeData?.challenge?.dnsHost ||
                                             challengeData?.dnsHost ||
                                             `_acme-challenge.${authz.identifier.value}`;
                                         this.log.info(
-                                            `Waiting ${aliasPropagationDelayMs}ms for DNS propagation of ${challengeDnsHost} before notifying the CA.`,
+                                            `Waiting for DNS propagation of ${challengeDnsHost} on system and public resolvers before notifying the CA.`,
                                         );
-                                        await new Promise(resolve => setTimeout(resolve, aliasPropagationDelayMs));
+                                        await this.waitForDnsPropagation(
+                                            challengeDnsHost,
+                                            challengeData.challenge.dnsAuthorization,
+                                        );
                                     }
                                 } else {
                                     const challengeData: any = {

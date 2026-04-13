@@ -294,7 +294,7 @@
           "md": 6,
           "lg": 4,
           "xl": 4,
-          "hidden": "!data.dns01Active || (!data.dns01Alias && data.dns01Module != 'acme-dns-01-cloudflare')"
+          "hidden": "!data.dns01Active || data.dns01Module != 'acme-dns-01-cloudflare'"
         },
         "dns01OapiPassword": {
           "newLine": true,
