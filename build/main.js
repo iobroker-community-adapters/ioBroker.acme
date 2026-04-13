@@ -225,6 +225,11 @@ class AcmeAdapter extends utils.Adapter {
                     dns01Props[key.slice(6)] = value;
                 }
             }
+            // Only a subset of dns-01 modules supports propagationDelay natively.
+            // For alias-based flows we handle waiting in adapter code before CA notify.
+            if (this.config.dns01Module !== 'acme-dns-01-cloudflare') {
+                delete dns01Props.propagationDelay;
+            }
             // Add the module-specific options
             switch (this.config.dns01Module) {
                 case 'acme-dns-01-namecheap':
@@ -828,8 +833,14 @@ class AcmeAdapter extends utils.Adapter {
                     // Work around acme-client DNS preflight issues for CNAME alias flows.
                     // Keep this scoped to DNS-only mode so HTTP-01 verification is unaffected.
                     const skipChallengeVerification = !!this.config.dns01Alias && this.config.dns01Active && !this.config.http01Active;
+                    const aliasPropagationDelayMs = skipChallengeVerification
+                        ? Math.max(0, Number(this.config.dns01PpropagationDelay) || 0)
+                        : 0;
                     if (skipChallengeVerification) {
                         this.log.info('DNS-01 alias configured in DNS-only mode: skipping local ACME challenge pre-verification and relying on CA validation.');
+                        if (aliasPropagationDelayMs > 0) {
+                            this.log.info(`DNS-01 alias configured: applying propagation delay of ${aliasPropagationDelayMs}ms before notifying the CA.`);
+                        }
                     }
                     cert = (await this.acmeClient.auto({
                         csr,
@@ -852,6 +863,13 @@ class AcmeAdapter extends utils.Adapter {
                                 this.dnsChallengeCache[this.getDnsChallengeCacheKey(authz, challenge)] =
                                     challengeData;
                                 await handler.set(challengeData);
+                                if (skipChallengeVerification && aliasPropagationDelayMs > 0) {
+                                    const challengeDnsHost = challengeData?.challenge?.dnsHost ||
+                                        challengeData?.dnsHost ||
+                                        `_acme-challenge.${authz.identifier.value}`;
+                                    this.log.info(`Waiting ${aliasPropagationDelayMs}ms for DNS propagation of ${challengeDnsHost} before notifying the CA.`);
+                                    await new Promise(resolve => setTimeout(resolve, aliasPropagationDelayMs));
+                                }
                             }
                             else {
                                 const challengeData = {
