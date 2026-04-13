@@ -81,10 +81,10 @@
     "release-major": "release-script major --yes",
     "update-packages": "npx -y npm-check-updates --upgrade && cd src-admin && npx -y npm-check-updates --upgrade",
     "npm": "npm i && cd src-admin && npm i -f",
-    "0-clean": "node tasks --0-clean",
-    "1-npm": "node tasks --1-npm",
-    "2-build": "node tasks --2-build",
-    "3-copy": "node tasks --3-copy"
+    "0-clean": "node tasks --admin-0-clean",
+    "1-npm": "node tasks --admin-1-npm",
+    "2-build": "node tasks --admin-2-compile",
+    "3-copy": "node tasks --admin-3-copy"
   },
   "bugs": {
     "url": "https://github.com/iobroker-community-adapters/ioBroker.acme/issues"

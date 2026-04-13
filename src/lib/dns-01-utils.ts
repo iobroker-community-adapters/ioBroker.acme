@@ -1,5 +1,3 @@
-import crypto from 'node:crypto';
-
 interface BuildDnsChallengeDataOptions {
     identifierValue: string;
     identifierType?: string;
@@ -42,13 +40,6 @@ export function normalizeDnsAlias(alias?: string | null): string {
     normalized = normalized.replace(/^_acme-challenge\./i, '');
     normalized = normalized.replace(/\.$/, '');
     return normalized;
-}
-
-/**
- * Compute the DNS-01 TXT authorization value from keyAuthorization.
- */
-export function computeDnsAuthorization(keyAuthorization: string): string {
-    return crypto.createHash('sha256').update(keyAuthorization).digest('base64url');
 }
 
 /**
@@ -95,7 +86,8 @@ export function buildDnsChallengeData(opts: BuildDnsChallengeDataOptions): DnsCh
     const dnsHost = `_acme-challenge.${identifierValue}`;
     const dnsZone = pickBestDnsZone(dnsHost, opts.zones || []) || deriveFallbackZone(identifierValue);
     const dnsPrefix = deriveDnsPrefix(dnsHost, dnsZone);
-    const dnsAuthorization = computeDnsAuthorization(opts.keyAuthorization);
+    // acme-client already passes the final DNS TXT value for dns-01 here.
+    const dnsAuthorization = opts.keyAuthorization;
 
     return {
         identifier: {
