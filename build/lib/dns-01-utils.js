@@ -1,8 +1,20 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.computeDnsAuthorization = computeDnsAuthorization;
 exports.normalizeDnsAlias = normalizeDnsAlias;
 exports.pickBestDnsZone = pickBestDnsZone;
 exports.buildDnsChallengeData = buildDnsChallengeData;
+const node_crypto_1 = __importDefault(require("node:crypto"));
+/**
+ * Compute the RFC dns-01 TXT value from keyAuthorization.
+ * Kept as an exported helper for compatibility with existing tests.
+ */
+function computeDnsAuthorization(keyAuthorization) {
+    return node_crypto_1.default.createHash('sha256').update(keyAuthorization).digest('base64url');
+}
 /**
  * Normalize a DNS alias domain entered by the user.
  * Accepts optional leading _acme-challenge. and trailing dot.

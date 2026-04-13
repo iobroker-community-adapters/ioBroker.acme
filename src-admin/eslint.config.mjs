@@ -5,8 +5,8 @@ export default [
     {
         languageOptions: {
             parserOptions: {
-                allowDefaultProject: {
-                    allow: ['*.js', '*.mjs'],
+                projectService: {
+                    allowDefaultProject: ['*.js', '*.mjs', 'src/theme.js'],
                 },
                 tsconfigRootDir: import.meta.dirname,
                 project: './tsconfig.json',
@@ -22,6 +22,6 @@ export default [
         },
     },
     {
-        ignores: ['build/**/*', 'node_modules/**/*', '**/*.mjs', '**/*.jsx'],
+        ignores: ['.__mf__temp/**/*', 'build/**/*', 'node_modules/**/*', '**/*.mjs', '**/*.jsx'],
     },
 ];

@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 interface BuildDnsChallengeDataOptions {
     identifierValue: string;
     identifierType?: string;
@@ -5,6 +7,14 @@ interface BuildDnsChallengeDataOptions {
     token: string;
     keyAuthorization: string;
     zones?: string[];
+}
+
+/**
+ * Compute the RFC dns-01 TXT value from keyAuthorization.
+ * Kept as an exported helper for compatibility with existing tests.
+ */
+export function computeDnsAuthorization(keyAuthorization: string): string {
+    return crypto.createHash('sha256').update(keyAuthorization).digest('base64url');
 }
 
 interface DnsChallengeShape {

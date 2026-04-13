@@ -10,7 +10,7 @@ ioBroker.acme is an ioBroker adapter that generates SSL/TLS certificate bundles 
 
 ### Build
 ```bash
-npm run build          # Full build: clean + npm install src-admin + Vite build + copy + TypeScript compile
+npm run build          # Full admin build: clean + npm install src-admin + Vite build + copy
 npm run build:tsc      # TypeScript compile only (src/ -> build/)
 npm run npm            # Install deps in root and src-admin
 ```
@@ -23,8 +23,7 @@ Build steps can be run individually:
 
 ### Test
 ```bash
-npm test                    # All tests (unit + package + integration + gui)
-npm run test:js             # Mocha unit tests
+npm test                    # All tests (package + integration + gui)
 npm run test:package        # Package validation
 npm run test:integration    # Integration tests + GUI tests
 npm run test:gui            # GUI tests only
@@ -63,7 +62,7 @@ npm run release        # Interactive release via @alcalzone/release-script
 
 ### Configuration
 - `admin/jsonConfig.json` — Declarative admin UI (tabs: Main, Challenges, Collections, Status). This is the primary config UI definition.
-- `io-package.json` — ioBroker adapter metadata. Mode is `schedule`. Encrypted native fields: `dns01Okey`, `dns01Osecret`, `dns01Otoken`, `dns01OapiKey`, `dns01OapiUser`.
+- `io-package.json` — ioBroker adapter metadata. Mode is `schedule`. Encrypted native fields: `dns01Okey`, `dns01Osecret`, `dns01Otoken`, `dns01OapiKey`, `dns01OapiPassword`, `dns01CollectionOverrides`.
 
 ### Key adapter behaviors
 - Runs as a scheduled adapter (not daemon) — executes, processes certificates, then exits.
