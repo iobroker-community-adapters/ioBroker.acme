@@ -5,6 +5,15 @@
 
 This file contains instructions and best practices for GitHub Copilot when working on ioBroker adapter development.
 
+## Scope and Sync Policy
+
+- This file is intentionally a curated, repository-specific adaptation of the upstream template.
+- It is not intended to mirror all files and automation content of the upstream repository.
+- Location is intentionally `.github/copilot-instructions.md` because this path is an always-on workspace instruction location for Copilot.
+- If a full template refresh is desired, use the upstream automation templates instead of manual copy/paste of all repository files:
+  - Initial setup automation: `https://raw.githubusercontent.com/DrozmotiX/ioBroker-Copilot-Instructions/main/templates/initial-setup-automation.md`
+  - Quick update template: `https://raw.githubusercontent.com/DrozmotiX/ioBroker-Copilot-Instructions/main/templates/copy-paste-template.md`
+
 ---
 
 ## 📑 Table of Contents
@@ -597,21 +606,6 @@ The ACME adapter uses a comprehensive JSON Config for certificate management:
           "help": "API secret for DNS provider (if required)",
           "hidden": "!data.dns01Active"
         },
-        "dns01OverifyPropagation": {
-          "type": "checkbox",
-          "label": "Verify DNS Propagation",
-          "help": "Wait for DNS records to propagate before proceeding",
-          "hidden": "!data.dns01Active"
-        },
-        "dns01PpropagationDelay": {
-          "type": "number",
-          "label": "Propagation Delay (ms)",
-          "min": 30000,
-          "max": 600000,
-          "default": 120000,
-          "help": "Time to wait for DNS propagation",
-          "hidden": "!data.dns01Active || !data.dns01OverifyPropagation"
-        }
       }
     },
     "collections": {
@@ -938,8 +932,6 @@ declare global {
       dns01Osecret: string;
       dns01Otoken: string;
       dns01Ousername: string;
-      dns01OverifyPropagation: boolean;
-      dns01PpropagationDelay: number;
       collections: Array<{
         id: string;
         commonName: string;

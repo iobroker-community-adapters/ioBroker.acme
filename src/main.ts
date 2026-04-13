@@ -231,16 +231,13 @@ class AcmeAdapter extends utils.Adapter {
                 if (key.startsWith('dns01O')) {
                     // An option...
                     dns01Options[key.slice(6)] = value;
+                } else if (key === 'dns01OverifyPropagation' || key === 'dns01PpropagationDelay') {
+                    // Deprecated: handled internally/removed from the public config.
+                    continue;
                 } else if (key.startsWith('dns01P')) {
                     // A property to add after creation
                     dns01Props[key.slice(6)] = value;
                 }
-            }
-
-            // Only a subset of dns-01 modules supports propagationDelay natively.
-            // For alias-based flows we handle waiting in adapter code before CA notify.
-            if (this.config.dns01Module !== 'acme-dns-01-cloudflare') {
-                delete dns01Props.propagationDelay;
             }
 
             // Add the module-specific options
@@ -249,13 +246,7 @@ class AcmeAdapter extends utils.Adapter {
                     dns01Options.baseUrl = 'https://api.namecheap.com/xml.response';
                     break;
                 case 'acme-dns-01-netcup':
-                    // Netcup's set() polls until the TXT record is visible on
-                    // authoritative, public, and system resolvers — the NPM
-                    // package handles propagation internally and sets its own
-                    // propagationDelay to 0; don't let the generic default
-                    // from io-package.json override it.
-                    dns01Options.verifyPropagation = true;
-                    delete dns01Props.propagationDelay;
+                    // Netcup handles its own propagation verification internally.
                     break;
             }
 
