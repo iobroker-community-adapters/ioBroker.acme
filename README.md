@@ -124,6 +124,8 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 - (@GermanBluefox) Corrected error with admin 7.4.3
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
