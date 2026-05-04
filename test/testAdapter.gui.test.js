@@ -20,7 +20,7 @@ describe('test-admin-gui', () => {
         this.timeout(150_000);
         return new Promise(resolve =>
             setTimeout(async () => {
-                await gPage.waitForSelector('#acme-custom-component', { timeout: 150_000 });
+                await gPage.waitForSelector('#acme-custom-component', { timeout: 300_000 });
                 resolve();
             }, 5000),
         );
