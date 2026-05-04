@@ -17,7 +17,7 @@ describe('test-admin-gui', () => {
     });
 
     it('Check admin server', async function () {
-        this.timeout(150_000);
+        this.timeout(300_000);
         return new Promise(resolve =>
             setTimeout(async () => {
                 await gPage.waitForSelector('#acme-custom-component', { timeout: 300_000 });
