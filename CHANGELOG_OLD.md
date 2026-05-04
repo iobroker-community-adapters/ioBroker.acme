@@ -1,4 +1,10 @@
 # Older changes
+## 1.0.5 (2024-12-08)
+
+- (@GermanBluefox) Corrected error with admin 7.4.3
+
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## 1.0.3 (2024-11-27)
 
 - (@GermanBluefox) Migrated GUI for admin 7 (one more time)
