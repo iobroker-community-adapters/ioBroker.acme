@@ -49,7 +49,7 @@
     "@iobroker/legacy-testing": "^2.0.2",
     "@iobroker/testing": "^5.2.2",
     "@tsconfig/node20": "^20.1.9",
-    "@types/node": "^25.3.3",
+    "@types/node": "^22.19.19",
     "@types/x509.js": "^1.0.3",
     "colorette": "^2.0.20",
     "puppeteer": "^24.40.0",
