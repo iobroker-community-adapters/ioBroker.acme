@@ -487,9 +487,7 @@ class AcmeAdapter extends utils.Adapter {
         // Get an existing collection & see if it needs renewing
         let create = false;
         const existingCollection = (await this.certManager?.getCollection(collection.id)) as
-            | CertificateCollection
-            | null
-            | undefined;
+            CertificateCollection | null | undefined;
         if (!existingCollection) {
             this.log.info(`Collection ${collection.id} does not exist - will create`);
             create = true;
