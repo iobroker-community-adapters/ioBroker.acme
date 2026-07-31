@@ -4,27 +4,15 @@
     // https://github.com/tsconfig/bases#node-20-tsconfigjson
     "extends": "@tsconfig/node20/tsconfig.json",
     "compilerOptions": {
-        // do not compile anything, this file is just to configure type checking
         "noEmit": true,
-
-        // check JS files
         "allowJs": true,
         "checkJs": true,
-
-        // This is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
-
-        // If you want to disable the stricter type checks (not recommended), uncomment the following line
-        // "strict": false,
-        // And enable some of those features for more fine-grained control
-        // "strictNullChecks": true,
-        // "strictPropertyInitialization": true,
-        // "strictBindCallApply": true,
+        "strict": true,
+        "strictNullChecks": true,
         "noImplicitAny": false,
-        // "noUnusedLocals": true,
-        // "noUnusedParameters": true,
+        "rootDir": "./src",
         "useUnknownInCatchVariables": false,
-
     },
     "include": [
         "**/*.js",

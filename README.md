@@ -97,6 +97,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Migrated to admin 8
+
 ### 3.1.0 (2026-05-04)
 - (copilot) Adapter requires node.js >= 22 now
 - (mcm1957) Dependencies have been updated

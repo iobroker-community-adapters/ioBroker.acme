@@ -3,9 +3,9 @@ import React from 'react';
 import { LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 // important to make from package and not from some children.
 // invalid
-// import I18n from '@iobroker/adapter-react-v5/Components/I18n';
+// import I18n from '@iobroker/gui-components/Components/I18n';
 // valid
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 const styles: { [name: string]: React.CSSProperties } = {
