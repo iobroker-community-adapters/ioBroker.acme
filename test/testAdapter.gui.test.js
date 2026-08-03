@@ -5,6 +5,7 @@ const packageJson = require('../package.json');
 const adapterName = packageJson.name.replace('iobroker.', '');
 let gPage;
 const rootDir = `${__dirname}/../`;
+process.env.ADMIN_VERSION = '8.0.1';
 
 describe('test-admin-gui', () => {
     before(async function () {
