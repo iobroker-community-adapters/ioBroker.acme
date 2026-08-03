@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "news": {
+      "4.0.2": {
+        "en": "Migrated to admin 8",
+        "de": "Migriert zu Admin 8",
+        "ru": "Перенесено на админку 8",
+        "pt": "Migrado para admin 8",
+        "nl": "Overgezet naar beheerder 8",
+        "fr": "Migré vers l'administrateur 8",
+        "it": "Migrato ad admin 8",
+        "es": "Migrado a admin 8",
+        "pl": "Przeniesiono do administratora 8",
+        "uk": "Перенесено до адміністратора 8",
+        "zh-cn": "已迁移至 admin 8"
+      },
       "3.1.0": {
         "en": "Adapter requires node.js >= 22 now\nDependencies have been updated",
         "de": "Adapter benötigt node.js >= 22 jetzt\nAbhängigkeiten wurden aktualisiert",
