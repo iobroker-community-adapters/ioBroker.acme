@@ -97,7 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.0 (2026-08-03)
 - (@GermanBluefox) Migrated to admin 8
 
 ### 3.1.0 (2026-05-04)
@@ -118,11 +118,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
 - (@GermanBluefox) Adater was migrated to TypeScript and vite
-
-### 1.0.6 (2024-12-27)
-
-- (mcm1957) Missing size attributes for jsonConfig have been added.
-- (mcm1957) Dependencies have been updated
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

@@ -1,4 +1,9 @@
 # Older changes
+## 1.0.6 (2024-12-27)
+
+- (mcm1957) Missing size attributes for jsonConfig have been added.
+- (mcm1957) Dependencies have been updated
+
 ## 1.0.5 (2024-12-08)
 
 - (@GermanBluefox) Corrected error with admin 7.4.3
