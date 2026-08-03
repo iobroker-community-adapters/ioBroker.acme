@@ -97,13 +97,16 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Migrated to admin 8
+
 ### 3.1.0 (2026-05-04)
 - (copilot) Adapter requires node.js >= 22 now
 - (mcm1957) Dependencies have been updated
 
 ### 3.0.2 (2026-03-10)
 - (@GermanBluefox) Correcting configuration dialog
-- (@GermanBluefox) Added tests for GUI component
+- (@GermanBluefox) Added tests for the GUI component
 
 ### 3.0.0 (2026-03-05)
 - (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
