@@ -97,7 +97,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.1 (2026-08-03)
 - (@GermanBluefox) Migrated to admin 8
 
 ### 3.1.0 (2026-05-04)
