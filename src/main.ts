@@ -16,6 +16,7 @@ import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
+import { applyPostAsGetPolling } from './lib/root-acme-post-as-get';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -287,6 +288,12 @@ class AcmeAdapter extends utils.Adapter {
                 ? 'https://acme-staging-v02.api.letsencrypt.org/directory'
                 : 'https://acme-v02.api.letsencrypt.org/directory';
             this.log.debug(`Using URL: ${directoryUrl}`);
+
+            // ACME.js as published on npm re-sends the challenge trigger and
+            // the order finalization, and today's Let's Encrypt rejects the
+            // repeats with 409 and 403 (#49). Restore the polling behaviour of
+            // the unpublished upstream 3.1.1 before anything uses the client.
+            applyPostAsGetPolling();
 
             this.acme = ACME.create({
                 maintainerEmail: this.config.maintainerEmail,
