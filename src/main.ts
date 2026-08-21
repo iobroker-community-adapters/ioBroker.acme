@@ -318,7 +318,15 @@ class AcmeAdapter extends utils.Adapter {
             if (accountObject) {
                 this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
 
-                if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
+                // Let's Encrypt stopped storing contact information in January
+                // 2025, and its newAccount response no longer carries a
+                // `contact` field, so a saved account may legitimately have
+                // none. Two things follow: the index must be guarded, and a
+                // missing contact has to mean "cannot verify" rather than
+                // "does not match" -- otherwise a new account is registered on
+                // every single run.
+                const savedContact = accountObject.native?.full?.contact?.[0];
+                if (savedContact && savedContact !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
                 } else {
                     this.account = accountObject.native as AcmeAccount;

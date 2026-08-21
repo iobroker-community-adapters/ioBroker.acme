@@ -97,6 +97,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (chris299) Fixed certificate renewal failing with "Cannot read properties of undefined (reading '0')"
+
 ### 4.0.3 (2026-08-03)
 - (@GermanBluefox) Migrated to admin 8
 - (@GermanBluefox) Adapter requires admin >= 8.0.0 now
