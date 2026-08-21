@@ -64,7 +64,8 @@ export interface AcmeAdapterConfig {
         | 'acme-dns-01-namedotcom'
         | 'acme-dns-01-route53'
         | 'acme-dns-01-vultr'
-        | 'acme-dns-01-netcup';
+        | 'acme-dns-01-netcup'
+        | 'acme-dns-01-ednsde';
     dns01OapiUser: string;
     dns01OapiKey: string;
     dns01OclientIp: string;
