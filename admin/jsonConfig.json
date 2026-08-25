@@ -147,6 +147,10 @@
                         {
                             "label": "eDNS.de",
                             "value": "acme-dns-01-ednsde"
+                        },
+                        {
+                            "label": "IONOS",
+                            "value": "acme-dns-01-ionos"
                         }
                     ],
                     "xs": 12,
@@ -246,7 +250,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4,
-                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-ednsde','acme-dns-01-gandi','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
+                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-ednsde','acme-dns-01-gandi','acme-dns-01-ionos','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
                 },
                 "dns01Ousername": {
                     "newLine": true,

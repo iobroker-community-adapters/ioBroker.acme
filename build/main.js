@@ -48,6 +48,7 @@ const x509_js_1 = __importDefault(require("x509.js"));
 const package_json_1 = __importDefault(require("../package.json"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
 const greenlock_challenge_shim_1 = require("./lib/greenlock-challenge-shim");
+const dns_01_ionos_1 = require("./lib/dns-01-ionos");
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
@@ -216,6 +217,12 @@ class AcmeAdapter extends utils.Adapter {
                     dns01Options.verifyPropagation = true;
                     delete dns01Props.propagationDelay;
                     break;
+                case 'acme-dns-01-ionos':
+                    // Implemented in this repository, not on npm. It reports no
+                    // propagation delay of its own, so the generic default from
+                    // io-package.json applies.
+                    dns01Options.log = (message) => this.log.debug(`dns-01: ${message}`);
+                    break;
                 case 'acme-dns-01-ednsde':
                     // eDNS' set() polls the zone's authoritative nameservers
                     // until they all serve the record, so it reports
@@ -243,13 +250,19 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
             try {
-                // Dynamic import - module name comes from config
-                const dns01Module = await import(this.config.dns01Module);
-                if (dns01Module.default) {
-                    thisChallenge = dns01Module.default.create(dns01Options);
+                if (this.config.dns01Module === 'acme-dns-01-ionos') {
+                    // Shipped with the adapter rather than pulled from npm.
+                    thisChallenge = (0, dns_01_ionos_1.create)(dns01Options);
                 }
                 else {
-                    thisChallenge = dns01Module.create(dns01Options);
+                    // Dynamic import - module name comes from config
+                    const dns01Module = await import(this.config.dns01Module);
+                    if (dns01Module.default) {
+                        thisChallenge = dns01Module.default.create(dns01Options);
+                    }
+                    else {
+                        thisChallenge = dns01Module.create(dns01Options);
+                    }
                 }
             }
             catch (err) {

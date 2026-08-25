@@ -14,6 +14,7 @@ import type { AdapterOptions } from '@iobroker/adapter-core';
 import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
 import { createChallengeShim, type ChallengeShim } from './lib/greenlock-challenge-shim';
+import { create as createIonosChallenge } from './lib/dns-01-ionos';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -219,6 +220,12 @@ class AcmeAdapter extends utils.Adapter {
                     dns01Options.verifyPropagation = true;
                     delete dns01Props.propagationDelay;
                     break;
+                case 'acme-dns-01-ionos':
+                    // Implemented in this repository, not on npm. It reports no
+                    // propagation delay of its own, so the generic default from
+                    // io-package.json applies.
+                    dns01Options.log = (message: string) => this.log.debug(`dns-01: ${message}`);
+                    break;
                 case 'acme-dns-01-ednsde':
                     // eDNS' set() polls the zone's authoritative nameservers
                     // until they all serve the record, so it reports
@@ -248,12 +255,19 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge: ChallengeHandler | undefined;
             try {
-                // Dynamic import - module name comes from config
-                const dns01Module = await import(this.config.dns01Module);
-                if (dns01Module.default) {
-                    thisChallenge = dns01Module.default.create(dns01Options);
+                if (this.config.dns01Module === 'acme-dns-01-ionos') {
+                    // Shipped with the adapter rather than pulled from npm.
+                    thisChallenge = createIonosChallenge(
+                        dns01Options as unknown as Parameters<typeof createIonosChallenge>[0],
+                    ) as unknown as ChallengeHandler;
                 } else {
-                    thisChallenge = dns01Module.create(dns01Options);
+                    // Dynamic import - module name comes from config
+                    const dns01Module = await import(this.config.dns01Module);
+                    if (dns01Module.default) {
+                        thisChallenge = dns01Module.default.create(dns01Options);
+                    } else {
+                        thisChallenge = dns01Module.create(dns01Options);
+                    }
                 }
             } catch (err) {
                 this.log.error(
