@@ -1,5 +1,15 @@
 "use strict";
 /* eslint-disable */
+// Copyright 2018-present AJ ONeal. All rights reserved
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+/*
+ * NOTE ON LICENSING: this single file is derived from @root/acme and is
+ * therefore covered by the MPL-2.0 above, not by the MIT license that applies
+ * to the rest of ioBroker.acme. MPL-2.0 is file-level copyleft: keep this
+ * notice, and keep modifications to this file under MPL-2.0.
+ */
 /*
  * Restores POST-as-GET polling in ACME.js.
  *
