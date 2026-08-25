@@ -1,4 +1,9 @@
 # Older changes
+## 2.0.0 (2026-02-12)
+- (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
+- (mcm1957) Dependencies have been updated
+- (@GermanBluefox) Adater was migrated to TypeScript and vite
+
 ## 1.0.6 (2024-12-27)
 
 - (mcm1957) Missing size attributes for jsonConfig have been added.

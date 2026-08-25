@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "4.0.3",
+    "version": "5.0.0",
     "news": {
+      "5.0.0": {
+        "en": "Added support for deSEC and PowerDNS DNS-01 challenges\nFixed DigitalOcean, DNSimple, Gandi, name.com and Route53 DNS-01 challenges failing with \"request is not a function\" after the acme-client migration\nAdded support for Hetzner and Dynu DNS-01 challenges\nAdded support for IONOS DNS-01 challenge\nBREAKING: Migrated from the abandoned ACME.js to acme-client. The saved ACME account is registered once anew on first run after the update.\nAdded support for eDNS.de DNS-01 challenge\nFixed certificate issuance failing against current Let's Encrypt with 409 / \"Unhandled status '403'\"\nFixed certificate renewal failing with \"Cannot read properties of undefined (reading '0')\"",
+        "de": "Unterstützung für deSEC- und PowerDNS-DNS-01-Herausforderungen hinzugefügt.\nBehebung des Fehlers „Anfrage ist keine Funktion“ bei den DNS-01-Herausforderungen von DigitalOcean, DNSimple, Gandi, name.com und Route53 nach der Migration von acme-client.\nUnterstützung für Hetzner- und Dynu-DNS-01-Herausforderungen hinzugefügt.\nUnterstützung für die IONOS DNS-01-Herausforderung hinzugefügt.\nEilmeldung: Migration von der veralteten ACME.js-Version zu acme-client. Das gespeicherte ACME-Konto wird nach dem Update beim ersten Start neu registriert.\nUnterstützung für die eDNS.de DNS-01-Herausforderung hinzugefügt.\nDie Ausstellung des Zertifikats schlug mit dem Fehler 409 / \"Unbehandelter Status '403'\" bei Let's Encrypt fehl.\nDie Erneuerung des Zertifikats schlug mit der Fehlermeldung „Eigenschaften von undefiniert können nicht gelesen werden (liest '0')“ fehl.",
+        "ru": "Добавлена поддержка запросов DNS-01 для deSEC и PowerDNS.\nИсправлена ошибка, из-за которой запросы DNS-01 для DigitalOcean, DNSimple, Gandi, name.com и Route53 завершались с ошибкой «запрос не является функцией» после миграции acme-client.\nДобавлена поддержка проверок DNS-01 от Hetzner и Dynu.\nДобавлена поддержка проверки IONOS DNS-01.\nВАЖНАЯ НОВОСТЬ: Произошла миграция с заброшенного ACME.js на acme-client. Сохраненная учетная запись ACME регистрируется заново при первом запуске после обновления.\nДобавлена поддержка проверки подлинности eDNS.de DNS-01.\nИсправлена ошибка выдачи сертификатов в текущей версии Let's Encrypt, приводившая к ошибке 409 / \"Необработанный статус '403'\".\nИсправлена ошибка обновления сертификата, приводившая к сбою \"Невозможно прочитать свойства неопределенного объекта (чтение '0')\".",
+        "pt": "Adicionado suporte para os desafios DNS-01 deSEC e PowerDNS\nCorrigido o problema em que os desafios DNS-01 da DigitalOcean, DNSimple, Gandi, name.com e Route53 falhavam com a mensagem \"a solicitação não é uma função\" após a migração do acme-client.\nAdicionado suporte para os desafios DNS-01 da Hetzner e da Dynu.\nAdicionado suporte para o desafio IONOS DNS-01\nÚLTIMA HORA: Migramos do ACME.js, que estava abandonado, para o acme-client. A conta ACME salva será registrada novamente na primeira execução após a atualização.\nAdicionado suporte para o desafio DNS-01 do eDNS.de\nCorrigido o problema de falha na emissão de certificados com o Let's Encrypt atual, retornando o erro 409 / \"Status não tratado '403'\".\nCorrigido o problema de falha na renovação do certificado com a mensagem \"Não é possível ler as propriedades de indefinido (leitura de '0')\".",
+        "nl": "Ondersteuning toegevoegd voor deSEC- en PowerDNS DNS-01-uitdagingen\nDe DNS-01-uitdagingen van DigitalOcean, DNSimple, Gandi, name.com en Route53 die mislukten met de foutmelding \"request is not a function\" zijn opgelost na de acme-client-migratie.\nOndersteuning toegevoegd voor Hetzner en Dynu DNS-01 uitdagingen\nOndersteuning toegevoegd voor de IONOS DNS-01-uitdaging.\nNIEUWS: Overgestapt van het verlaten ACME.js naar acme-client. Het opgeslagen ACME-account wordt na de update bij de eerste keer opstarten opnieuw geregistreerd.\nOndersteuning toegevoegd voor de eDNS.de DNS-01-uitdaging.\nHet probleem met het uitgeven van een vast certificaat voor de huidige Let's Encrypt-website is opgelost en geeft een 409-foutmelding / \"Onverwerkte status '403'\".\nHet probleem met het mislukken van de certificaatvernieuwing is opgelost met de foutmelding \"Kan geen eigenschappen van ongedefinieerd lezen (leest '0')\".",
+        "fr": "Ajout de la prise en charge des défis DNS-01 de deSEC et PowerDNS\nCorrection d'un problème de défilement DNS-01 avec l'erreur « la requête n'est pas une fonction » rencontré avec DigitalOcean, DNSimple, Gandi, name.com et Route53 après la migration d'acme-client.\nAjout de la prise en charge des défis DNS-01 de Hetzner et Dynu\nAjout de la prise en charge du défi IONOS DNS-01\nDERNIÈRE MINUTE : Migration de l’application ACME.js (abandonnée) vers acme-client. Le compte ACME sauvegardé est réenregistré lors du premier lancement après la mise à jour.\nAjout de la prise en charge du défi DNS-01 d'eDNS.de\nCorrection d'un problème d'émission de certificats avec la version actuelle de Let's Encrypt (erreur 409 / « Statut non géré '403' »).\nCorrection d'un problème de renouvellement de certificat qui échouait avec le message « Impossible de lire les propriétés de undefined (lecture de '0') ».",
+        "it": "Aggiunto il supporto per le sfide DNS-01 di deSEC e PowerDNS.\nRisolto il problema per cui le sfide DNS-01 di DigitalOcean, DNSimple, Gandi, name.com e Route53 fallivano con l'errore \"request is not a function\" dopo la migrazione di acme-client.\nAggiunto il supporto per le sfide DNS-01 di Hetzner e Dynu.\nAggiunto il supporto per la sfida IONOS DNS-01\nULTIM'ORA: Migrazione effettuata dal progetto abbandonato ACME.js ad acme-client. L'account ACME salvato verrà registrato nuovamente al primo avvio dopo l'aggiornamento.\nAggiunto il supporto per la sfida DNS-01 di eDNS.de.\nL'emissione del certificato corretto non riesce con l'attuale Let's Encrypt con errore 409 / \"Stato non gestito '403'\"\nRisolto il problema di rinnovo del certificato che non riusciva con il messaggio \"Impossibile leggere le proprietà di undefined (lettura di '0')\"",
+        "es": "Se agregó compatibilidad con los desafíos DNS-01 de deSEC y PowerDNS.\nSe corrigieron los desafíos DNS-01 de DigitalOcean, DNSimple, Gandi, name.com y Route53 que fallaban con el mensaje \"la solicitud no es una función\" después de la migración de acme-client.\nSe agregó compatibilidad con los desafíos DNS-01 de Hetzner y Dynu.\nSe agregó compatibilidad con el desafío IONOS DNS-01.\nÚLTIMA HORA: Se ha migrado del abandonado ACME.js a acme-client. La cuenta ACME guardada se registra de nuevo la primera vez que se ejecuta tras la actualización.\nSe ha añadido compatibilidad con el desafío DNS-01 de eDNS.de.\nSe solucionó el problema de emisión de certificados que fallaba con la versión actual de Let's Encrypt con el código 409 / \"Estado no gestionado '403'\".\nSe solucionó el problema de renovación de certificados que fallaba con el mensaje \"No se pueden leer las propiedades de undefined (leyendo '0')\".",
+        "pl": "Dodano obsługę wyzwań deSEC i PowerDNS DNS-01\nNaprawiono problemy DigitalOcean, DNSimple, Gandi, name.com i Route53 DNS-01 powodujące błąd „żądanie nie jest funkcją” po migracji acme-client\nDodano obsługę wyzwań Hetzner i Dynu DNS-01\nDodano obsługę wyzwania IONOS DNS-01\nPILNE: Migracja z porzuconego pliku ACME.js do acme-client. Zapisane konto ACME jest rejestrowane ponownie przy pierwszym uruchomieniu po aktualizacji.\nDodano obsługę wyzwania eDNS.de DNS-01\nNaprawiono problem z wydawaniem certyfikatu w obecnym Let's Encrypt z błędem 409/„Nieobsłużony status '403'”\nNaprawiono błąd odnawiania certyfikatu powodujący błąd „Nie można odczytać właściwości niezdefiniowanego (odczyt „0”)”",
+        "uk": "Додано підтримку для викликів deSEC та PowerDNS DNS-01.\nВиправлено проблеми з DNS-01 для DigitalOcean, DNSimple, Gandi, name.com та Route53, через які після міграції acme-client виникало повідомлення «запит не є функцією».\nДодано підтримку для випробувань Hetzner та Dynu DNS-01.\nДодано підтримку для випробування IONOS DNS-01.\nВАЖЛИВО: Перенесено з покинутого ACME.js до acme-client. Збережений обліковий запис ACME реєструється заново під час першого запуску після оновлення.\nДодано підтримку для перевірки DNS-01 від eDNS.de.\nВиправлено помилку видачі сертифіката для поточного Let's Encrypt з помилкою 409 / \"Необроблений статус '403'\"\nВиправлено помилку поновлення сертифіката з повідомленням «Не вдається прочитати властивості невизначеного значення (читається '0')».",
+        "zh-cn": "新增对 deSEC 和 PowerDNS DNS-01 挑战的支持\n修复了 acme-client 迁移后 DigitalOcean、DNSimple、Gandi、name.com 和 Route53 DNS-01 质询失败并显示“请求不是一个函数”错误的问题。\n新增对 Hetzner 和 Dynu DNS-01 挑战的支持\n新增对 IONOS DNS-01 挑战的支持\n突发消息：已从已弃用的 ACME.js 迁移到 acme-client。更新后首次运行时，已保存的 ACME 帐户将重新注册一次。\n新增对 eDNS.de DNS-01 挑战的支持\n修复了针对当前 Let's Encrypt 的证书颁发失败问题，错误代码为 409 / “未处理的状态 '403'”。\n修复了证书续订失败并显示“无法读取未定义对象的属性（读取值为'0'）”的问题"
+      },
       "4.0.3": {
         "en": "Migrated to admin 8",
         "de": "Migriert zu Admin 8",
@@ -80,19 +93,6 @@
         "pl": "Dodano brakujące atrybuty rozmiaru dla jsonCOnfig.\nZaktualizowano zależności",
         "uk": "Додано атрибути розмірів для jsonCOnfig.\nЗалежність було оновлено",
         "zh-cn": "添加了 jsonconfig 的大小属性 .\n依赖关系已更新"
-      },
-      "1.0.5": {
-        "en": "Corrected error with admin 7.4.3",
-        "de": "Fehler behoben mit admin 7.4.3",
-        "ru": "Исправленная ошибка с admin 7.4.3",
-        "pt": "Erro correto com admin 7.4.3",
-        "nl": "Gecorrigeerde fout met admin 7.4.3",
-        "fr": "Erreur corrigée avec admin 7.4.3",
-        "it": "Errore corretto con admin 7.4.3",
-        "es": "Error corregido con admin 7.4.3",
-        "pl": "Skorygowany błąd z admin 7.4.3",
-        "uk": "Виправлена помилка з адміністратором 7.4.3",
-        "zh-cn": "更正错误,附则 7.4.3"
       }
     },
     "titleLang": {
@@ -181,7 +181,7 @@
     "dns01PpropagationDelay": 120000,
     "dns01OcustomerNumber": "",
     "dns01OapiPassword": "",
-            "dns01ObaseUrl": "",
+    "dns01ObaseUrl": "",
     "collections": [
       {
         "id": "exampleDomain",
