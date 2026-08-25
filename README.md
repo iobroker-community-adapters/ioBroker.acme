@@ -98,6 +98,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Added support for deSEC and PowerDNS DNS-01 challenges
 - (@GermanBluefox) Fixed DigitalOcean, DNSimple, Gandi, name.com and Route53 DNS-01 challenges failing with "request is not a function" after the acme-client migration
 - (@GermanBluefox) Added support for Hetzner and Dynu DNS-01 challenges
 - (@GermanBluefox) Added support for IONOS DNS-01 challenge

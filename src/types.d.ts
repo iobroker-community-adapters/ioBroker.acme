@@ -33,7 +33,10 @@ export interface AcmeAdapterConfig {
         | 'acme-dns-01-ednsde'
         | 'acme-dns-01-ionos'
         | 'acme-dns-01-hetzner'
-        | 'acme-dns-01-dynu';
+        | 'acme-dns-01-dynu'
+        | 'acme-dns-01-desec'
+        | 'acme-dns-01-powerdns';
+    dns01ObaseUrl: string;
     dns01OapiUser: string;
     dns01OapiKey: string;
     dns01OclientIp: string;

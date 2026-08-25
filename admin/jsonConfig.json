@@ -159,6 +159,14 @@
                         {
                             "label": "Dynu",
                             "value": "acme-dns-01-dynu"
+                        },
+                        {
+                            "label": "deSEC",
+                            "value": "acme-dns-01-desec"
+                        },
+                        {
+                            "label": "PowerDNS",
+                            "value": "acme-dns-01-powerdns"
                         }
                     ],
                     "xs": 12,
@@ -182,6 +190,17 @@
                     "lg": 12,
                     "xl": 12,
                     "hidden": "data.dns01Module != 'acme-dns-01-route53'"
+                },
+                "dns01ObaseUrl": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "DNS-01 API base URL",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "hidden": "!data.dns01Active || !['acme-dns-01-desec','acme-dns-01-powerdns'].includes(data.dns01Module)"
                 },
                 "dns01OcustomerNumber": {
                     "newLine": true,
@@ -258,7 +277,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4,
-                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-ednsde','acme-dns-01-gandi','acme-dns-01-ionos','acme-dns-01-hetzner','acme-dns-01-dynu','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
+                    "hidden": "!data.dns01Active || !['acme-dns-01-cloudflare','acme-dns-01-digitalocean','acme-dns-01-dnsimple','acme-dns-01-duckdns','acme-dns-01-ednsde','acme-dns-01-gandi','acme-dns-01-desec','acme-dns-01-ionos','acme-dns-01-hetzner','acme-dns-01-dynu','acme-dns-01-powerdns','acme-dns-01-namedotcom', 'acme-dns-01-vultr'].includes(data.dns01Module)"
                 },
                 "dns01Ousername": {
                     "newLine": true,

@@ -126,3 +126,42 @@ describe('real acme-dns-01-* plugins that depend on opts.request', () => {
         });
     }
 });
+
+describe('desec and powerdns through the shim', () => {
+    const authz = { identifier: { type: 'dns', value: 'sub.example.com' }, wildcard: false };
+    const chal = { type: 'dns-01', token: 'tok', url: 'u', status: 'pending' };
+
+    it('desec defaults to the desec.io API and authenticates with a Token header', async () => {
+        const f = fakeFetch({ text: '[]' });
+        const plugin = require('acme-dns-01-desec').create({ token: 'T' });
+        const shim = createChallengeShim(plugin, { request: createRequestHelper(f) });
+        await shim.challengeCreateFn(authz, chal, 'VALUE-A').catch(() => {});
+        expect(f.calls.length).to.be.greaterThan(0);
+        expect(f.calls[0].url).to.contain('https://desec.io/api/v1');
+        expect(f.calls[0].headers.Authorization).to.equal('Token T');
+    });
+
+    it('powerdns talks to the configured base URL with an X-Api-Key header', async () => {
+        const f = fakeFetch({ text: '[]' });
+        const plugin = require('acme-dns-01-powerdns').create({
+            baseUrl: 'https://pdns.example/api/v1/servers/localhost',
+            token: 'K',
+        });
+        const shim = createChallengeShim(plugin, { request: createRequestHelper(f) });
+        await shim.challengeCreateFn(authz, chal, 'VALUE-A').catch(() => {});
+        expect(f.calls.length).to.be.greaterThan(0);
+        expect(f.calls[0].url).to.contain('https://pdns.example/api/v1/servers/localhost');
+        expect(f.calls[0].headers['X-Api-Key']).to.equal('K');
+    });
+
+    it('the shim supplies challenge.hostname, which powerdns reads', async () => {
+        let seen = null;
+        const probe = {
+            init: () => null,
+            set: d => { seen = d.challenge; return null; },
+            remove: () => null,
+        };
+        await createChallengeShim(probe).challengeCreateFn(authz, chal, 'VALUE-A');
+        expect(seen.hostname).to.equal('sub.example.com');
+    });
+});

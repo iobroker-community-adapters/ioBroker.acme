@@ -134,6 +134,7 @@ export interface GreenlockChallenge {
     identifier: { type: string; value: string };
     wildcard: boolean;
     altname: string;
+    hostname: string;
     token: string;
     url?: string;
     status?: string;
@@ -224,6 +225,8 @@ export function createChallengeShim(
             identifier: { type: 'dns', value: hostname },
             wildcard,
             altname: wildcard ? `*.${hostname}` : hostname,
+            // ACME.js exposed this alias of identifier.value; powerdns reads it.
+            hostname,
             token: challenge.token,
             url: challenge.url,
             status: challenge.status,

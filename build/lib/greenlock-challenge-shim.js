@@ -135,6 +135,8 @@ function createChallengeShim(plugin, options = {}) {
             identifier: { type: 'dns', value: hostname },
             wildcard,
             altname: wildcard ? `*.${hostname}` : hostname,
+            // ACME.js exposed this alias of identifier.value; powerdns reads it.
+            hostname,
             token: challenge.token,
             url: challenge.url,
             status: challenge.status,
