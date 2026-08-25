@@ -226,6 +226,20 @@ class AcmeAdapter extends utils.Adapter {
                     dns01Options.verifyPropagation = true;
                     delete dns01Props.propagationDelay;
                     break;
+                case 'acme-dns-01-ednsde':
+                    // eDNS' set() polls the zone's authoritative nameservers
+                    // until they all serve the record, so it reports
+                    // propagationDelay 0 and skipChallengeTest itself. Keep the
+                    // generic default from io-package.json from overwriting
+                    // that, or acme.js waits another two minutes for nothing.
+                    delete dns01Props.propagationDelay;
+                    // eDNS answers a name it has already published from a cache
+                    // with the record's 300s TTL, so a certificate covering a
+                    // domain and its wildcard waits that out once. Without
+                    // somewhere to report that, the log simply goes quiet for
+                    // minutes and looks like a hang.
+                    dns01Options.log = (message: string) => this.log.debug(`dns-01: ${message}`);
+                    break;
             }
 
             // Log dns-01 options with sensitive values redacted

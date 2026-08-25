@@ -98,6 +98,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (chris299) Added support for eDNS.de DNS-01 challenge
 - (chris299) Fixed certificate issuance failing against current Let's Encrypt with 409 / "Unhandled status '403'"
 - (chris299) Fixed certificate renewal failing with "Cannot read properties of undefined (reading '0')"
 
