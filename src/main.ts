@@ -16,6 +16,7 @@ import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
+import { applyPostAsGetPolling } from './lib/root-acme-post-as-get';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -302,6 +303,12 @@ class AcmeAdapter extends utils.Adapter {
                 : 'https://acme-v02.api.letsencrypt.org/directory';
             this.log.debug(`Using URL: ${directoryUrl}`);
 
+            // ACME.js as published on npm re-sends the challenge trigger and
+            // the order finalization, and today's Let's Encrypt rejects the
+            // repeats with 409 and 403 (#49). Restore the polling behaviour of
+            // the unpublished upstream 3.1.1 before anything uses the client.
+            applyPostAsGetPolling();
+
             this.acme = ACME.create({
                 maintainerEmail: this.config.maintainerEmail,
                 packageAgent: `${pkg.name}/${pkg.version}`,
@@ -332,7 +339,15 @@ class AcmeAdapter extends utils.Adapter {
             if (accountObject) {
                 this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
 
-                if (accountObject.native?.full?.contact[0] !== `mailto:${this.config.maintainerEmail}`) {
+                // Let's Encrypt stopped storing contact information in January
+                // 2025, and its newAccount response no longer carries a
+                // `contact` field, so a saved account may legitimately have
+                // none. Two things follow: the index must be guarded, and a
+                // missing contact has to mean "cannot verify" rather than
+                // "does not match" -- otherwise a new account is registered on
+                // every single run.
+                const savedContact = accountObject.native?.full?.contact?.[0];
+                if (savedContact && savedContact !== `mailto:${this.config.maintainerEmail}`) {
                     this.log.warn('Saved account does not match maintainer email, will recreate.');
                 } else {
                     this.account = accountObject.native as AcmeAccount;
