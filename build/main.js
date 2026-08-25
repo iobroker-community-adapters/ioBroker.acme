@@ -50,6 +50,7 @@ const pem_1 = __importDefault(require("@root/pem"));
 const x509_js_1 = __importDefault(require("x509.js"));
 const package_json_1 = __importDefault(require("../package.json"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
+const root_acme_post_as_get_1 = require("./lib/root-acme-post-as-get");
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
@@ -270,6 +271,11 @@ class AcmeAdapter extends utils.Adapter {
                 ? 'https://acme-staging-v02.api.letsencrypt.org/directory'
                 : 'https://acme-v02.api.letsencrypt.org/directory';
             this.log.debug(`Using URL: ${directoryUrl}`);
+            // ACME.js as published on npm re-sends the challenge trigger and
+            // the order finalization, and today's Let's Encrypt rejects the
+            // repeats with 409 and 403 (#49). Restore the polling behaviour of
+            // the unpublished upstream 3.1.1 before anything uses the client.
+            (0, root_acme_post_as_get_1.applyPostAsGetPolling)();
             this.acme = acme_1.default.create({
                 maintainerEmail: this.config.maintainerEmail,
                 packageAgent: `${package_json_1.default.name}/${package_json_1.default.version}`,
