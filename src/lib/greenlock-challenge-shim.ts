@@ -37,6 +37,86 @@ export function pluckZone(zonenames: string[], dnsHost: string): string | undefi
     return zonenames.filter(z => zoneRegExp(z).test(dnsHost)).sort((a, b) => b.length - a.length)[0];
 }
 
+/**
+ * Response shape the Greenlock plugins expect back from `request`.
+ */
+export interface GreenlockResponse {
+    statusCode: number;
+    headers: Record<string, string>;
+    body: any;
+}
+
+/**
+ * Options the Greenlock plugins pass to `request`.
+ *
+ * `json` doubles as a flag and as a payload: `true` only asks for JSON back,
+ * anything else is the request body to serialise. Some plugins instead put an
+ * object in `body` alongside `json: true`, so both are handled.
+ */
+export interface GreenlockRequestOptions {
+    method?: string;
+    url: string;
+    headers?: Record<string, string>;
+    json?: unknown;
+    body?: unknown;
+}
+
+/**
+ * A drop-in for the `request` helper ACME.js handed to challenge plugins.
+ *
+ * Five of the twelve acme-dns-01-* modules -- digitalocean, dnsimple, gandi,
+ * namedotcom and route53 -- keep `opts.request` from init() and do all their
+ * HTTP through it, as do desec and powerdns. ACME.js supplied `@root/request`
+ * here (acme.js:1281, `presenter.init({type: '*', request: me.request})`).
+ * acme-client has no equivalent, so this reimplements the same contract on
+ * native fetch: `{statusCode, headers, body}` back, JSON parsed when asked
+ * for, and non-2xx returned rather than thrown -- the plugins check
+ * statusCode themselves.
+ *
+ * @param doFetch fetch implementation, overridable for testing
+ */
+export function createRequestHelper(doFetch: typeof fetch = fetch) {
+    return async function request(options: GreenlockRequestOptions): Promise<GreenlockResponse> {
+        const headers: Record<string, string> = { ...(options.headers || {}) };
+        const wantsJson = !!options.json;
+        let payload: string | undefined;
+
+        if (wantsJson) {
+            headers.Accept ??= 'application/json';
+        }
+
+        if (options.json !== undefined && options.json !== true && options.json !== false) {
+            payload = JSON.stringify(options.json);
+        } else if (options.body !== undefined) {
+            payload = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+        }
+
+        if (payload !== undefined) {
+            headers['Content-Type'] ??= 'application/json';
+        }
+
+        const method = options.method || (payload === undefined ? 'GET' : 'POST');
+        const response = await doFetch(options.url, { method, headers, body: payload });
+
+        const text = await response.text();
+        let body: any = text;
+        if (wantsJson && text) {
+            try {
+                body = JSON.parse(text);
+            } catch {
+                // Leave it as text; the plugin will judge by statusCode.
+            }
+        }
+
+        const outHeaders: Record<string, string> = {};
+        response.headers?.forEach?.((value, key) => {
+            outHeaders[key] = value;
+        });
+
+        return { statusCode: response.status, headers: outHeaders, body };
+    };
+}
+
 /** The subset of the Greenlock plugin contract we rely on. */
 export interface GreenlockPlugin {
     init?: (opts: Record<string, unknown>) => unknown;
@@ -81,10 +161,15 @@ export interface ChallengeShim {
  * @param options shim options
  * @param options.log sink for progress messages
  * @param options.propagationDelay overrides the delay the plugin reports
+ * @param options.request overrides the HTTP helper handed to the plugin
  */
 export function createChallengeShim(
     plugin: GreenlockPlugin,
-    options: { log?: (message: string) => void; propagationDelay?: number } = {},
+    options: {
+        log?: (message: string) => void;
+        propagationDelay?: number;
+        request?: ReturnType<typeof createRequestHelper>;
+    } = {},
 ): ChallengeShim {
     const log = options.log || ((): void => {});
     // acme-client offers nowhere to keep state between create and remove, so we
@@ -100,10 +185,13 @@ export function createChallengeShim(
 
     function ensureInit(): Promise<unknown> {
         if (!initPromise) {
-            // Greenlock passed a `request` helper here. Modern plugins use fetch
-            // and ignore it, but init() must still run: cloudflare builds its
-            // API client in it, and our http-01 server starts listening.
-            initPromise = Promise.resolve(plugin.init ? plugin.init({ request: null }) : undefined);
+            // ACME.js called init({type: '*', request: me.request}) and several
+            // plugins keep that helper and do all their HTTP through it. Passing
+            // nothing here breaks digitalocean, dnsimple, gandi, namedotcom and
+            // route53 at the first request.
+            initPromise = Promise.resolve(
+                plugin.init ? plugin.init({ type: '*', request: options.request || createRequestHelper() }) : undefined,
+            );
         }
         return initPromise;
     }

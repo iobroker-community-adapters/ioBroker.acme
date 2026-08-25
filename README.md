@@ -98,6 +98,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed DigitalOcean, DNSimple, Gandi, name.com and Route53 DNS-01 challenges failing with "request is not a function" after the acme-client migration
 - (@GermanBluefox) Added support for Hetzner and Dynu DNS-01 challenges
 - (@GermanBluefox) Added support for IONOS DNS-01 challenge
 - (@GermanBluefox) BREAKING: Migrated from the abandoned ACME.js to acme-client. The saved ACME account is registered once anew on first run after the update.

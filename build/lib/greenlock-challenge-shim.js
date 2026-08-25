@@ -25,6 +25,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pluckZone = pluckZone;
+exports.createRequestHelper = createRequestHelper;
 exports.createChallengeShim = createChallengeShim;
 const DNS_PREFIX = '_acme-challenge';
 /** Matches example.com and foo.example.com, but not fooexample.com. */
@@ -36,12 +37,63 @@ function pluckZone(zonenames, dnsHost) {
     return zonenames.filter(z => zoneRegExp(z).test(dnsHost)).sort((a, b) => b.length - a.length)[0];
 }
 /**
+ * A drop-in for the `request` helper ACME.js handed to challenge plugins.
+ *
+ * Five of the twelve acme-dns-01-* modules -- digitalocean, dnsimple, gandi,
+ * namedotcom and route53 -- keep `opts.request` from init() and do all their
+ * HTTP through it, as do desec and powerdns. ACME.js supplied `@root/request`
+ * here (acme.js:1281, `presenter.init({type: '*', request: me.request})`).
+ * acme-client has no equivalent, so this reimplements the same contract on
+ * native fetch: `{statusCode, headers, body}` back, JSON parsed when asked
+ * for, and non-2xx returned rather than thrown -- the plugins check
+ * statusCode themselves.
+ *
+ * @param doFetch fetch implementation, overridable for testing
+ */
+function createRequestHelper(doFetch = fetch) {
+    return async function request(options) {
+        const headers = { ...(options.headers || {}) };
+        const wantsJson = !!options.json;
+        let payload;
+        if (wantsJson) {
+            headers.Accept ??= 'application/json';
+        }
+        if (options.json !== undefined && options.json !== true && options.json !== false) {
+            payload = JSON.stringify(options.json);
+        }
+        else if (options.body !== undefined) {
+            payload = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+        }
+        if (payload !== undefined) {
+            headers['Content-Type'] ??= 'application/json';
+        }
+        const method = options.method || (payload === undefined ? 'GET' : 'POST');
+        const response = await doFetch(options.url, { method, headers, body: payload });
+        const text = await response.text();
+        let body = text;
+        if (wantsJson && text) {
+            try {
+                body = JSON.parse(text);
+            }
+            catch {
+                // Leave it as text; the plugin will judge by statusCode.
+            }
+        }
+        const outHeaders = {};
+        response.headers?.forEach?.((value, key) => {
+            outHeaders[key] = value;
+        });
+        return { statusCode: response.status, headers: outHeaders, body };
+    };
+}
+/**
  * Wrap a Greenlock-style challenge plugin so acme-client can drive it.
  *
  * @param plugin the acme-dns-01-* plugin instance, or our http-01 challenge server
  * @param options shim options
  * @param options.log sink for progress messages
  * @param options.propagationDelay overrides the delay the plugin reports
+ * @param options.request overrides the HTTP helper handed to the plugin
  */
 function createChallengeShim(plugin, options = {}) {
     const log = options.log || (() => { });
@@ -55,10 +107,11 @@ function createChallengeShim(plugin, options = {}) {
     const keyOf = (authz, challenge) => `${authz.identifier.value}|${challenge.token}`;
     function ensureInit() {
         if (!initPromise) {
-            // Greenlock passed a `request` helper here. Modern plugins use fetch
-            // and ignore it, but init() must still run: cloudflare builds its
-            // API client in it, and our http-01 server starts listening.
-            initPromise = Promise.resolve(plugin.init ? plugin.init({ request: null }) : undefined);
+            // ACME.js called init({type: '*', request: me.request}) and several
+            // plugins keep that helper and do all their HTTP through it. Passing
+            // nothing here breaks digitalocean, dnsimple, gandi, namedotcom and
+            // route53 at the first request.
+            initPromise = Promise.resolve(plugin.init ? plugin.init({ type: '*', request: options.request || createRequestHelper() }) : undefined);
         }
         return initPromise;
     }
