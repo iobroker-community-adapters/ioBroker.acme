@@ -6,26 +6,34 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import { CertificateManager, type CertificateCollection } from '@iobroker/webserver';
-import ACME from 'acme';
-import Keypairs from '@root/keypairs';
-import CSR from '@root/csr';
-import PEM from '@root/pem';
+import * as acme from 'acme-client';
 import x509 from 'x509.js';
 
 import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
-import { applyPostAsGetPolling } from './lib/root-acme-post-as-get';
+import { createChallengeShim, type ChallengeShim } from './lib/greenlock-challenge-shim';
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
 
+/**
+ * What we persist between runs.
+ *
+ * `key` is the account private key in PEM. ACME.js stored a JWK plus its own
+ * account object; that format cannot be handed to acme-client, so a saved
+ * account in the old shape is discarded and re-registered once (see initAcme).
+ */
 interface AcmeAccount {
-    full: Record<string, any> | null;
-    key: Record<string, any> | null;
+    /** Account URL at the CA, e.g. https://.../acme/acct/12345 */
+    url: string | null;
+    /** Account private key, PEM encoded */
+    key: string | null;
+    /** The email this account was registered with, so a change can be detected */
+    email: string | null;
 }
 
 interface ChallengeHandler {
@@ -43,25 +51,9 @@ class AcmeAdapter extends utils.Adapter {
     private readonly toShutdown: ChallengeHandler[];
     private donePortCheck: boolean;
     private certManager: CertificateManager | undefined;
-    private acme: {
-        init: (directoryUrl: string) => Promise<void>;
-        accounts: {
-            create: (options: {
-                subscriberEmail: string;
-                agreeToTerms: boolean;
-                accountKey: Record<string, any>;
-            }) => Promise<Record<string, any>>;
-        };
-        certificates: {
-            create: (options: {
-                account: Record<string, any>;
-                accountKey: Record<string, string | Buffer>;
-                csr: string;
-                domains: string[];
-                challenges: Record<string, ChallengeHandler>;
-            }) => Promise<{ cert: string; chain: string }>;
-        };
-    } | null = null;
+    private acme: acme.Client | null = null;
+    /** Greenlock plugins wrapped for acme-client, keyed by challenge type. */
+    private readonly shims: Record<string, ChallengeShim> = {};
     private stoppedAdapters: string[] | null | undefined;
 
     /**
@@ -81,8 +73,9 @@ class AcmeAdapter extends utils.Adapter {
         });
 
         this.account = {
-            full: null,
+            url: null,
             key: null,
+            email: null,
         };
         this.challenges = {};
         this.toShutdown = [];
@@ -290,92 +283,76 @@ class AcmeAdapter extends utils.Adapter {
         }
     }
 
-    acmeNotify(ev: string, msg: unknown): void {
-        const logLevel = ev === 'error' ? this.log.error : ev === 'warning' ? this.log.warn : this.log.debug;
-        logLevel(`ACMENotify - ${ev}: ${JSON.stringify(msg)}`);
-    }
-
     async initAcme(): Promise<void> {
-        if (!this.acme) {
-            // Doesn't exist yet, actually do init
-            const directoryUrl = this.config.useStaging
-                ? 'https://acme-staging-v02.api.letsencrypt.org/directory'
-                : 'https://acme-v02.api.letsencrypt.org/directory';
-            this.log.debug(`Using URL: ${directoryUrl}`);
+        if (this.acme) {
+            return;
+        }
 
-            // ACME.js as published on npm re-sends the challenge trigger and
-            // the order finalization, and today's Let's Encrypt rejects the
-            // repeats with 409 and 403 (#49). Restore the polling behaviour of
-            // the unpublished upstream 3.1.1 before anything uses the client.
-            applyPostAsGetPolling();
+        const directoryUrl = this.config.useStaging
+            ? acme.directory.letsencrypt.staging
+            : acme.directory.letsencrypt.production;
+        this.log.debug(`Using URL: ${directoryUrl}`);
 
-            this.acme = ACME.create({
-                maintainerEmail: this.config.maintainerEmail,
-                packageAgent: `${pkg.name}/${pkg.version}`,
-                notify: this.acmeNotify.bind(this),
-                debug: true,
+        // Route the library's own diagnostics into the adapter log.
+        acme.setLogger(message => this.log.debug(`acme-client: ${message}`));
+
+        // ACME.js sent a packageAgent; keep identifying ourselves to the CA.
+        acme.axios.defaults.headers.common['User-Agent'] = `${pkg.name}/${pkg.version}`;
+
+        // Wrap every challenge handler so acme-client can drive it.
+        for (const [type, handler] of Object.entries(this.challenges)) {
+            this.shims[type] = createChallengeShim(handler, {
+                log: message => this.log.debug(`${type}: ${message}`),
             });
-            // init() must run FIRST so that _canCheck is populated (dns-01, http-01).
-            // Only AFTER that we set skipChallengeTest, which skips the actual
-            // DNS verification but still allows the dry-run to recognise dns-01.
-            await this.acme!.init(directoryUrl);
+        }
 
-            // If any challenge plugin signals that it handles DNS verification
-            // internally (e.g. by polling authoritative + public resolvers in
-            // set()), skip the ACME library's own pre-flight DNS check which
-            // uses the OS system resolver and may fail due to negative caching.
-            for (const challenge of Object.values(this.challenges)) {
-                if ((challenge as any).skipChallengeTest) {
-                    (this.acme as any).skipChallengeTest = true;
-                    this.log.debug(
-                        'ACME skipChallengeTest=true (challenge plugin handles DNS verification internally)',
-                    );
-                    break;
-                }
+        // Try and load a saved account
+        const accountObject = await this.getObjectAsync(accountObjectId);
+        const saved = accountObject?.native as Partial<AcmeAccount> & { full?: unknown };
+        if (saved) {
+            if (saved.full !== undefined || typeof saved.key !== 'string') {
+                // Pre-migration account: ACME.js kept a JWK plus its own account
+                // object, neither of which acme-client can use. Registering a
+                // fresh account is cheap and happens once per installation.
+                this.log.info('Saved ACME account is in the old ACME.js format - registering a new one.');
+            } else if (saved.email && saved.email !== this.config.maintainerEmail) {
+                this.log.warn('Saved account does not match maintainer email, will recreate.');
+            } else {
+                this.account = {
+                    url: saved.url ?? null,
+                    key: saved.key,
+                    email: saved.email ?? null,
+                };
+                this.log.debug(`Loaded existing ACME account: ${this.account.url}`);
             }
+        }
 
-            // Try and load a saved object
-            const accountObject = await this.getObjectAsync(accountObjectId);
-            if (accountObject) {
-                this.log.debug(`Loaded existing ACME account: ${JSON.stringify(accountObject)}`);
+        if (!this.account.key) {
+            this.log.info('Registering new ACME account...');
+            const accountKey = await acme.crypto.createPrivateKey();
+            this.account.key = accountKey.toString();
+            this.account.email = this.config.maintainerEmail;
 
-                // Let's Encrypt stopped storing contact information in January
-                // 2025, and its newAccount response no longer carries a
-                // `contact` field, so a saved account may legitimately have
-                // none. Two things follow: the index must be guarded, and a
-                // missing contact has to mean "cannot verify" rather than
-                // "does not match" -- otherwise a new account is registered on
-                // every single run.
-                const savedContact = accountObject.native?.full?.contact?.[0];
-                if (savedContact && savedContact !== `mailto:${this.config.maintainerEmail}`) {
-                    this.log.warn('Saved account does not match maintainer email, will recreate.');
-                } else {
-                    this.account = accountObject.native as AcmeAccount;
-                }
-            }
+            this.acme = new acme.Client({
+                directoryUrl,
+                accountKey: this.account.key,
+            });
+            await this.acme.createAccount({
+                termsOfServiceAgreed: true,
+                contact: [`mailto:${this.config.maintainerEmail}`],
+            });
+            this.account.url = this.acme.getAccountUrl();
+            this.log.debug(`Created account: ${this.account.url}`);
 
-            if (!this.account.full) {
-                this.log.info('Registering new ACME account...');
-
-                // Register a new account
-                const accountKeypair: { [name: string]: any } = await Keypairs.generate({
-                    kty: 'EC',
-                    format: 'jwk',
-                });
-                this.log.debug(`accountKeypair: ${JSON.stringify(accountKeypair)}`);
-                this.account.key = accountKeypair.private;
-
-                this.account.full = await this.acme!.accounts.create({
-                    subscriberEmail: this.config.maintainerEmail,
-                    agreeToTerms: true,
-                    accountKey: this.account.key!,
-                });
-                this.log.debug(`Created account: ${JSON.stringify(this.account)}`);
-
-                await this.extendObjectAsync(accountObjectId, {
-                    native: this.account,
-                });
-            }
+            await this.extendObjectAsync(accountObjectId, {
+                native: this.account,
+            });
+        } else {
+            this.acme = new acme.Client({
+                directoryUrl,
+                accountKey: this.account.key,
+                accountUrl: this.account.url ?? undefined,
+            });
         }
     }
 
@@ -555,32 +532,50 @@ class AcmeAdapter extends utils.Adapter {
             // stopAdaptersOnSamePort can be called many times as has its own checks to prevent unnecessary action.
             await this.stopAdaptersOnSamePort();
 
-            const serverKeypair = await Keypairs.generate({ kty: 'RSA', format: 'jwk' });
-            const serverPem = await Keypairs.export({ jwk: serverKeypair.private });
-            const serverKey = await Keypairs.import({ pem: serverPem });
-
-            const csrDer = await CSR.csr({
-                jwk: serverKey,
-                domains,
-                encoding: 'der',
-            });
-            const csr = PEM.packBlock({
-                type: 'CERTIFICATE REQUEST',
-                bytes: csrDer,
-            });
-
-            if (!this.acme || !this.account.full || !this.account.key) {
+            if (!this.acme) {
                 this.log.error('ACME client not initialized');
                 return;
             }
-            let pems: { cert: string; chain: string } | undefined;
+
+            // Replaces Keypairs.generate + export + import + CSR.csr + PEM.packBlock.
+            const [serverKeyBuf, csr] = await acme.crypto.createCsr({
+                commonName: domains[0],
+                altNames: domains.slice(1),
+            });
+            const serverPem = serverKeyBuf.toString();
+
+            // If any plugin verifies propagation itself, skip acme-client's own
+            // pre-flight DNS check: it uses the system resolver and can trip
+            // over negative caching.
+            const skipChallengeVerification = Object.values(this.shims).some(shim => shim.skipChallengeTest);
+            if (skipChallengeVerification) {
+                this.log.debug('skipChallengeVerification=true (plugin verifies propagation internally)');
+            }
+
+            let certPem: string | undefined;
             try {
-                pems = await this.acme.certificates.create({
-                    account: this.account.full,
-                    accountKey: this.account.key,
+                certPem = await this.acme.auto({
                     csr,
-                    domains,
-                    challenges: this.challenges,
+                    email: this.config.maintainerEmail,
+                    termsOfServiceAgreed: true,
+                    skipChallengeVerification,
+                    // Prefer dns-01 when configured: it is the only one that can
+                    // validate wildcards, and needs no inbound port.
+                    challengePriority: Object.keys(this.shims).sort(),
+                    challengeCreateFn: (authz, challenge, keyAuthorization) => {
+                        const shim = this.shims[challenge.type];
+                        if (!shim) {
+                            return Promise.reject(new Error(`No handler for ${challenge.type} challenge`));
+                        }
+                        return shim.challengeCreateFn(authz, challenge, keyAuthorization);
+                    },
+                    challengeRemoveFn: (authz, challenge, keyAuthorization) => {
+                        const shim = this.shims[challenge.type];
+                        if (!shim) {
+                            return Promise.resolve();
+                        }
+                        return shim.challengeRemoveFn(authz, challenge, keyAuthorization);
+                    },
                 });
             } catch (err) {
                 this.log.error(
@@ -590,12 +585,14 @@ class AcmeAdapter extends utils.Adapter {
 
             this.log.debug('Done');
 
-            if (pems) {
+            if (certPem) {
+                // auto() returns the full chain; the leaf is the first block.
+                const chainParts = acme.crypto.splitPemChain(certPem);
                 let collectionToSet: CertificateCollection | null = {
                     from: this.namespace,
                     key: serverPem,
-                    cert: pems.cert,
-                    chain: [pems.cert, pems.chain],
+                    cert: chainParts[0],
+                    chain: chainParts,
                     domains,
                     staging: this.config.useStaging,
                     tsExpires: 0,
