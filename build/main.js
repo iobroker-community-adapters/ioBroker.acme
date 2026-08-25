@@ -49,6 +49,18 @@ const package_json_1 = __importDefault(require("../package.json"));
 const http_01_challenge_server_1 = require("./lib/http-01-challenge-server");
 const greenlock_challenge_shim_1 = require("./lib/greenlock-challenge-shim");
 const dns_01_ionos_1 = require("./lib/dns-01-ionos");
+const dns_01_hetzner_1 = require("./lib/dns-01-hetzner");
+const dns_01_dynu_1 = require("./lib/dns-01-dynu");
+/**
+ * DNS-01 providers implemented in this adapter because no acme-dns-01-*
+ * package exists for them on npm. They follow the same plugin contract, so
+ * everything downstream treats them like any other module.
+ */
+const localDns01Modules = {
+    'acme-dns-01-ionos': dns_01_ionos_1.create,
+    'acme-dns-01-hetzner': dns_01_hetzner_1.create,
+    'acme-dns-01-dynu': dns_01_dynu_1.create,
+};
 const accountObjectId = 'account';
 // Renew 7 days before expiry
 const renewWindow = 60 * 60 * 24 * 7 * 1000;
@@ -218,7 +230,9 @@ class AcmeAdapter extends utils.Adapter {
                     delete dns01Props.propagationDelay;
                     break;
                 case 'acme-dns-01-ionos':
-                    // Implemented in this repository, not on npm. It reports no
+                case 'acme-dns-01-hetzner':
+                case 'acme-dns-01-dynu':
+                    // Implemented in this repository, not on npm. None reports a
                     // propagation delay of its own, so the generic default from
                     // io-package.json applies.
                     dns01Options.log = (message) => this.log.debug(`dns-01: ${message}`);
@@ -250,9 +264,10 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge;
             try {
-                if (this.config.dns01Module === 'acme-dns-01-ionos') {
+                const localFactory = localDns01Modules[this.config.dns01Module];
+                if (localFactory) {
                     // Shipped with the adapter rather than pulled from npm.
-                    thisChallenge = (0, dns_01_ionos_1.create)(dns01Options);
+                    thisChallenge = localFactory(dns01Options);
                 }
                 else {
                     // Dynamic import - module name comes from config

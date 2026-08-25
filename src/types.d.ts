@@ -31,7 +31,9 @@ export interface AcmeAdapterConfig {
         | 'acme-dns-01-vultr'
         | 'acme-dns-01-netcup'
         | 'acme-dns-01-ednsde'
-        | 'acme-dns-01-ionos';
+        | 'acme-dns-01-ionos'
+        | 'acme-dns-01-hetzner'
+        | 'acme-dns-01-dynu';
     dns01OapiUser: string;
     dns01OapiKey: string;
     dns01OclientIp: string;

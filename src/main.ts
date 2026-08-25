@@ -15,6 +15,19 @@ import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
 import { createChallengeShim, type ChallengeShim } from './lib/greenlock-challenge-shim';
 import { create as createIonosChallenge } from './lib/dns-01-ionos';
+import { create as createHetznerChallenge } from './lib/dns-01-hetzner';
+import { create as createDynuChallenge } from './lib/dns-01-dynu';
+
+/**
+ * DNS-01 providers implemented in this adapter because no acme-dns-01-*
+ * package exists for them on npm. They follow the same plugin contract, so
+ * everything downstream treats them like any other module.
+ */
+const localDns01Modules: Record<string, (options: any) => unknown> = {
+    'acme-dns-01-ionos': createIonosChallenge,
+    'acme-dns-01-hetzner': createHetznerChallenge,
+    'acme-dns-01-dynu': createDynuChallenge,
+};
 import type { AcmeAdapterConfig } from './types';
 
 const accountObjectId = 'account';
@@ -221,7 +234,9 @@ class AcmeAdapter extends utils.Adapter {
                     delete dns01Props.propagationDelay;
                     break;
                 case 'acme-dns-01-ionos':
-                    // Implemented in this repository, not on npm. It reports no
+                case 'acme-dns-01-hetzner':
+                case 'acme-dns-01-dynu':
+                    // Implemented in this repository, not on npm. None reports a
                     // propagation delay of its own, so the generic default from
                     // io-package.json applies.
                     dns01Options.log = (message: string) => this.log.debug(`dns-01: ${message}`);
@@ -255,11 +270,10 @@ class AcmeAdapter extends utils.Adapter {
             // Do this inside try... catch as the module is configurable
             let thisChallenge: ChallengeHandler | undefined;
             try {
-                if (this.config.dns01Module === 'acme-dns-01-ionos') {
+                const localFactory = localDns01Modules[this.config.dns01Module];
+                if (localFactory) {
                     // Shipped with the adapter rather than pulled from npm.
-                    thisChallenge = createIonosChallenge(
-                        dns01Options as unknown as Parameters<typeof createIonosChallenge>[0],
-                    ) as unknown as ChallengeHandler;
+                    thisChallenge = localFactory(dns01Options) as ChallengeHandler;
                 } else {
                     // Dynamic import - module name comes from config
                     const dns01Module = await import(this.config.dns01Module);
