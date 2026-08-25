@@ -63,12 +63,12 @@ npm run release        # Interactive release via @alcalzone/release-script
 
 ### Configuration
 - `admin/jsonConfig.json` — Declarative admin UI (tabs: Main, Challenges, Collections, Status). This is the primary config UI definition.
-- `io-package.json` — ioBroker adapter metadata. Mode is `schedule`. Encrypted native fields: `dns01Okey`, `dns01Osecret`, `dns01Otoken`, `dns01OapiKey`, `dns01OapiUser`.
+- `io-package.json` — ioBroker adapter metadata. Mode is `schedule`. Encrypted native fields (top-level `encryptedNative`/`protectedNative` arrays): `dns01OapiKey`, `dns01OapiPassword`, `dns01Okey`, `dns01Osecret`, `dns01Otoken`.
 
 ### Key adapter behaviors
 - Runs as a scheduled adapter (not daemon) — executes, processes certificates, then exits.
 - Before starting HTTP-01 challenge server, stops other adapters using the same port, then restores them after.
-- DNS-01 providers are loaded dynamically: `require(\`acme-dns-01-${module}\`)`.
+- DNS-01 providers are loaded dynamically: `await import(this.config.dns01Module)` (the config holds the full module name, e.g. `acme-dns-01-netcup`), falling back from `.default.create()` to `.create()`.
 - Certificate data is stored via ioBroker's `CertificateManager` from `@iobroker/webserver`.
 
 ## Conventions
