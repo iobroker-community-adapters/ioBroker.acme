@@ -13,6 +13,13 @@ import type { AdapterOptions } from '@iobroker/adapter-core';
 
 import pkg from '../package.json';
 import { create as createHttp01ChallengeServer } from './lib/http-01-challenge-server';
+import {
+    create as createHttp01ChallengePublisher,
+    probeHttp01Endpoint,
+    HTTP01_CHALLENGE_STATE,
+    type ChallengePublisher,
+    type PublishedChallenges,
+} from './lib/http-01-challenge-publisher';
 import { createChallengeShim, type ChallengeShim } from './lib/greenlock-challenge-shim';
 import { create as createIonosChallenge } from './lib/dns-01-ionos';
 import { create as createHetznerChallenge } from './lib/dns-01-hetzner';
@@ -69,6 +76,13 @@ class AcmeAdapter extends utils.Adapter {
     /** Greenlock plugins wrapped for acme-client, keyed by challenge type. */
     private readonly shims: Record<string, ChallengeShim> = {};
     private stoppedAdapters: string[] | null | undefined;
+    /**
+     * Only true when http-01 tokens are delivered by our own listener, which is
+     * the one case in which whatever else holds that port has to give way.
+     */
+    private http01NeedsPort = false;
+    /** Kept apart from the challenge handler so the state is cleared either way. */
+    private http01Publisher: ChallengePublisher | null = null;
 
     /**
      * Safely extract an error message from an unknown error value.
@@ -181,6 +195,14 @@ class AcmeAdapter extends utils.Adapter {
         }
 
         try {
+            // shutdown() is synchronous, but the state write is not, and we are
+            // about to terminate - so wait for it here.
+            await this.http01Publisher?.clear();
+        } catch (err) {
+            this.log.error(`Failed to withdraw published challenges: ${AcmeAdapter.getErrorMessage(err)}`);
+        }
+
+        try {
             await this.restoreAdaptersOnSamePort();
         } catch (err) {
             this.log.error(`Failed to restore adapters on same port: ${AcmeAdapter.getErrorMessage(err)}`);
@@ -191,15 +213,10 @@ class AcmeAdapter extends utils.Adapter {
 
     async initChallenges(): Promise<void> {
         if (this.config.http01Active) {
-            this.log.debug('Init http-01 challenge server');
-            // This does not actually cause the challenge server to start listening, so we don't need to do port check at this time.
-            const thisChallenge = createHttp01ChallengeServer({
-                port: this.config.port,
-                address: this.config.bind,
-                log: this.log,
-            });
-            this.challenges['http-01'] = thisChallenge;
-            this.toShutdown.push(thisChallenge);
+            const mode = this.config.http01Mode || 'auto';
+            this.log.debug(`Init http-01 challenge (delivery: ${mode})`);
+            this.challenges['http-01'] = await this.initHttp01Challenge(mode);
+            this.toShutdown.push(this.challenges['http-01']);
         }
 
         if (this.config.dns01Active) {
@@ -311,6 +328,102 @@ class AcmeAdapter extends utils.Adapter {
         }
     }
 
+    /**
+     * Decide how http-01 tokens reach the CA and return the handler that does it.
+     *
+     * Publishing (see http-01-challenge-publisher.ts) is preferred because it
+     * needs no port of its own and therefore does not have to stop whatever is
+     * on port 80. Whether it works cannot be assumed, though - it takes a web
+     * or admin instance with a recent enough `@iobroker/webserver`, or a
+     * reverse proxy forwarding the path to one - so 'auto' asks the port
+     * directly and only falls back to the old behaviour if it does not answer.
+     *
+     * @param mode the configured delivery mode
+     */
+    private async initHttp01Challenge(mode: 'auto' | 'standalone' | 'external'): Promise<ChallengeHandler> {
+        const startOwnServer = (): ChallengeHandler => {
+            this.http01NeedsPort = true;
+            // Creating it does not make it listen - that happens on the first
+            // set() - so nothing is bound before we know a cert is due.
+            return createHttp01ChallengeServer({
+                port: this.config.port,
+                address: this.config.bind,
+                log: this.log,
+            });
+        };
+
+        if (mode === 'standalone') {
+            this.log.debug('http-01: own challenge server requested by configuration');
+            return startOwnServer();
+        }
+
+        await this.createHttp01ChallengeState();
+        const publisher = createHttp01ChallengePublisher({
+            log: this.log,
+            write: challenges => this.publishHttp01Challenges(challenges),
+        });
+        // Held on to even when it does not end up being the handler: the probe
+        // below publishes through it, and that has to be cleaned up.
+        this.http01Publisher = publisher;
+
+        if (mode === 'external') {
+            this.log.info('http-01: challenges are published for an external responder - no port will be opened');
+            return publisher;
+        }
+
+        const answers = await probeHttp01Endpoint({
+            publisher,
+            address: this.config.bind,
+            port: this.config.port,
+            log: this.log,
+        });
+
+        if (answers) {
+            this.log.info(
+                `http-01: published challenges are already served on port ${this.config.port} - no adapter has to be stopped`,
+            );
+            return publisher;
+        }
+
+        // Nothing to fix if the port is simply ours - the hint about who could
+        // have answered belongs where a conflicting adapter is actually found.
+        this.log.info(
+            `http-01: nothing serves published challenges on port ${this.config.port} - using an own challenge server`,
+        );
+        return startOwnServer();
+    }
+
+    /**
+     * The state is read by other adapters, so it has to exist even on an
+     * instance that was created before this feature.
+     */
+    private async createHttp01ChallengeState(): Promise<void> {
+        await this.setObjectNotExistsAsync('info', {
+            type: 'channel',
+            common: { name: 'Information' },
+            native: {},
+        });
+        await this.setObjectNotExistsAsync(HTTP01_CHALLENGE_STATE, {
+            type: 'state',
+            common: {
+                name: 'Pending HTTP-01 challenge tokens',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: false,
+                def: '{}',
+            },
+            native: {},
+        });
+    }
+
+    /**
+     * @param challenges the tokens currently valid, keyed by token
+     */
+    private async publishHttp01Challenges(challenges: PublishedChallenges): Promise<void> {
+        await this.setStateAsync(HTTP01_CHALLENGE_STATE, JSON.stringify(challenges), true);
+    }
+
     async initAcme(): Promise<void> {
         if (this.acme) {
             return;
@@ -387,7 +500,8 @@ class AcmeAdapter extends utils.Adapter {
     async stopAdaptersOnSamePort(): Promise<void> {
         // TODO: Maybe this should be in some sort of utility so other adapters can 'grab' a port in use?
         // Stop conflicting adapters using our challenge server port only if we are going to need it and haven't already checked.
-        if (this.config.http01Active && !this.donePortCheck) {
+        // With published challenges nobody has to give the port up, so http01NeedsPort stays false and this is skipped entirely.
+        if (this.http01NeedsPort && !this.donePortCheck) {
             // TODO: is there a better way than hardcoding this 'system.adapter.' part?
             const us = `system.adapter.${this.namespace}`;
             const host = this.host;
@@ -443,6 +557,10 @@ class AcmeAdapter extends utils.Adapter {
                 this.log.debug('No adapters found on same port, nothing to stop');
             } else {
                 this.log.info(`Stopping adapter(s) on our host/bind/port ${host}/${bind}/${port}...`);
+                this.log.info(
+                    'This outage is avoidable: on a web/admin version whose @iobroker/webserver serves published ' +
+                        'ACME challenges, nothing has to be stopped.',
+                );
                 this.stoppedAdapters = adapters.map(adapter => adapter._id);
                 for (let i = 0; i < this.stoppedAdapters.length; i++) {
                     const config = await this.getForeignObjectAsync(this.stoppedAdapters[i]);

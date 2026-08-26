@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.3",
-    "@iobroker/webserver": "^2.0.1",
+    "@iobroker/webserver": "^3.0.1",
     "acme-client": "^5.4.0",
     "acme-dns-01-cloudflare": "^1.2.5",
     "acme-dns-01-desec": "^3.0.0",
@@ -55,7 +55,7 @@
     "@types/node": "^22.20.1",
     "@types/x509.js": "^1.0.3",
     "colorette": "^2.0.20",
-    "puppeteer": "^25.8.0",
+    "puppeteer": "^25.9.0",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3"
   },

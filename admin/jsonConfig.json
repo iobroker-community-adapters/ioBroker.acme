@@ -49,6 +49,33 @@
                     "validatorErrorText": "At least one challenge mechanism must be active",
                     "validatorNoSaveOnError": true
                 },
+                "http01Mode": {
+                    "newLine": true,
+                    "type": "select",
+                    "label": "HTTP-01 challenge delivery",
+                    "help": "Automatic publishes the challenges for web/admin to serve and only starts an own server - stopping adapters on the same port - if that does not answer.",
+                    "default": "auto",
+                    "options": [
+                        {
+                            "label": "Automatic (recommended)",
+                            "value": "auto"
+                        },
+                        {
+                            "label": "Own challenge server, stop conflicting adapters",
+                            "value": "standalone"
+                        },
+                        {
+                            "label": "Served by another adapter or reverse proxy",
+                            "value": "external"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "hidden": "!data.http01Active"
+                },
                 "port": {
                     "newLine": true,
                     "type": "port",
@@ -61,8 +88,8 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4,
-                    "hidden": "!data.http01Active",
-                    "validator": "!data.http01Active || data.port",
+                    "hidden": "!data.http01Active || data.http01Mode === 'external'",
+                    "validator": "!data.http01Active || data.http01Mode === 'external' || data.port",
                     "validatorErrorText": "Listen port is mandatory",
                     "validatorNoSaveOnError": true
                 },
@@ -75,8 +102,8 @@
                     "lg": 4,
                     "xl": 4,
                     "listenOnAllPorts": true,
-                    "hidden": "!data.http01Active",
-                    "validator": "!data.http01Active || data.bind",
+                    "hidden": "!data.http01Active || data.http01Mode === 'external'",
+                    "validator": "!data.http01Active || data.http01Mode === 'external' || data.bind",
                     "validatorErrorText": "Listen address is mandatory",
                     "validatorNoSaveOnError": true
                 },

@@ -15,6 +15,13 @@ export interface AcmeAdapterConfig {
     maintainerEmail: string;
     useStaging: boolean;
     http01Active: boolean;
+    /**
+     * How http-01 tokens reach the CA:
+     * - `auto`: publish them and let web/admin serve them, own server as fallback
+     * - `standalone`: always our own server, stopping adapters on the same port
+     * - `external`: publish only, a reverse proxy or another adapter serves them
+     */
+    http01Mode: 'auto' | 'standalone' | 'external';
     port: number;
     bind: string;
     dns01Active: boolean;

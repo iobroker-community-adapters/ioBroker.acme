@@ -166,6 +166,7 @@
     "maintainerEmail": "",
     "useStaging": true,
     "http01Active": false,
+    "http01Mode": "auto",
     "port": 0,
     "bind": "",
     "dns01Active": false,
@@ -213,6 +214,27 @@
         "name": "account",
         "type": "json",
         "role": "json"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.httpChallenges",
+      "type": "state",
+      "common": {
+        "name": "Pending HTTP-01 challenge tokens",
+        "type": "string",
+        "role": "json",
+        "read": true,
+        "write": false,
+        "def": "{}"
       },
       "native": {}
     }
