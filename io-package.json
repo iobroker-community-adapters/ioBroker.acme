@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "acme",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "news": {
+      "5.0.1": {
+        "en": "HTTP-01 challenges are now published in `acme.<instance>.info.httpChallenges` so `web`/`admin` can serve them; adapters on port 80 are only stopped when nothing answers there (#85)\nAdded the \"HTTP-01 challenge delivery\" setting to choose between automatic, an own challenge server, and an external responder",
+        "de": "HTTP-01-Herausforderungen werden jetzt in `acme.<instance>.info.httpChallenges` veröffentlicht, sodass `web`/`admin` sie bedienen können; Adapter auf Port 80 werden nur dann gestoppt, wenn dort keine Antwort erfolgt (#85).\nDie Einstellung „HTTP-01 Challenge-Zustellung“ wurde hinzugefügt, um zwischen automatischer Zustellung, einem eigenen Challenge-Server und einem externen Responder zu wählen.",
+        "ru": "Теперь запросы HTTP-01 публикуются в `acme.<instance>.info.httpChallenges`, поэтому `web`/`admin` могут их обрабатывать; адаптеры на порту 80 останавливаются только тогда, когда на них ничего не отвечает (#85)\nДобавлена настройка \"Доставка HTTP-01-запроса\", позволяющая выбирать между автоматическим режимом, использованием собственного сервера запросов и внешним ответчиком.",
+        "pt": "Os desafios HTTP-01 agora são publicados em `acme.<instância>.info.httpChallenges` para que `web`/`admin` possam servi-los; os adaptadores na porta 80 são interrompidos apenas quando nada responde lá (#85)\nAdicionada a configuração \"Entrega do desafio HTTP-01\" para escolher entre automática, servidor de desafio próprio e respondente externo.",
+        "nl": "HTTP-01-uitdagingen worden nu gepubliceerd in `acme.<instance>.info.httpChallenges` zodat `web`/`admin` ze kunnen verwerken; adapters op poort 80 worden alleen gestopt als er geen reactie komt (#85).\nDe instelling \"HTTP-01 challenge delivery\" is toegevoegd, waarmee je kunt kiezen tussen automatisch, een eigen challenge-server en een externe responder.",
+        "fr": "Les défis HTTP-01 sont désormais publiés dans `acme.<instance>.info.httpChallenges` afin que `web`/`admin` puisse les traiter ; les adaptateurs sur le port 80 ne sont arrêtés que lorsqu'aucune réponse n'est reçue sur ce port (#85).\nAjout du paramètre « Envoi du défi HTTP-01 » permettant de choisir entre le mode automatique, un serveur de défi dédié et un répondeur externe.",
+        "it": "Le sfide HTTP-01 sono ora pubblicate in `acme.<instance>.info.httpChallenges` in modo che `web`/`admin` possano gestirle; gli adattatori sulla porta 80 vengono arrestati solo quando non c'è risposta (#85)\nAggiunta l'impostazione \"Consegna sfida HTTP-01\" per scegliere tra automatico, un server di sfida proprietario e un risponditore esterno.",
+        "es": "Los desafíos HTTP-01 ahora se publican en `acme.<instance>.info.httpChallenges` para que `web`/`admin` pueda servirlos; los adaptadores en el puerto 80 solo se detienen cuando nadie responde allí (#85).\nSe agregó la configuración \"Entrega de desafío HTTP-01\" para elegir entre automático, un servidor de desafío propio y un respondedor externo.",
+        "pl": "Wyzwania HTTP-01 są teraz publikowane w `acme.<instance>.info.httpChallenges`, aby `web`/`admin` mógł je obsługiwać; adaptery na porcie 80 są zatrzymywane tylko wtedy, gdy nie ma tam żadnej odpowiedzi (#85)\nDodano ustawienie „Dostarczanie wyzwania HTTP-01” umożliwiające wybór pomiędzy trybem automatycznym, własnym serwerem wyzwania i zewnętrznym serwerem odpowiadającym",
+        "uk": "Запити HTTP-01 тепер публікуються в `acme.<instance>.info.httpChallenges`, щоб `web`/`admin` могли їх обслуговувати; адаптери на порту 80 зупиняються лише тоді, коли там нічого не відповідає (#85)\nДодано налаштування «Доставка викликів HTTP-01» для вибору між автоматичною доставкою, власним сервером викликів та зовнішнім відповідачем.",
+        "zh-cn": "HTTP-01 挑战现在发布在 `acme.<instance>.info.httpChallenges` 中，以便 `web`/`admin` 可以提供这些挑战；只有当端口 80 没有响应时，端口 80 上的适配器才会停止 (#85)\n新增了“HTTP-01 质询传递”设置，可以选择自动传递、使用自有质询服务器或使用外部响应器。"
+      },
       "5.0.0": {
         "en": "Added support for deSEC and PowerDNS DNS-01 challenges\nFixed DigitalOcean, DNSimple, Gandi, name.com and Route53 DNS-01 challenges failing with \"request is not a function\" after the acme-client migration\nAdded support for Hetzner and Dynu DNS-01 challenges\nAdded support for IONOS DNS-01 challenge\nBREAKING: Migrated from the abandoned ACME.js to acme-client. The saved ACME account is registered once anew on first run after the update.\nAdded support for eDNS.de DNS-01 challenge\nFixed certificate issuance failing against current Let's Encrypt with 409 / \"Unhandled status '403'\"\nFixed certificate renewal failing with \"Cannot read properties of undefined (reading '0')\"",
         "de": "Unterstützung für deSEC- und PowerDNS-DNS-01-Herausforderungen hinzugefügt.\nBehebung des Fehlers „Anfrage ist keine Funktion“ bei den DNS-01-Herausforderungen von DigitalOcean, DNSimple, Gandi, name.com und Route53 nach der Migration von acme-client.\nUnterstützung für Hetzner- und Dynu-DNS-01-Herausforderungen hinzugefügt.\nUnterstützung für die IONOS DNS-01-Herausforderung hinzugefügt.\nEilmeldung: Migration von der veralteten ACME.js-Version zu acme-client. Das gespeicherte ACME-Konto wird nach dem Update beim ersten Start neu registriert.\nUnterstützung für die eDNS.de DNS-01-Herausforderung hinzugefügt.\nDie Ausstellung des Zertifikats schlug mit dem Fehler 409 / \"Unbehandelter Status '403'\" bei Let's Encrypt fehl.\nDie Erneuerung des Zertifikats schlug mit der Fehlermeldung „Eigenschaften von undefiniert können nicht gelesen werden (liest '0')“ fehl.",
@@ -80,19 +93,6 @@
         "pl": "Adapter wymaga node.js > = 20, kontroler js- i admin > = 7.6.17\nZaktualizowano zależności\nAdater został przeniesiony do TypeScript i vite",
         "uk": "Адаптер вимагає node.js >= 20, js-controller >= 6.0.11 і admin >= 7.6.17 тепер\nЗалежність було оновлено\nAdater був мігрований до TypeScript і vite",
         "zh-cn": "适配器需要节点.js >= 20,js控制器 >= 6.0.11和admin >= 7.6.17 现在\n依赖关系已更新\n已迁移到 TypeScript 和 vite"
-      },
-      "1.0.6": {
-        "en": "Missing size attributes for jsonCOnfig have been added.\nDependencies have been updated",
-        "de": "Fehlende Größenattribute für jsonCOnfig wurden hinzugefügt.\nAbhängigkeiten wurden aktualisiert",
-        "ru": "Добавлены отсутствующие атрибуты размера для jsonCOnfig.\nЗависимость обновлена",
-        "pt": "Atributos de tamanho perdido para jsonCOnfig foram adicionados.\nAs dependências foram atualizadas",
-        "nl": "Ontbrekende grootte attributen voor jsonCOnfig zijn toegevoegd.\nAfhankelijkheden zijn bijgewerkt",
-        "fr": "Des attributs de taille manquante pour jsonConfig ont été ajoutés.\nLes dépendances ont été actualisées",
-        "it": "Gli attributi di dimensione mancante per jsonCOnfig sono stati aggiunti.\nLe dipendenze sono state aggiornate",
-        "es": "Se han añadido atributos de tamaño perdido para jsonCOnfig.\nSe han actualizado las dependencias",
-        "pl": "Dodano brakujące atrybuty rozmiaru dla jsonCOnfig.\nZaktualizowano zależności",
-        "uk": "Додано атрибути розмірів для jsonCOnfig.\nЗалежність було оновлено",
-        "zh-cn": "添加了 jsonconfig 的大小属性 .\n依赖关系已更新"
       }
     },
     "titleLang": {

@@ -128,7 +128,7 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 5.0.1 (2026-08-26)
 - (@GermanBluefox) HTTP-01 challenges are now published in `acme.<instance>.info.httpChallenges` so `web`/`admin` can serve them; adapters on port 80 are only stopped when nothing answers there (#85)
 - (@GermanBluefox) Added the "HTTP-01 challenge delivery" setting to choose between automatic, an own challenge server, and an external responder
 
@@ -153,12 +153,6 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 ### 3.0.2 (2026-03-10)
 - (@GermanBluefox) Correcting configuration dialog
 - (@GermanBluefox) Added tests for the GUI component
-
-### 3.0.0 (2026-03-05)
-- (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
-- (copilot) Adapter requires admin >= 7.7.22 now
-- (lubepi) Added support for Netcup DNS-01 challenge 
-- (@GermanBluefox) Optimisations on log output and error handling
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

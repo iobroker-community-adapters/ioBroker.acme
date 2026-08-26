@@ -1,4 +1,10 @@
 # Older changes
+## 3.0.0 (2026-03-05)
+- (lubepi) BREAKING: DNS-01 credentials are encrypted now. You might have to reenter them once after upgrading the aadapter. 
+- (copilot) Adapter requires admin >= 7.7.22 now
+- (lubepi) Added support for Netcup DNS-01 challenge 
+- (@GermanBluefox) Optimisations on log output and error handling
+
 ## 2.0.0 (2026-02-12)
 - (mcm1957) Adapter requires node.js >= 20, js-controller >= 6.0.11 and admin >= 7.6.17 now
 - (mcm1957) Dependencies have been updated
