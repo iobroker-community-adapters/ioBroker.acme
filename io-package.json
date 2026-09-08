@@ -29,19 +29,6 @@
         "uk": "Перенесено до адміністратора 8",
         "zh-cn": "已迁移至 admin 8"
       },
-      "3.1.0": {
-        "en": "Adapter requires node.js >= 22 now\nDependencies have been updated",
-        "de": "Adapter benötigt node.js >= 22 jetzt\nAbhängigkeiten wurden aktualisiert",
-        "ru": "Адаптер требует node.js >= 22 сейчас\nЗависимости были обновлены",
-        "pt": "Adaptador requer nod.js >= 22 agora\nAs dependências foram atualizadas",
-        "nl": "Voor de adapter zijn node.js < 22 nu nodig\nAfhankelijkheden zijn bijgewerkt",
-        "fr": "Adaptateur nécessite node.js >= 22 maintenant\nLes dépendances ont été actualisées",
-        "it": "Adattatore richiede node.js >= 22 ora\nLe dipendenze sono state aggiornate",
-        "es": "Adaptador requiere node.js ю= 22 ahora\nSe han actualizado las dependencias",
-        "pl": "Adapter wymaga node.js > = 22\nZaktualizowano zależności",
-        "uk": "Адаптер вимагає node.js >= 22 тепер\nЗалежність було оновлено",
-        "zh-cn": "适配器需要节点.js 现在22\n依赖关系已更新"
-      },
       "3.0.2": {
         "en": "Correcting configuration dialog\nAdded tests for GUI component",
         "de": "Konfigurationsdialog korrigieren\nZusätzliche Tests für GUI-Komponente",
