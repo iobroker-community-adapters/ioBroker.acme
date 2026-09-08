@@ -1,6 +1,6 @@
 {
   "name": "iobroker.acme",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Generates certificate bundles using ACME challenges",
   "author": "Robin Rainton <robin@rainton.com>",
   "contributors": [
