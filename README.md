@@ -128,11 +128,9 @@ See [AMCS.js](https://www.npmjs.com/package/acme) for more details.
 -->
 
 ## Changelog
-### 5.0.1 (2026-08-26)
+### **WORK IN PROGRESS**
 - (@GermanBluefox) HTTP-01 challenges are now published in `acme.<instance>.info.httpChallenges` so `web`/`admin` can serve them; adapters on port 80 are only stopped when nothing answers there (#85)
 - (@GermanBluefox) Added the "HTTP-01 challenge delivery" setting to choose between automatic, an own challenge server, and an external responder
-
-### 5.0.0 (2026-08-25)
 - (@GermanBluefox) Added support for deSEC and PowerDNS DNS-01 challenges
 - (@GermanBluefox) Fixed DigitalOcean, DNSimple, Gandi, name.com and Route53 DNS-01 challenges failing with "request is not a function" after the acme-client migration
 - (@GermanBluefox) Added support for Hetzner and Dynu DNS-01 challenges

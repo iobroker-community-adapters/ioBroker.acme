@@ -84,7 +84,7 @@ if (MODULE === 'acme-dns-01-netcup') {
 const domains = WILDCARD ? [DOMAIN, `*.${DOMAIN}`] : [DOMAIN];
 const redacted = Object.keys(options).filter(k => k !== 'log' && k !== 'baseUrl');
 
-console.log('Let\'s Encrypt STAGING order');
+console.log("Let's Encrypt STAGING order");
 console.log(`  domains   ${domains.join(', ')}`);
 console.log(`  module    ${MODULE}${LOCAL_MODULES[MODULE] ? ' (shipped with the adapter)' : ' (npm)'}`);
 console.log(`  options   ${redacted.join(', ') || '(none)'} ${options.baseUrl ? `baseUrl=${options.baseUrl}` : ''}`);
@@ -113,7 +113,9 @@ try {
         log: message => console.log(`  [${elapsed()}] ${message}`),
         request: createRequestHelper(),
     });
-    console.log(`  plugin loaded, propagationDelay=${shim.propagationDelay}ms skipChallengeTest=${shim.skipChallengeTest}`);
+    console.log(
+        `  plugin loaded, propagationDelay=${shim.propagationDelay}ms skipChallengeTest=${shim.skipChallengeTest}`,
+    );
 
     // ---- account -----------------------------------------------------------
     acme.setLogger(message => process.env.ACME_DEBUG && console.log(`    [acme-client] ${message}`));
